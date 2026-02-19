@@ -27,136 +27,163 @@ export default function MFDataConsulting() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-gray-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-100 relative">
+
+      {/* FUNDO TECNOLÓGICO */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_30%,rgba(220,38,38,0.4),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.2),transparent_40%)]"></div>
 
       {/* HEADER FIXO */}
-      <header className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-6 bg-white shadow-sm">
-        <img src="/logo.png" alt="MF Data Consulting" className="h-12" />
+      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
+          <img src="/logo.png" alt="MF Data Consulting" className="h-12" />
 
-        <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-800">
-          <a href="#sobre" className="hover:text-red-600 transition">Sobre</a>
-          <a href="#servicos" className="hover:text-red-600 transition">Serviços</a>
-          <a href="#portfolio" className="hover:text-red-600 transition">Portfólio</a>
-          <a href="#contato" className="hover:text-red-600 transition">Contato</a>
-        </nav>
+          <nav className="hidden md:flex gap-10 text-sm font-semibold text-gray-800">
+            <a href="#sobre" className="hover:text-red-700 transition">Sobre</a>
+            <a href="#servicos" className="hover:text-red-700 transition">Serviços</a>
+            <a href="#portfolio" className="hover:text-red-700 transition">Portfólio</a>
+            <a href="#contato" className="hover:text-red-700 transition">Contato</a>
+          </nav>
+        </div>
       </header>
 
-      {/* ESPAÇO PARA COMPENSAR HEADER FIXO */}
+      {/* ESPAÇO HEADER */}
       <div className="h-24"></div>
 
       {/* HERO */}
-      <section className="px-8 py-24 text-center bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6">
-          Transformando Dados em Decisão Estratégica
+      <section className="px-8 py-28 text-center max-w-5xl mx-auto">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+          Engenharia de Dados e Inteligência Estratégica
         </h1>
-        <p className="max-w-2xl mx-auto text-lg text-gray-300 mb-8">
-          Soluções em Engenharia de Dados, BI e Integração de Sistemas.
+
+        <p className="text-lg md:text-xl text-gray-300 mb-10">
+          Transformamos dados complexos em decisões estratégicas,
+          estruturando arquitetura, BI e integrações com foco em
+          performance, governança e escalabilidade.
         </p>
+
         <a
           href="#contato"
-          className="bg-red-600 hover:bg-red-700 px-8 py-3 rounded-2xl font-semibold shadow-lg transition"
+          className="bg-red-700 hover:bg-red-800 px-10 py-4 rounded-2xl text-white font-semibold shadow-xl transition"
         >
           Solicitar Consultoria
         </a>
       </section>
 
       {/* SOBRE */}
-      <section id="sobre" className="px-8 py-20 max-w-6xl mx-auto scroll-mt-28">
-        <h2 className="text-3xl font-bold mb-8 text-center">Sobre</h2>
+      <section id="sobre" className="px-8 py-24 max-w-6xl mx-auto scroll-mt-28">
+        <h2 className="text-4xl font-bold mb-10 text-center text-white">
+          Sobre a MF Data Consulting
+        </h2>
+
         <p className="text-lg text-gray-300 leading-relaxed text-center max-w-3xl mx-auto">
-          A MF Data Consulting atua com foco em arquitetura de dados, BI corporativo,
-          integrações complexas e desenvolvimento de soluções personalizadas.
+          A MF Data Consulting atua na estruturação de ambientes analíticos modernos,
+          integração de sistemas e governança de dados. Com experiência em ambientes
+          regulados e projetos de alta criticidade, entregamos soluções robustas,
+          seguras e orientadas a resultados mensuráveis.
         </p>
       </section>
 
-      {/* Serviços */}
-<section id="servicos" className="px-8 py-20 bg-white scroll-mt-28">
-  <h2 className="text-3xl font-bold mb-12 text-center">Serviços</h2>
+      {/* SERVIÇOS */}
+      <section id="servicos" className="px-8 py-24 bg-white text-gray-800 scroll-mt-28">
+        <h2 className="text-4xl font-bold mb-16 text-center text-gray-900">
+          Serviços
+        </h2>
 
-  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-    {[
-      {
-        title: "Engenharia de Dados",
-        desc: "Desenho e implementação de pipelines ETL/ELT, modelagem dimensional e arquitetura moderna de dados em ambientes escaláveis e orientados a performance."
-      },
-      {
-        title: "Business Intelligence",
-        desc: "Criação de dashboards executivos, indicadores estratégicos (KPIs) e soluções analíticas em Power BI para suporte à tomada de decisão."
-      },
-      {
-        title: "Integração de Sistemas",
-        desc: "Integração segura entre ERPs, APIs, bancos de dados e sistemas legados, garantindo consistência, automação e governança das informações."
-      },
-      {
-        title: "Consultoria em Governança de Dados",
-        desc: "Estruturação de padrões, qualidade, catalogação e boas práticas para garantir confiabilidade, compliance e maturidade analítica."
-      },
-      {
-        title: "Projetos de Migração e Modernização",
-        desc: "Migração de bases de dados, consolidação de ambientes e modernização de arquitetura com foco em redução de risco e continuidade operacional."
-      }
-    ].map((service, index) => (
-      <div key={index} className="bg-gray-50 p-8 rounded-2xl shadow-md hover:shadow-xl transition">
-        <h3 className="text-xl font-semibold mb-4">{service.title}</h3>
-        <p className="text-gray-600 leading-relaxed">{service.desc}</p>
-      </div>
-    ))}
-  </div>
-</section>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          {[
+            {
+              title: "Engenharia de Dados",
+              desc: "Desenho e implementação de pipelines ETL/ELT, modelagem dimensional e arquitetura moderna de dados escalável."
+            },
+            {
+              title: "Business Intelligence",
+              desc: "Dashboards executivos, KPIs estratégicos e soluções analíticas em Power BI para decisões baseadas em dados."
+            },
+            {
+              title: "Integração de Sistemas",
+              desc: "Integração segura entre ERPs, APIs e bancos de dados garantindo consistência e automação de processos."
+            },
+            {
+              title: "Governança de Dados",
+              desc: "Padronização, qualidade e boas práticas para garantir confiabilidade e maturidade analítica."
+            },
+            {
+              title: "Migração e Modernização",
+              desc: "Migração de bases, consolidação de ambientes e modernização de arquitetura com foco em performance."
+            }
+          ].map((service, index) => (
+            <div
+              key={index}
+              className="bg-gray-50 p-8 rounded-2xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <h3 className="text-xl font-bold mb-4 text-gray-900">
+                {service.title}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {service.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
+      {/* PORTFÓLIO */}
+      <section id="portfolio" className="px-8 py-24 bg-gray-100 text-gray-800 scroll-mt-28">
+        <h2 className="text-4xl font-bold mb-16 text-center text-gray-900">
+          Portfólio & Experiência
+        </h2>
 
-      {/* Portfólio */}
-<section id="portfolio" className="px-8 py-20 bg-gray-100 scroll-mt-28">
-  <h2 className="text-3xl font-bold mb-12 text-center">Portfólio & Experiência</h2>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="bg-white p-8 rounded-2xl shadow-md">
+            <h4 className="font-bold text-lg mb-2 text-gray-900">
+              Projetos de BI Corporativo
+            </h4>
+            <p>
+              Desenvolvimento de painéis estratégicos para áreas executivas,
+              consolidando múltiplas fontes de dados em visões gerenciais claras.
+            </p>
+          </div>
 
-  <div className="max-w-4xl mx-auto space-y-6 text-gray-700">
+          <div className="bg-white p-8 rounded-2xl shadow-md">
+            <h4 className="font-bold text-lg mb-2 text-gray-900">
+              Integrações Complexas
+            </h4>
+            <p>
+              Integração entre ERPs e sistemas regulatórios em ambientes de alta criticidade.
+            </p>
+          </div>
 
-    <div className="bg-white p-6 rounded-2xl shadow">
-      <h4 className="font-semibold mb-2">Projetos de BI Corporativo</h4>
-      <p>
-        Desenvolvimento de painéis estratégicos para áreas executivas, financeiras e operacionais,
-        consolidando múltiplas fontes de dados em visões gerenciais claras e orientadas a resultados.
-      </p>
-    </div>
-
-    <div className="bg-white p-6 rounded-2xl shadow">
-      <h4 className="font-semibold mb-2">Integrações Complexas e Ambientes Regulados</h4>
-      <p>
-        Integração entre ERPs, sistemas regulatórios e plataformas terceiras em ambientes de alta criticidade,
-        garantindo segurança, rastreabilidade e consistência de dados.
-      </p>
-    </div>
-
-    <div className="bg-white p-6 rounded-2xl shadow">
-      <h4 className="font-semibold mb-2">Arquitetura e Governança de Dados</h4>
-      <p>
-        Estruturação de ambientes SQL Server, Oracle e MySQL com foco em performance,
-        escalabilidade e boas práticas de governança da informação.
-      </p>
-    </div>
-
-  </div>
-</section>
-
+          <div className="bg-white p-8 rounded-2xl shadow-md">
+            <h4 className="font-bold text-lg mb-2 text-gray-900">
+              Arquitetura e Governança
+            </h4>
+            <p>
+              Estruturação de ambientes SQL Server, Oracle e MySQL com foco em performance e governança.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* CONTATO */}
-      <section id="contato" className="px-8 py-20 bg-gray-900 text-white scroll-mt-28">
+      <section id="contato" className="px-8 py-24 bg-black text-white scroll-mt-28">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Vamos conversar?</h2>
+          <h2 className="text-4xl font-bold mb-10">
+            Vamos conversar?
+          </h2>
 
-          <div className="grid md:grid-cols-2 gap-10 mt-10">
+          <div className="grid md:grid-cols-2 gap-12">
 
             {/* FORM */}
             <form
               onSubmit={handleSubmit}
-              className="space-y-6 bg-gray-800 p-8 rounded-2xl shadow-xl"
+              className="space-y-6 bg-gray-900 p-8 rounded-2xl shadow-2xl"
             >
               <input
                 type="text"
                 name="nome"
                 placeholder="Nome"
                 required
-                className="w-full p-3 rounded-lg bg-gray-700"
+                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
               />
 
               <input
@@ -164,7 +191,7 @@ export default function MFDataConsulting() {
                 name="email"
                 placeholder="Email"
                 required
-                className="w-full p-3 rounded-lg bg-gray-700"
+                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
               />
 
               <textarea
@@ -172,12 +199,12 @@ export default function MFDataConsulting() {
                 rows={4}
                 placeholder="Mensagem"
                 required
-                className="w-full p-3 rounded-lg bg-gray-700"
+                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
               />
 
               <button
                 type="submit"
-                className="w-full bg-red-600 hover:bg-red-700 p-3 rounded-xl font-semibold transition"
+                className="w-full bg-red-700 hover:bg-red-800 p-3 rounded-xl font-semibold transition"
               >
                 Enviar Mensagem
               </button>
@@ -186,26 +213,27 @@ export default function MFDataConsulting() {
             </form>
 
             {/* WHATSAPP */}
-            <div className="flex flex-col justify-center items-center bg-gray-800 p-8 rounded-2xl shadow-xl">
+            <div className="flex flex-col justify-center items-center bg-gray-900 p-8 rounded-2xl shadow-xl">
               <a
                 href="https://wa.me/5531991160913"
                 target="_blank"
-                className="bg-green-500 hover:bg-green-600 px-8 py-3 rounded-2xl font-semibold transition"
+                className="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-2xl font-semibold transition"
               >
                 Chamar no WhatsApp
               </a>
 
-              <p className="mt-6 text-sm">
+              <p className="mt-6 text-gray-400 text-sm">
                 marlio.fernandes@mfdataconsulting.com
               </p>
             </div>
+
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-black text-gray-400 text-center py-6 text-sm">
-        © {new Date().getFullYear()} MF Data Consulting
+      <footer className="bg-black text-gray-500 text-center py-6 text-sm">
+        © {new Date().getFullYear()} MF Data Consulting. Todos os direitos reservados.
       </footer>
     </div>
   );
