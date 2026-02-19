@@ -164,69 +164,76 @@ export default function MFDataConsulting() {
         </div>
       </section>
 
-      {/* CONTATO */}
-      <section id="contato" className="px-8 py-24 bg-black text-white scroll-mt-28">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-10">
-            Vamos conversar?
-          </h2>
+      {/* Contato */}
+      <section id="contato" className="px-8 py-20 bg-gray-900 text-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6 text-center">Vamos conversar?</h2>
+          <p className="mb-10 text-gray-300 text-center">
+            Preencha o formulário abaixo ou fale diretamente pelo WhatsApp.
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-12">
-
-            {/* FORM */}
+          <div className="grid md:grid-cols-2 gap-10">
+            {/* Formulário */}
             <form
               onSubmit={handleSubmit}
-              className="space-y-6 bg-gray-900 p-8 rounded-2xl shadow-2xl"
+              className="space-y-6 bg-gray-900/80 backdrop-blur p-8 rounded-2xl shadow-2xl border border-gray-700"
             >
-              <input
-                type="text"
-                name="nome"
-                placeholder="Nome"
-                required
-                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
-              />
+              <div>
+                <label className="block mb-2 text-sm">Nome</label>
+                <input
+                  type="text"
+                  name="nome"
+                  required
+                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
+                />
+              </div>
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
-              />
+              <div>
+                <label className="block mb-2 text-sm">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
+                />
+              </div>
 
-              <textarea
-                name="mensagem"
-                rows={4}
-                placeholder="Mensagem"
-                required
-                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-red-600 outline-none"
-              />
+              <div>
+                <label className="block mb-2 text-sm">Mensagem</label>
+                <textarea
+                  name="mensagem"
+                  rows="4"
+                  required
+                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
+                ></textarea>
+              </div>
 
               <button
                 type="submit"
-                className="w-full bg-red-700 hover:bg-red-800 p-3 rounded-xl font-semibold transition"
+                className="w-full bg-red-600 hover:bg-red-700 p-3 rounded-xl font-semibold transition"
               >
                 Enviar Mensagem
               </button>
 
-              {status && <p className="text-sm mt-2">{status}</p>}
+              {status && (
+                <p className="text-sm text-gray-300 mt-2">{status}</p>
+              )}
             </form>
 
-            {/* WHATSAPP */}
-            <div className="flex flex-col justify-center items-center bg-gray-900 p-8 rounded-2xl shadow-xl">
+            {/* WhatsApp */}
+            <div className="flex flex-col justify-center items-center bg-gray-800 p-8 rounded-2xl shadow-xl text-center">
+              <h3 className="text-xl font-semibold mb-4">Contato direto</h3>
+              <p className="text-gray-300 mb-6">
+                Prefere uma conversa mais rápida? Fale comigo diretamente pelo WhatsApp.
+              </p>
               <a
                 href="https://wa.me/5531991160913"
                 target="_blank"
-                className="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-2xl font-semibold transition"
+                className="bg-green-500 hover:bg-green-600 px-8 py-3 rounded-2xl font-semibold transition"
               >
                 Chamar no WhatsApp
               </a>
-
-              <p className="mt-6 text-gray-400 text-sm">
-                marlio.fernandes@mfdataconsulting.com
-              </p>
             </div>
-
           </div>
         </div>
       </section>
