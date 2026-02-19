@@ -69,44 +69,75 @@ export default function MFDataConsulting() {
         </p>
       </section>
 
-      {/* SERVIÇOS */}
-      <section id="servicos" className="px-8 py-20 bg-white text-gray-800 scroll-mt-28">
-        <h2 className="text-3xl font-bold mb-12 text-center">Serviços</h2>
+      {/* Serviços */}
+<section id="servicos" className="px-8 py-20 bg-white scroll-mt-28">
+  <h2 className="text-3xl font-bold mb-12 text-center">Serviços</h2>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {[
-            "Engenharia de Dados",
-            "Business Intelligence",
-            "Integração de Sistemas",
-            "Consultoria em Dados",
-            "Projetos de Migração",
-          ].map((item, index) => (
-            <div key={index} className="bg-gray-50 p-8 rounded-2xl shadow-md hover:shadow-xl transition">
-              <h3 className="text-xl font-semibold mb-4">{item}</h3>
-              <p className="text-gray-600">
-                Soluções estratégicas focadas em performance, escalabilidade e governança.
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    {[
+      {
+        title: "Engenharia de Dados",
+        desc: "Desenho e implementação de pipelines ETL/ELT, modelagem dimensional e arquitetura moderna de dados em ambientes escaláveis e orientados a performance."
+      },
+      {
+        title: "Business Intelligence",
+        desc: "Criação de dashboards executivos, indicadores estratégicos (KPIs) e soluções analíticas em Power BI para suporte à tomada de decisão."
+      },
+      {
+        title: "Integração de Sistemas",
+        desc: "Integração segura entre ERPs, APIs, bancos de dados e sistemas legados, garantindo consistência, automação e governança das informações."
+      },
+      {
+        title: "Consultoria em Governança de Dados",
+        desc: "Estruturação de padrões, qualidade, catalogação e boas práticas para garantir confiabilidade, compliance e maturidade analítica."
+      },
+      {
+        title: "Projetos de Migração e Modernização",
+        desc: "Migração de bases de dados, consolidação de ambientes e modernização de arquitetura com foco em redução de risco e continuidade operacional."
+      }
+    ].map((service, index) => (
+      <div key={index} className="bg-gray-50 p-8 rounded-2xl shadow-md hover:shadow-xl transition">
+        <h3 className="text-xl font-semibold mb-4">{service.title}</h3>
+        <p className="text-gray-600 leading-relaxed">{service.desc}</p>
+      </div>
+    ))}
+  </div>
+</section>
 
-      {/* PORTFÓLIO */}
-      <section id="portfolio" className="px-8 py-20 bg-gray-100 text-gray-800 scroll-mt-28">
-        <h2 className="text-3xl font-bold mb-12 text-center">Portfólio</h2>
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow">
-            Projetos de BI Corporativo
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow">
-            Integrações Complexas
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow">
-            Arquitetura de Dados
-          </div>
-        </div>
-      </section>
+      {/* Portfólio */}
+<section id="portfolio" className="px-8 py-20 bg-gray-100 scroll-mt-28">
+  <h2 className="text-3xl font-bold mb-12 text-center">Portfólio & Experiência</h2>
+
+  <div className="max-w-4xl mx-auto space-y-6 text-gray-700">
+
+    <div className="bg-white p-6 rounded-2xl shadow">
+      <h4 className="font-semibold mb-2">Projetos de BI Corporativo</h4>
+      <p>
+        Desenvolvimento de painéis estratégicos para áreas executivas, financeiras e operacionais,
+        consolidando múltiplas fontes de dados em visões gerenciais claras e orientadas a resultados.
+      </p>
+    </div>
+
+    <div className="bg-white p-6 rounded-2xl shadow">
+      <h4 className="font-semibold mb-2">Integrações Complexas e Ambientes Regulados</h4>
+      <p>
+        Integração entre ERPs, sistemas regulatórios e plataformas terceiras em ambientes de alta criticidade,
+        garantindo segurança, rastreabilidade e consistência de dados.
+      </p>
+    </div>
+
+    <div className="bg-white p-6 rounded-2xl shadow">
+      <h4 className="font-semibold mb-2">Arquitetura e Governança de Dados</h4>
+      <p>
+        Estruturação de ambientes SQL Server, Oracle e MySQL com foco em performance,
+        escalabilidade e boas práticas de governança da informação.
+      </p>
+    </div>
+
+  </div>
+</section>
+
 
       {/* CONTATO */}
       <section id="contato" className="px-8 py-20 bg-gray-900 text-white scroll-mt-28">
