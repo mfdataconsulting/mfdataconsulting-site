@@ -35,7 +35,14 @@ export default function MFDataConsulting() {
       {/* HEADER FIXO */}
       <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
-          <img src="/logo.png" alt="MF Data Consulting" className="h-12" />
+          <a href="#inicio" className="flex items-center">
+  <img
+    src="/logo.png"
+    alt="MF Data Consulting"
+    className="h-16 w-auto cursor-pointer"
+  />
+</a>
+
           <nav className="hidden md:flex gap-10 text-sm font-semibold text-gray-800">
             <a href="#sobre" className="hover:text-red-700 transition">Sobre</a>
             <a href="#servicos" className="hover:text-red-700 transition">Serviços</a>
