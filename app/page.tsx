@@ -39,7 +39,6 @@ export default function MFDataConsulting() {
           <nav className="hidden md:flex gap-10 text-sm font-semibold text-gray-800">
             <a href="#sobre" className="hover:text-red-700 transition">Sobre</a>
             <a href="#servicos" className="hover:text-red-700 transition">Serviços</a>
-            <a href="#portfolio" className="hover:text-red-700 transition">Portfólio</a>
             <a href="#contato" className="hover:text-red-700 transition">Contato</a>
           </nav>
         </div>
@@ -221,43 +220,6 @@ export default function MFDataConsulting() {
               </p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* PORTFÓLIO */}
-      <section id="portfolio" className="px-8 py-24 bg-gray-100 text-gray-800 scroll-mt-28">
-        <h2 className="text-4xl font-bold mb-16 text-center text-gray-900">
-          Portfólio & Experiência
-        </h2>
-
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="bg-white p-8 rounded-2xl shadow-md">
-            <h4 className="font-bold text-lg mb-2 text-gray-900">
-              Projetos de BI Corporativo
-            </h4>
-            <p>
-              Desenvolvimento de painéis estratégicos para áreas executivas,
-              consolidando múltiplas fontes de dados em visões gerenciais claras.
-            </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-2xl shadow-md">
-            <h4 className="font-bold text-lg mb-2 text-gray-900">
-              Integrações Complexas
-            </h4>
-            <p>
-              Integração entre ERPs e sistemas regulatórios em ambientes de alta criticidade.
-            </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-2xl shadow-md">
-            <h4 className="font-bold text-lg mb-2 text-gray-900">
-              Arquitetura e Governança
-            </h4>
-            <p>
-              Estruturação de ambientes SQL Server, Oracle e MySQL com foco em performance e governança.
-            </p>
-          </div>
         </div>
       </section>
 
