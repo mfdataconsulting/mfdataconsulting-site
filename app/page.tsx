@@ -109,10 +109,29 @@ export default function MFDataConsulting() {
         </h2>
 
         <p className="text-lg text-gray-300 leading-relaxed text-center max-w-3xl mx-auto">
-          A MF Data Consulting atua na estruturação de ambientes analíticos modernos,
-          integração de sistemas e governança de dados. Com experiência em ambientes
-          regulados e projetos de alta criticidade, entregamos soluções robustas,
-          seguras e orientadas a resultados mensuráveis.
+          A MF Data Consulting é uma consultoria especializada em engenharia de dados, BI e automação, focada em transformar dados brutos em informação estratégica para tomada de decisão.
+Atuamos no desenvolvimento e manutenção de pipelines de dados, integração de sistemas corporativos e estruturação de modelos analíticos, garantindo confiabilidade, performance e escalabilidade no uso dos dados.
+Com forte experiência em ambientes corporativos e regulados, entregamos soluções sob medida que conectam dados, processos e pessoas, apoiando empresas na construção de uma cultura data-driven.
+
+✔ Engenharia e Integração de Dados
+• Desenvolvimento e manutenção de pipelines ETL (Extração, Transformação e Carga)
+• Integração de sistemas via APIs REST, arquivos e bancos de dados
+• Atuação com bancos relacionais: Oracle, SQL Server, MySQL e PostgreSQL
+
+✔ Business Intelligence and Analytics
+• Modelagem e preparação de dados para Power BI
+• Estruturação de modelos analíticos a partir de bases relacionais e não relacionais
+• Interpretação de dados para criação de dashboards performáticos, confiáveis e orientados ao negócio
+
+✔ Automação de Processos e Dados
+• Automação de rotinas e fluxos de dados com Python, Power Automate e SQL
+• Otimização de processos operacionais e redução de retrabalho manual
+• Orquestração de cargas e integrações entre sistemas internos e externos
+
+✔ Apoio à Tomada de Decisão
+• Estruturação de dados para análises estratégicas
+• Melhoria do fluxo de informação entre áreas e sistemas
+• Suporte à implantação de uma cultura Data-Driven
         </p>
       </section>
 
