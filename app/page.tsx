@@ -49,25 +49,59 @@ export default function MFDataConsulting() {
       {/* ESPAÇO HEADER */}
       <div className="h-24"></div>
 
-      {/* HERO */}
-      <section className="px-8 py-28 text-center max-w-5xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-          Engenharia de Dados e Inteligência Estratégica
-        </h1>
+      {/* ================= HERO ================= */}
+<section
+  id="inicio"
+  className="relative isolate min-h-screen flex items-center justify-center text-center text-white overflow-hidden"
+>
 
-        <p className="text-lg md:text-xl text-gray-300 mb-10">
-          Transformamos dados complexos em decisões estratégicas,
-          estruturando arquitetura, BI e integrações com foco em
-          performance, governança e escalabilidade.
-        </p>
+  {/* Background Image */}
+  <div
+    className="absolute inset-0 bg-cover bg-center"
+    style={{ backgroundImage: "url('/hero-bg.jpg')" }}
+  ></div>
 
-        <a
-          href="#contato"
-          className="bg-red-700 hover:bg-red-800 px-10 py-4 rounded-2xl text-white font-semibold shadow-xl transition"
-        >
-          Solicitar Consultoria
-        </a>
-      </section>
+  {/* Dark Overlay */}
+<div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/70 pointer-events-none"></div>
+
+  {/* Content */}
+  <div className="relative z-10 max-w-4xl px-6">
+
+    <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
+      Engenharia de Dados e Business Intelligence
+      <span className="block text-red-500 mt-2">
+        para Decisões Estratégicas
+      </span>
+    </h1>
+
+    <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+      Estruturamos arquiteturas de dados escaláveis, integramos sistemas
+      complexos e transformamos informações em vantagem competitiva
+      para empresas que desejam crescer com segurança.
+    </p>
+
+    <div className="flex flex-col sm:flex-row gap-6 justify-center">
+
+      <a
+        href="#contato"
+        className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition shadow-xl hover:shadow-2xl"
+      >
+        Solicitar Consultoria
+      </a>
+
+      <a
+        href="#servicos"
+        className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-xl text-lg font-semibold transition"
+      >
+        Conhecer Serviços
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
 
       {/* SOBRE */}
       <section id="sobre" className="px-8 py-24 max-w-6xl mx-auto scroll-mt-28">
@@ -165,7 +199,10 @@ export default function MFDataConsulting() {
       </section>
 
       {/* Contato */}
-      <section id="contato" className="px-8 py-20 bg-gray-900 text-white">
+      <section
+  id="contato"
+  className="relative z-50 px-8 py-24 bg-black text-white scroll-mt-28"
+>
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-6 text-center">Vamos conversar?</h2>
           <p className="mb-10 text-gray-300 text-center">
@@ -227,12 +264,14 @@ export default function MFDataConsulting() {
                 Prefere uma conversa mais rápida? Fale comigo diretamente pelo WhatsApp.
               </p>
               <a
-                href="https://wa.me/5531991160913"
-                target="_blank"
-                className="bg-green-500 hover:bg-green-600 px-8 py-3 rounded-2xl font-semibold transition"
-              >
-                Chamar no WhatsApp
-              </a>
+  href="https://wa.me/5531991160913?text=Olá,%20gostaria%20de%20solicitar%20uma%20consultoria."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-2xl font-semibold transition"
+>
+  Chamar no WhatsApp
+</a>
+
             </div>
           </div>
         </div>
