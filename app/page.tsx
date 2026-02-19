@@ -202,7 +202,7 @@ export default function MFDataConsulting() {
                 <label className="block mb-2 text-sm">Mensagem</label>
                 <textarea
                   name="mensagem"
-                  rows="4"
+                  rows={4}
                   required
                   className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
                 ></textarea>
