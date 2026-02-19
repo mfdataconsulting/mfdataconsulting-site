@@ -103,37 +103,82 @@ export default function MFDataConsulting() {
 
 
       {/* SOBRE */}
-      <section id="sobre" className="px-8 py-24 max-w-6xl mx-auto scroll-mt-28">
-        <h2 className="text-4xl font-bold mb-10 text-center text-white">
-          Sobre a MF Data Consulting
-        </h2>
+<section id="sobre" className="px-8 py-24 max-w-6xl mx-auto scroll-mt-28">
+  <h2 className="text-4xl font-bold mb-12 text-center text-white">
+    Sobre a MF Data Consulting
+  </h2>
 
-        <p className="text-lg text-gray-300 leading-relaxed text-center max-w-3xl mx-auto">
-          A MF Data Consulting é uma consultoria especializada em engenharia de dados, BI e automação, focada em transformar dados brutos em informação estratégica para tomada de decisão.
-Atuamos no desenvolvimento e manutenção de pipelines de dados, integração de sistemas corporativos e estruturação de modelos analíticos, garantindo confiabilidade, performance e escalabilidade no uso dos dados.
-Com forte experiência em ambientes corporativos e regulados, entregamos soluções sob medida que conectam dados, processos e pessoas, apoiando empresas na construção de uma cultura data-driven.
+  <div className="text-lg text-gray-300 leading-relaxed space-y-6 max-w-4xl mx-auto">
 
-✔ Engenharia e Integração de Dados
-• Desenvolvimento e manutenção de pipelines ETL (Extração, Transformação e Carga)
-• Integração de sistemas via APIs REST, arquivos e bancos de dados
-• Atuação com bancos relacionais: Oracle, SQL Server, MySQL e PostgreSQL
+    <p>
+      A <strong>MF Data Consulting</strong> é uma consultoria especializada em
+      engenharia de dados, Business Intelligence e automação, focada em transformar
+      dados brutos em informação estratégica para tomada de decisão.
+    </p>
 
-✔ Business Intelligence and Analytics
-• Modelagem e preparação de dados para Power BI
-• Estruturação de modelos analíticos a partir de bases relacionais e não relacionais
-• Interpretação de dados para criação de dashboards performáticos, confiáveis e orientados ao negócio
+    <p>
+      Atuamos no desenvolvimento e manutenção de pipelines de dados, integração
+      de sistemas corporativos e estruturação de modelos analíticos, garantindo
+      confiabilidade, performance e escalabilidade no uso dos dados.
+    </p>
 
-✔ Automação de Processos e Dados
-• Automação de rotinas e fluxos de dados com Python, Power Automate e SQL
-• Otimização de processos operacionais e redução de retrabalho manual
-• Orquestração de cargas e integrações entre sistemas internos e externos
+    <p>
+      Com forte experiência em ambientes corporativos e regulados, entregamos
+      soluções sob medida que conectam dados, processos e pessoas, apoiando
+      empresas na construção de uma cultura data-driven.
+    </p>
 
-✔ Apoio à Tomada de Decisão
-• Estruturação de dados para análises estratégicas
-• Melhoria do fluxo de informação entre áreas e sistemas
-• Suporte à implantação de uma cultura Data-Driven
-        </p>
-      </section>
+    <div className="pt-6 space-y-8">
+
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-3">
+          ✔ Engenharia e Integração de Dados
+        </h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Desenvolvimento e manutenção de pipelines ETL</li>
+          <li>Integração via APIs REST, arquivos e bancos de dados</li>
+          <li>Oracle, SQL Server, MySQL e PostgreSQL</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-3">
+          ✔ Business Intelligence e Analytics
+        </h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Modelagem e preparação de dados para Power BI</li>
+          <li>Estruturação de modelos analíticos</li>
+          <li>Criação de dashboards performáticos e orientados ao negócio</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-3">
+          ✔ Automação de Processos e Dados
+        </h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Automação com Python, Power Automate e SQL</li>
+          <li>Otimização e redução de retrabalho</li>
+          <li>Orquestração de cargas e integrações</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-3">
+          ✔ Apoio à Tomada de Decisão
+        </h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Estruturação de dados para análises estratégicas</li>
+          <li>Melhoria do fluxo de informação entre áreas</li>
+          <li>Implantação de cultura Data-Driven</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
 
       {/* SERVIÇOS */}
       <section id="servicos" className="px-8 py-24 bg-white text-gray-800 scroll-mt-28">
