@@ -39,7 +39,7 @@ export default function MFDataConsulting() {
   <img
     src="/logo.png"
     alt="MF Data Consulting"
-    className="h-16 w-auto cursor-pointer"
+    className="h-12 w-auto cursor-pointer"
   />
 </a>
 
