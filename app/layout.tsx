@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     images: [
       {
-        url: "/og.jpg", // crie em /public (1200x630)
+        url: "/og.png", // crie em /public (1200x630)
         width: 1200,
         height: 630,
         alt: "MF Data Consulting",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteName} | Engenharia de Dados e BI`,
     description,
-    images: ["/og.jpg"],
+    images: ["/og.png"],
   },
 
   icons: {
