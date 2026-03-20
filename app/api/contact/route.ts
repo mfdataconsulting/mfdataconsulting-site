@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { nome, email, mensagem } = body;
+    const { nome, telefone, email, mensagem } = body;
 
     await resend.emails.send({
       from: "marlio.fernandes@mfdataconsulting.com",
@@ -15,6 +15,7 @@ export async function POST(req: Request) {
       html: `
         <h3>Novo contato pelo site</h3>
         <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>Telefone:</strong> ${telefone}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Mensagem:</strong><br/> ${mensagem}</p>
       `,
