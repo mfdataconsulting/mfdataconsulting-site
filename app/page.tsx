@@ -258,6 +258,16 @@ export default function MFDataConsulting() {
               </div>
 
               <div>
+                <label className="block mb-2 text-sm">Telefone</label>
+                <input
+                  type="text"
+                  name="telefone"
+                  required
+                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div>
                 <label className="block mb-2 text-sm">Email</label>
                 <input
                   type="email"
