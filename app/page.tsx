@@ -1,318 +1,101 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 
-export default function MFDataConsulting() {
+const solutions = [
+  ["01", "▥", "Engenharia de Dados", "Pipelines, modelagem, ETL/ELT e arquiteturas que tornam seus dados confiáveis e prontos para uso."],
+  ["02", "⇄", "Integrações", "APIs, ERPs, bancos, planilhas e sistemas legados conectados em fluxos seguros e rastreáveis."],
+  ["03", "⌁", "BI & Analytics", "Dashboards e indicadores que traduzem operações complexas em decisões claras e rápidas."],
+  ["04", "⚙", "Automações", "Processos manuais transformados em rotinas inteligentes, reduzindo erros, tempo e retrabalho."],
+  ["05", "◇", "Governança de Dados", "Qualidade, padronização, documentação e controles para informações consistentes e protegidas."],
+];
+
+const problems = [
+  "Dados espalhados em planilhas e sistemas",
+  "Processos manuais que consomem tempo",
+  "Sistemas que não conversam entre si",
+  "Indicadores lentos ou pouco confiáveis",
+  "Legados que precisam ser preservados ou migrados",
+  "Falta de governança e visão integrada",
+];
+
+const formats = [
+  ["□", "Projeto fechado", "Escopo, prazo e entregas definidos para uma necessidade específica."],
+  ["↻", "Acompanhamento recorrente", "Evolução contínua, suporte técnico e priorização de demandas."],
+  ["＋", "Demandas sob medida", "Horas especializadas para análises, ajustes e necessidades pontuais."],
+];
+
+function Arrow() { return <span aria-hidden="true">↗</span>; }
+
+export default function Tectria() {
+  const [menu, setMenu] = useState(false);
   const [status, setStatus] = useState("");
 
-  async function handleSubmit(e: any) {
-    e.preventDefault();
-    setStatus("Enviando...");
-
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      setStatus("Mensagem enviada com sucesso!");
-      e.target.reset();
-    } else {
-      setStatus("Erro ao enviar. Tente novamente.");
-    }
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setStatus("Enviando...");
+    const form = event.currentTarget;
+    try {
+      const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      if (!response.ok) throw new Error();
+      setStatus("Mensagem enviada. Em breve entraremos em contato."); form.reset();
+    } catch { setStatus("Não foi possível enviar. Fale conosco pelo WhatsApp."); }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-100 relative">
+  return <main>
+    <header className="header">
+      <a href="#inicio" aria-label="TECTRIA — início"><img src="/tectria-logo.png" alt="TECTRIA" /></a>
+      <nav className={menu ? "open" : ""} aria-label="Navegação principal">
+        <a href="#problemas" onClick={()=>setMenu(false)}>O que resolvemos</a><a href="#solucoes" onClick={()=>setMenu(false)}>Soluções</a><a href="#escala" onClick={()=>setMenu(false)}>Para sua empresa</a><a href="#investimento" onClick={()=>setMenu(false)}>Investimento</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
+      </nav>
+      <a className="top-cta" href="https://wa.me/5531991160913?text=Olá,%20gostaria%20de%20conhecer%20as%20soluções%20da%20TECTRIA." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
+      <button className="menu" onClick={()=>setMenu(!menu)} aria-label="Abrir menu" aria-expanded={menu}><i/><i/></button>
+    </header>
 
-      {/* FUNDO TECNOLÓGICO */}
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_30%,rgba(220,38,38,0.4),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.2),transparent_40%)]"></div>
-
-      {/* HEADER FIXO */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
-          <a href="#inicio" className="flex items-center">
-  <img
-    src="/logo.png"
-    alt="MF Data Consulting"
-    className="h-12 w-auto cursor-pointer"
-  />
-</a>
-
-          <nav className="hidden md:flex gap-10 text-sm font-semibold text-gray-800">
-            <a href="#sobre" className="hover:text-red-700 transition">Sobre</a>
-            <a href="#servicos" className="hover:text-red-700 transition">Serviços</a>
-            <a href="#contato" className="hover:text-red-700 transition">Contato</a>
-          </nav>
-        </div>
-      </header>
-
-      {/* ESPAÇO HEADER */}
-      <div className="h-24"></div>
-
-      {/* ================= HERO ================= */}
-<section
-  id="inicio"
-  className="relative isolate min-h-screen flex items-center justify-center text-center text-white overflow-hidden"
->
-
-  {/* Background Image */}
-  <div
-    className="absolute inset-0 bg-cover bg-center"
-    style={{ backgroundImage: "url('/hero-bg.jpg')" }}
-  ></div>
-
-  {/* Dark Overlay */}
-<div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/70 pointer-events-none"></div>
-
-  {/* Content */}
-  <div className="relative z-10 max-w-4xl px-6">
-
-    <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
-      Engenharia de Dados e Business Intelligence
-      <span className="block text-red-500 mt-2">
-        para Decisões Estratégicas
-      </span>
-    </h1>
-
-    <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-      Estruturamos arquiteturas de dados escaláveis, integramos sistemas
-      complexos e transformamos informações em vantagem competitiva
-      para empresas que desejam crescer com segurança.
-    </p>
-
-    <div className="flex flex-col sm:flex-row gap-6 justify-center">
-
-      <a
-        href="#contato"
-        className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition shadow-xl hover:shadow-2xl"
-      >
-        Solicitar Consultoria
-      </a>
-
-      <a
-        href="#servicos"
-        className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-xl text-lg font-semibold transition"
-      >
-        Conhecer Serviços
-      </a>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-      {/* SOBRE */}
-<section id="sobre" className="px-8 py-24 max-w-6xl mx-auto scroll-mt-28">
-  <h2 className="text-4xl font-bold mb-12 text-center text-white">
-    Sobre a MF Data Consulting
-  </h2>
-
-  <div className="text-lg text-gray-300 leading-relaxed space-y-6 max-w-4xl mx-auto">
-
-    <p>
-      A <strong>MF Data Consulting</strong> é uma consultoria especializada em
-      engenharia de dados, Business Intelligence e automação, focada em transformar
-      dados brutos em informação estratégica para tomada de decisão.
-    </p>
-
-    <p>
-      Atuamos no desenvolvimento e manutenção de pipelines de dados, integração
-      de sistemas corporativos e estruturação de modelos analíticos, garantindo
-      confiabilidade, performance e escalabilidade no uso dos dados.
-    </p>
-
-    <p>
-      Com forte experiência em ambientes corporativos e regulados, entregamos
-      soluções sob medida que conectam dados, processos e pessoas, apoiando
-      empresas na construção de uma cultura data-driven.
-    </p>
-
-    <div className="pt-6 space-y-8">
-
-      <div>
-        <h3 className="text-xl font-semibold text-white mb-3">
-          ✔ Engenharia e Integração de Dados
-        </h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Desenvolvimento e manutenção de pipelines ETL</li>
-          <li>Integração via APIs REST, arquivos e bancos de dados</li>
-          <li>Oracle, SQL Server, MySQL e PostgreSQL</li>
-        </ul>
+    <section id="inicio" className="hero">
+      <div className="hero-lines"/><div className="glow"/>
+      <div className="hero-copy">
+        <p className="kicker">Engenharia de dados & tecnologia aplicada</p>
+        <h1>Engenharia que transforma dados em <em>resultados.</em></h1>
+        <p className="lead">Integramos dados, automatizamos processos e criamos soluções para negócios mais eficientes e inteligentes.</p>
+        <p className="disciplines">Engenharia de Dados <b>•</b> Integrações <b>•</b> BI <b>•</b> Automações</p>
+        <div className="actions"><a className="primary" href="#contato">Converse com a TECTRIA <Arrow /></a><a className="secondary" href="#solucoes">Conheça nossas soluções</a></div>
       </div>
+      <div className="hero-visual" aria-hidden="true"><img src="/tectria-icon.png" alt=""/><span className="node n1"/><span className="node n2"/><span className="node n3"/></div>
+      <div className="scroll">Role para explorar <span>↓</span></div>
+    </section>
 
-      <div>
-        <h3 className="text-xl font-semibold text-white mb-3">
-          ✔ Business Intelligence e Analytics
-        </h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Modelagem e preparação de dados para Power BI</li>
-          <li>Estruturação de modelos analíticos</li>
-          <li>Criação de dashboards performáticos e orientados ao negócio</li>
-        </ul>
-      </div>
+    <section id="problemas" className="section light">
+      <div className="section-head"><p className="kicker">Complexidade transformada em clareza</p><h2>Quando dados e processos não conversam, o negócio perde velocidade.</h2></div>
+      <div className="problem-grid">{problems.map((p,i)=><article key={p}><span>0{i+1}</span><p>{p}</p></article>)}</div>
+    </section>
 
-      <div>
-        <h3 className="text-xl font-semibold text-white mb-3">
-          ✔ Automação de Processos e Dados
-        </h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Automação com Python, Power Automate e SQL</li>
-          <li>Otimização e redução de retrabalho</li>
-          <li>Orquestração de cargas e integrações</li>
-        </ul>
-      </div>
+    <section id="solucoes" className="section dark">
+      <div className="section-head split"><div><p className="kicker">Nossas soluções</p><h2>Estrutura para operar.<br/>Inteligência para evoluir.</h2></div><p>Atuamos da origem do dado ao resultado do negócio, combinando engenharia, integração e visão estratégica.</p></div>
+      <div className="solutions">{solutions.map(([n,icon,t,d])=><article className="motion-card" key={t}><span>{n}</span><i className="service-icon" aria-hidden="true">{icon}</i><h3>{t}</h3><p>{d}</p><Arrow /></article>)}</div>
+    </section>
 
-      <div>
-        <h3 className="text-xl font-semibold text-white mb-3">
-          ✔ Apoio à Tomada de Decisão
-        </h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Estruturação de dados para análises estratégicas</li>
-          <li>Melhoria do fluxo de informação entre áreas</li>
-          <li>Implantação de cultura Data-Driven</li>
-        </ul>
-      </div>
+    <section id="escala" className="section scale">
+      <div className="scale-copy"><p className="kicker">Tecnologia na medida certa</p><h2>Do pequeno negócio à grande empresa.</h2><p>O desafio muda de escala. Nossa engenharia se adapta à realidade de cada operação.</p></div>
+      <div className="scale-cards"><article className="motion-card"><i className="card-symbol">↗</i><span>NEGÓCIOS EM CRESCIMENTO</span><h3>Menos planilhas.<br/>Mais controle.</h3><p>Automação de rotinas, organização de dados, indicadores de vendas, custos e estoque para decisões mais seguras.</p></article><article className="accent motion-card"><i className="card-symbol">⌬</i><span>OPERAÇÕES COMPLEXAS</span><h3>Arquitetura robusta.<br/>Evolução contínua.</h3><p>Pipelines, APIs, migrações, BI, legado e governança para ambientes corporativos de alta exigência.</p></article></div>
+    </section>
 
-    </div>
+    <section className="flow section">
+      <p className="kicker">Como transformamos dados</p><h2>Da dispersão ao resultado.</h2>
+      <div className="flow-line">{["Dados dispersos","Integração","Estruturação","Inteligência","Resultado"].map((x,i)=><div key={x}><span>{String(i+1).padStart(2,"0")}</span><strong>{x}</strong>{i<4&&<b>→</b>}</div>)}</div>
+    </section>
 
-  </div>
-</section>
+    <section id="investimento" className="section light investment">
+      <div className="section-head split"><div><p className="kicker">Flexibilidade de investimento</p><h2>Comece pelo que faz sentido agora.</h2></div><p>Sem pacotes engessados. Definimos o formato ideal de acordo com escopo, complexidade e momento da empresa.</p></div>
+      <div className="format-grid">{formats.map(([icon,t,d],i)=><article className="motion-card" key={t}><div><span>0{i+1}</span><i className="format-icon">{icon}</i></div><h3>{t}</h3><p>{d}</p><a href="#contato">Conversar sobre este formato <Arrow /></a></article>)}</div>
+    </section>
 
+    <section className="section expertise"><div><p className="kicker">Experiência que reduz riscos</p><h2>Preparados para ambientes complexos e regulados.</h2></div><div><p>Experiência prática com grandes bases, sistemas legados, migrações críticas e operações que exigem segurança, rastreabilidade e continuidade.</p><ul><li>Bases legadas e alto volume</li><li>Migrações e integrações críticas</li><li>Ambientes regulados</li><li>Documentação e governança</li></ul></div></section>
 
-      {/* SERVIÇOS */}
-      <section id="servicos" className="px-8 py-24 bg-white text-gray-800 scroll-mt-28">
-        <h2 className="text-4xl font-bold mb-16 text-center text-gray-900">
-          Serviços
-        </h2>
+    <section id="contato" className="contact section">
+      <div className="contact-copy"><p className="kicker">Vamos transformar?</p><h2>Seu próximo resultado começa com uma boa conversa.</h2><p>Conte seu desafio. A TECTRIA ajuda a encontrar o caminho mais eficiente entre a complexidade atual e a operação que você quer construir.</p><div className="direct"><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><a href="https://wa.me/5531991160913" target="_blank" rel="noreferrer">(31) 99116-0913</a></div></div>
+      <form onSubmit={submit}><label>Nome<input name="nome" required/></label><label>Empresa<input name="empresa"/></label><label>E-mail<input type="email" name="email" required/></label><label>Como podemos ajudar?<textarea name="mensagem" rows={4} required/></label><button className="primary" type="submit">Enviar mensagem <Arrow /></button><p aria-live="polite">{status}</p></form>
+    </section>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          {[
-            {
-              title: "Engenharia de Dados",
-              desc: "Desenho e implementação de pipelines ETL/ELT, modelagem dimensional e arquitetura moderna de dados escalável."
-            },
-            {
-              title: "Business Intelligence",
-              desc: "Dashboards executivos, KPIs estratégicos e soluções analíticas em Power BI para decisões baseadas em dados."
-            },
-            {
-              title: "Integração de Sistemas",
-              desc: "Integração segura entre ERPs, APIs e bancos de dados garantindo consistência e automação de processos."
-            },
-            {
-              title: "Governança de Dados",
-              desc: "Padronização, qualidade e boas práticas para garantir confiabilidade e maturidade analítica."
-            },
-            {
-              title: "Migração e Modernização",
-              desc: "Migração de bases, consolidação de ambientes e modernização de arquitetura com foco em performance."
-            }
-          ].map((service, index) => (
-            <div
-              key={index}
-              className="bg-gray-50 p-8 rounded-2xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
-            >
-              <h3 className="text-xl font-bold mb-4 text-gray-900">
-                {service.title}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {service.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contato */}
-      <section
-  id="contato"
-  className="relative z-50 px-8 py-24 bg-black text-white scroll-mt-28"
->
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold mb-6 text-center">Vamos conversar?</h2>
-          <p className="mb-10 text-gray-300 text-center">
-            Preencha o formulário abaixo ou fale diretamente pelo WhatsApp.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-10">
-            {/* Formulário */}
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6 bg-gray-900/80 backdrop-blur p-8 rounded-2xl shadow-2xl border border-gray-700"
-            >
-              <div>
-                <label className="block mb-2 text-sm">Nome</label>
-                <input
-                  type="text"
-                  name="nome"
-                  required
-                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm">Mensagem</label>
-                <textarea
-                  name="mensagem"
-                  rows={4}
-                  required
-                  className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-red-500"
-                ></textarea>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-red-600 hover:bg-red-700 p-3 rounded-xl font-semibold transition"
-              >
-                Enviar Mensagem
-              </button>
-
-              {status && (
-                <p className="text-sm text-gray-300 mt-2">{status}</p>
-              )}
-            </form>
-
-            {/* WhatsApp */}
-            <div className="flex flex-col justify-center items-center bg-gray-800 p-8 rounded-2xl shadow-xl text-center">
-              <h3 className="text-xl font-semibold mb-4">Contato direto</h3>
-              <p className="text-gray-300 mb-6">
-                Prefere uma conversa mais rápida? Fale comigo diretamente pelo WhatsApp.
-              </p>
-              <a
-  href="https://wa.me/5531991160913?text=Olá,%20gostaria%20de%20solicitar%20uma%20consultoria."
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-2xl font-semibold transition"
->
-  Chamar no WhatsApp
-</a>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-black text-gray-500 text-center py-6 text-sm">
-        © {new Date().getFullYear()} MF Data Consulting. Todos os direitos reservados.
-      </footer>
-    </div>
-  );
+    <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Engenharia de Dados • Integrações • BI • Automações</p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
+  </main>;
 }
