@@ -50,8 +50,8 @@
 @keyframes redirectProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:620px){.transition-page{padding-block:40px}.transition-content>img{height:135px}.transition-lead{font-size:16px}.brand-path{height:34px}.transition-content h1{font-size:44px}}
 
-.legacy-brand{width:min(400px,72vw);height:145px;border-radius:14px;overflow:hidden;background:#aaa;box-shadow:0 18px 55px rgba(237,17,28,.13)}
-.legacy-brand img{width:100%;height:100%;object-fit:cover}
-.tectria-wordmark{display:inline-block;width:min(360px,58vw);height:.88em;vertical-align:-.12em;overflow:hidden;position:relative;margin-left:.08em}
-.tectria-wordmark i{position:absolute;inset:-115% -34% -115% -103%;background:url('/tectria-logo.png') center/contain no-repeat;mix-blend-mode:screen}
-@media(max-width:620px){.legacy-brand{height:105px}.tectria-wordmark{display:block;width:250px;height:64px;margin:8px auto 0}.tectria-wordmark i{inset:-112% -34% -112% -103%}}
+.legacy-brand{width:auto;height:auto;background:transparent;box-shadow:none;overflow:visible;display:flex;flex-direction:column;align-items:center;line-height:1}
+.legacy-brand strong{font-size:34px;letter-spacing:.08em;color:#eee}.legacy-brand strong span{color:var(--red)}
+.legacy-brand small{margin-top:8px;font-size:9px;letter-spacing:.42em;color:#777}
+.transition-tectria-logo{width:min(590px,82vw)!important;height:180px!important;object-fit:contain!important;mix-blend-mode:screen;margin:-18px 0 12px!important}
+@media(max-width:620px){.legacy-brand strong{font-size:27px}.transition-tectria-logo{height:120px!important;margin:-10px 0 10px!important}}
