@@ -16,11 +16,11 @@ export default function TransitionClient() {
   return <main className="transition-page">
     <div className="transition-grid" aria-hidden="true" />
     <section className="transition-content">
-      <div className="legacy-brand"><img src="/mfdata-official.png" alt="MF Data Consulting" /></div>
+      <div className="legacy-brand" aria-label="MF Data Consulting"><strong><span>MF</span> DATA</strong><small>CONSULTING</small></div>
       <div className="brand-path" aria-hidden="true"><i/><b>→</b><i/></div>
-      <img src="/tectria-brand.png" alt="TECTRIA — Engenharia de Dados, Integrações, BI e Automações" />
       <p className="kicker">Uma nova fase. A mesma essência.</p>
-      <h1>A MF Data cresceu.<br/>Evoluiu. Tornou-se <span className="tectria-wordmark" aria-label="TECTRIA"><i /></span></h1>
+      <h1>A MF Data cresceu.<br/>Evoluiu. Tornou-se</h1>
+      <img className="transition-tectria-logo" src="/tectria-logo.png" alt="TECTRIA" />
       <p className="transition-lead">Mais integrada ao seu negócio, mais preparada para desafios complexos e com uma atuação ainda mais ampla em engenharia de dados, integrações, BI e automações.</p>
       <p className="transition-note">Nossa experiência continua. Nossa capacidade de transformar dados e processos ficou ainda maior.</p>
       <a className="primary" href={destination}>Conheça a TECTRIA <span>↗</span></a>
