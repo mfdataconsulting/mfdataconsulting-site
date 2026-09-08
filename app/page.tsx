@@ -45,7 +45,7 @@ export default function Tectria() {
     <header className="header">
       <a href="#inicio" aria-label="TECTRIA — início"><img src="/tectria-logo.png" alt="TECTRIA" /></a>
       <nav className={menu ? "open" : ""} aria-label="Navegação principal">
-        <a href="#problemas" onClick={()=>setMenu(false)}>O que resolvemos</a><a href="#solucoes" onClick={()=>setMenu(false)}>Soluções</a><a href="#escala" onClick={()=>setMenu(false)}>Para sua empresa</a><a href="#investimento" onClick={()=>setMenu(false)}>Investimento</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
+        <a href="#problemas" onClick={()=>setMenu(false)}>O que resolvemos</a><a href="#solucoes" onClick={()=>setMenu(false)}>Soluções</a><a href="/cases" onClick={()=>setMenu(false)}>Cases</a><a href="#escala" onClick={()=>setMenu(false)}>Para sua empresa</a><a href="#investimento" onClick={()=>setMenu(false)}>Investimento</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
       </nav>
       <a className="top-cta" href="https://wa.me/5531991160913?text=Olá,%20gostaria%20de%20conhecer%20as%20soluções%20da%20TECTRIA." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
       <button className="menu" onClick={()=>setMenu(!menu)} aria-label="Abrir menu" aria-expanded={menu}><i/><i/></button>
