@@ -55,10 +55,16 @@ export default function CasesPage() {
   const fallbackKey = `${competence}|Todos` as keyof typeof billingData;
   const billing = billingData[billingKey] ?? billingData[fallbackKey];
   const bi = biData[biView];
+  const selectedIndex = cases.findIndex(([id]) => id === selected);
 
   function choose(id: string) {
     setSelected(id); setAutomation(0);
     setTimeout(() => document.getElementById("demonstracao")?.scrollIntoView({ behavior: "smooth", block: "start" }), 20);
+  }
+
+  function navigateCase(direction: number) {
+    const nextIndex = selectedIndex + direction;
+    if (nextIndex >= 0 && nextIndex < cases.length) choose(cases[nextIndex][0]);
   }
 
   return <main className={styles.page}>
@@ -67,7 +73,7 @@ export default function CasesPage() {
       <nav aria-label="Navegação principal">
         <a href="/#problemas">O que resolvemos</a><a href="/#solucoes">Soluções</a><a href="/cases">Cases</a><a href="/#escala">Para sua empresa</a><a href="/#investimento">Investimento</a><a href="/#contato">Contato</a>
       </nav>
-      <a className="top-cta" href="https://wa.me/5531991160913?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
+      <a className="top-cta" href="https://wa.me/553120940682?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
     </header>
 
     <section className={styles.hero}>
@@ -88,10 +94,16 @@ export default function CasesPage() {
       {selected === "automation" && <><p className="kicker">Case 03 • Automação de Processos</p><h2>Um processo manual transformado em fluxo automático.</h2><p className={styles.desc}>Avance pelas etapas e acompanhe o que acontece em cada ponto da automação.</p><div className={styles.flow}>{automationSteps.map((x,i)=><article className={`${styles.step} ${automation>i?styles.done:""}`} key={x[0]}><small>0{i+1}</small><strong>{x[0]}</strong><p>{x[1]}</p><div className={styles.metric}><span>{x[2]}</span><b>{x[3]}</b></div></article>)}</div><div className={styles.runRow}><button className="primary" onClick={()=>setAutomation((automation+1)%5)}>{automation===0?"Executar simulação":automation<4?"Avançar etapa":"Reiniciar"} <Arrow /></button><p>{["Fluxo aguardando execução.","Arquivo recebido automaticamente.","Validação concluída: 17 inconsistências.","2.463 registros integrados com sucesso.","Processo concluído e relatório gerado."][automation]}</p></div><Note/></>}
 
       {selected === "bi" && <><p className="kicker">Case 04 • Business Intelligence</p><h2>Uma visão clara da operação para decidir melhor.</h2><p className={styles.desc}>Selecione uma visão para atualizar os indicadores e a evolução mensal.</p><div className={styles.controls}><label>Visão<select value={biView} onChange={e=>setBiView(e.target.value as keyof typeof biData)}>{Object.keys(biData).map(x=><option key={x}>{x}</option>)}</select></label></div><div className={styles.kpis}><Kpi label="Faturamento demonstrativo" value={bi[0] as string}/><Kpi label="Margem demonstrativa" value={bi[1] as string}/><Kpi label="Ticket médio demonstrativo" value={bi[2] as string} red/></div><Chart values={bi[3] as readonly number[]}/><Note/></>}
+
+      <nav className={styles.caseNav} aria-label="Navegação entre cases">
+        <button type="button" onClick={()=>navigateCase(-1)} disabled={selectedIndex===0} aria-label="Case anterior"><span>←</span> Case anterior</button>
+        <div><small>Case {selectedIndex+1} de {cases.length}</small><strong>{cases[selectedIndex][3]}</strong></div>
+        <button type="button" onClick={()=>navigateCase(1)} disabled={selectedIndex===cases.length-1}>Próximo case <Arrow /></button>
+      </nav>
     </section>
 
     <section className={styles.result}><div><p className="kicker">O que estes cases demonstram</p><h2>Engenharia aplicada ao problema, não à ferramenta.</h2></div><ul><li>Estruturação e transformação de dados</li><li>Automação de regras e processos</li><li>Integração entre fontes e sistemas</li><li>Indicadores acionáveis para o negócio</li></ul></section>
-    <section className={styles.cta}><div><p className="kicker">Seu desafio pode ser o próximo case</p><h2>Sua empresa enfrenta algo semelhante?</h2><p>Soluções sob medida em Engenharia de Dados, Integrações, BI e Automações.</p></div><a className="primary" href="https://wa.me/5531991160913?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale com a TECTRIA <Arrow /></a></section>
+    <section className={styles.cta}><div><p className="kicker">Seu desafio pode ser o próximo case</p><h2>Sua empresa enfrenta algo semelhante?</h2><p>Soluções sob medida em Engenharia de Dados, Integrações, BI e Automações.</p></div><a className="primary" href="https://wa.me/553120940682?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale com a TECTRIA <Arrow /></a></section>
     <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Engenharia de Dados • Integrações • BI • Automações</p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
   </main>;
 }
