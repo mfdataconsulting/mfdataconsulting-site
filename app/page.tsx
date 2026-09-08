@@ -45,9 +45,9 @@ export default function Tectria() {
     <header className="header">
       <a href="#inicio" aria-label="TECTRIA — início"><img src="/tectria-logo.png" alt="TECTRIA" /></a>
       <nav className={menu ? "open" : ""} aria-label="Navegação principal">
-        <a href="#problemas" onClick={()=>setMenu(false)}>O que resolvemos</a><a href="#solucoes" onClick={()=>setMenu(false)}>Soluções</a><a href="#escala" onClick={()=>setMenu(false)}>Para sua empresa</a><a href="#investimento" onClick={()=>setMenu(false)}>Investimento</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
+        <a href="#problemas" onClick={()=>setMenu(false)}>O que resolvemos</a><a href="#solucoes" onClick={()=>setMenu(false)}>Soluções</a><a href="/cases" onClick={()=>setMenu(false)}>Cases</a><a href="#escala" onClick={()=>setMenu(false)}>Para sua empresa</a><a href="#investimento" onClick={()=>setMenu(false)}>Investimento</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
       </nav>
-      <a className="top-cta" href="https://wa.me/553120940682?text=Olá,%20gostaria%20de%20conhecer%20as%20soluções%20da%20TECTRIA." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
+      <a className="top-cta" href="https://wa.me/5531991160913?text=Olá,%20gostaria%20de%20conhecer%20as%20soluções%20da%20TECTRIA." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
       <button className="menu" onClick={()=>setMenu(!menu)} aria-label="Abrir menu" aria-expanded={menu}><i/><i/></button>
     </header>
 
@@ -92,7 +92,7 @@ export default function Tectria() {
     <section className="section expertise"><div><p className="kicker">Experiência que reduz riscos</p><h2>Preparados para ambientes complexos e regulados.</h2></div><div><p>Experiência prática com grandes bases, sistemas legados, migrações críticas e operações que exigem segurança, rastreabilidade e continuidade.</p><ul><li>Bases legadas e alto volume</li><li>Migrações e integrações críticas</li><li>Ambientes regulados</li><li>Documentação e governança</li></ul></div></section>
 
     <section id="contato" className="contact section">
-      <div className="contact-copy"><p className="kicker">Vamos transformar?</p><h2>Seu próximo resultado começa com uma boa conversa.</h2><p>Conte seu desafio. A TECTRIA ajuda a encontrar o caminho mais eficiente entre a complexidade atual e a operação que você quer construir.</p><div className="direct"><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><a href="https://wa.me/553120940682" target="_blank" rel="noreferrer">(31) 2094-0682</a></div></div>
+      <div className="contact-copy"><p className="kicker">Vamos transformar?</p><h2>Seu próximo resultado começa com uma boa conversa.</h2><p>Conte seu desafio. A TECTRIA ajuda a encontrar o caminho mais eficiente entre a complexidade atual e a operação que você quer construir.</p><div className="direct"><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><a href="https://wa.me/5531991160913" target="_blank" rel="noreferrer">(31) 99116-0913</a></div></div>
       <form onSubmit={submit}><label>Nome<input name="nome" required/></label><label>Empresa<input name="empresa"/></label><label>E-mail<input type="email" name="email" required/></label><label>Como podemos ajudar?<textarea name="mensagem" rows={4} required/></label><button className="primary" type="submit">Enviar mensagem <Arrow /></button><p aria-live="polite">{status}</p></form>
     </section>
 
