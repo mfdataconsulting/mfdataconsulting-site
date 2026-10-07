@@ -39,4 +39,5 @@ body.connected .pulso-topbar{position:absolute;top:0;left:0;right:0;height:77px;
 
 .pulso-topbar{gap:12px}.pulso-topbar .portal-account{display:flex;margin-left:auto;gap:7px;align-items:center;flex-wrap:wrap}.pulso-sidebar .help-nav{margin-top:0}.pulso-sidebar.menu-open .help-nav{display:grid} .pulso-topbar .tectria-brand{flex-shrink:0}
 @media(max-width:750px){body.connected .pulso-topbar{height:auto;min-height:76px;flex-wrap:wrap;padding:8px 16px}.pulso-topbar>span{display:none}.pulso-topbar .portal-account button{font-size:10px;padding:7px}.pulso-topbar .tectria-brand{width:95px}body.connected .card{padding-top:95px}}
+.pulso-topbar .portal-account{border:0;padding:0;margin:0 0 0 auto}.pulso-topbar .portal-account button{background:#ffffff12!important;color:#f0f2f5!important;border-color:#ffffff45!important;margin:0!important;box-shadow:none!important}
 
