@@ -3,6 +3,15 @@ from unittest.mock import patch
 import backend as b
 H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
 class AccessTests(unittest.TestCase):
+ def test_expired_session_cannot_read(self):
+  with patch.object(b,'remote',side_effect=b.ApiError('Expired',401)) as remote:
+   with self.assertRaises(b.ApiError) as failure:b.handle('panel',{},dict(H,Cookie=b.COOKIE+'=expired.jwt'))
+   self.assertEqual(failure.exception.status,401);self.assertEqual(remote.call_count,1)
+ def test_logout_clears_cookie_and_only_current_session(self):
+  with patch.object(b,'remote',return_value={}) as remote:
+   result,c=b.handle('logout',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+   remote.assert_called_once_with('/auth/v1/logout?scope=local',{},'jwt')
+   self.assertTrue(result['ok']);self.assertIn('Max-Age=0',c)
  def test_cross_origin_rejected_before_remote(self):
   with patch.object(b,'remote') as remote:
    with self.assertRaises(b.ApiError):b.handle('login',{},dict(H,Origin='https://other.example'))
@@ -32,3 +41,4 @@ class AccessTests(unittest.TestCase):
   with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'password':'NEVER','contacts':[]}):
    self.assertEqual(b.panel('jwt')['data'],{'dias':[]})
 if __name__=='__main__':unittest.main()
+
