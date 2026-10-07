@@ -1,3 +1,4 @@
+import {mountLocalHelp} from './help-local.mjs';
 export const money=value=>value===null||value===undefined?'Não informado':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(value/100);
 const number=value=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(value);
 const payment=value=>({cash:'Dinheiro',card:'Cartão',pix:'Pix',debit:'Débito',credit:'Crédito',voucher:'Voucher'})[value]||value;
@@ -38,7 +39,7 @@ export function renderDashboard(root,packet,page,start,end){
  ['Por que aparece Não informado?','Quando não há informação suficiente, o Pulso sinaliza a ausência. Por exemplo, lucro exige custos completos das vendas.'],
  ['Como abrir Nexo e Lume?','Nexo e Lume estão disponíveis no computador onde foram instalados. Nesta versão web, os atalhos locais ficam indisponíveis.'],
  ['Posso acessar pelo celular?','Sim. Após a publicação, abra o endereço do Pulso no navegador e entre com sua conta Tectria. Os dados exibidos são os já sincronizados pelo estabelecimento.']
- ]){const item=node('details'),title=node('summary',question);item.append(title,node('p',answer));help.append(item);}root.append(help);
+ ]){const item=node('details'),title=node('summary',question);item.append(title,node('p',answer));help.append(item);}root.append(help);mountLocalHelp(root,'Pulso',[...help.querySelectorAll('details')].map(item=>[item.querySelector('summary').textContent,item.querySelector('p').textContent]));
  }else if(page==='inicio'){
   const metrics=node('div',undefined,'metrics');metrics.append(card('Vendas líquidas',money(s.net),'Somente dias fechados'),card('Lucro bruto',money(s.profit),s.profit===null?'Custo incompleto ou não informado':'Vendas menos custo dos produtos'),card('Pedidos concluídos',number(s.orders),'Exclui cancelamentos'),card('Ticket médio',money(s.ticket),'Vendas líquidas por pedido'));root.append(metrics);
   const grid=node('div',undefined,'dashboard-grid'),evolution=panel('Evolução das vendas');
