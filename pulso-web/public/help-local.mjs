@@ -1,6 +1,7 @@
 const normalize=text=>String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const stop=new Set('como para pela pelo posso onde qual quais que uma um meu minha fazer funciona sobre com dos das'.split(' '));
-const words=text=>new Set((normalize(text).match(/[a-z0-9]{3,}/g)||[]).filter(w=>!stop.has(w)));
+const stop=new Set('como para pela pelo posso onde qual quais que uma um meu minha fazer funciona sobre com dos das quero preciso favor poderia faco'.split(' '));
+const aliases={cadastrar:'cadastro',cadastra:'cadastro',cadastramento:'cadastro',produtos:'produto',fornecedores:'fornecedor',clientes:'cliente',vendas:'venda'};
+const words=text=>new Set((normalize(text).match(/[a-z0-9]{3,}/g)||[]).filter(w=>!stop.has(w)).map(w=>aliases[w]||w));
 export function localAnswer(question,items){
  const q=normalize(question),tokens=words(q);
  const human=()=>({mode:'faq',answer:'Não encontrei uma orientação segura na documentação deste módulo. Fale com a Tectria pelo WhatsApp e informe a tela, a ação realizada e a mensagem apresentada.',needsHuman:true,sources:[]});
@@ -25,3 +26,4 @@ export function mountLocalHelp(root,module,items){
  form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;const result=localAnswer(input.value.trim(),items);output.textContent='Resposta da documentação\n'+result.answer+(result.sources.length?'\n\nBase: '+result.sources[0].title:'')+(result.needsHuman?'\n\nUse o link abaixo para atendimento humano.':'');update();});
  return section;
 }
+
