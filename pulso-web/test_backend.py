@@ -3,6 +3,19 @@ from unittest.mock import patch
 import backend as b
 H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
 class AccessTests(unittest.TestCase):
+ def test_module_availability_requires_session(self):
+  with patch.object(b,'remote') as remote:
+   with self.assertRaises(b.ApiError):b.handle('module-access',{},H)
+   remote.assert_not_called()
+ def test_module_availability_is_bound_to_company_and_user(self):
+  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'nexo','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'not_contracted'}]) as remote:
+   result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+   self.assertEqual(result,{'modules':{'nexo':'allowed','lume':'not_contracted'}})
+   for call in remote.call_args_list:self.assertEqual(call.args[1]['company_id'],b.COMPANY);self.assertEqual(call.args[2],'jwt')
+ def test_module_availability_rejects_mismatched_company(self):
+  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':'other','module':'nexo','status':'allowed'},b.ApiError('Unavailable',502)]):
+   result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+   self.assertEqual(result['modules'],{'nexo':'unknown','lume':'unknown'})
  def test_expired_session_cannot_read(self):
   with patch.object(b,'remote',side_effect=b.ApiError('Expired',401)) as remote:
    with self.assertRaises(b.ApiError) as failure:b.handle('panel',{},dict(H,Cookie=b.COOKIE+'=expired.jwt'))
@@ -41,4 +54,3 @@ class AccessTests(unittest.TestCase):
   with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'password':'NEVER','contacts':[]}):
    self.assertEqual(b.panel('jwt')['data'],{'dias':[]})
 if __name__=='__main__':unittest.main()
-
