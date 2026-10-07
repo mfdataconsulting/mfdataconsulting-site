@@ -1,0 +1,34 @@
+import unittest
+from unittest.mock import patch
+import backend as b
+H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
+class AccessTests(unittest.TestCase):
+ def test_cross_origin_rejected_before_remote(self):
+  with patch.object(b,'remote') as remote:
+   with self.assertRaises(b.ApiError):b.handle('login',{},dict(H,Origin='https://other.example'))
+   remote.assert_not_called()
+ def test_anonymous_cannot_read(self):
+  with patch.object(b,'remote') as remote:
+   with self.assertRaises(b.ApiError):b.handle('panel',{},H)
+   remote.assert_not_called()
+ def test_login_checks_contract_and_sets_secure_cookie(self):
+  with patch.object(b,'remote',side_effect=[{'access_token':'jwt.token.value','expires_in':7200},{'companyId':b.COMPANY,'module':'pulso','status':'allowed'}]):
+   result,c=b.handle('login',{'email':'a@example.com','password':'example'},H)
+   self.assertTrue(result['ok']);self.assertIn('HttpOnly; Secure; SameSite=Strict',c);self.assertIn('Max-Age=3600',c)
+ def test_other_company_cannot_login(self):
+  with patch.object(b,'remote',side_effect=[{'access_token':'jwt','expires_in':3600},{'companyId':'other','module':'pulso','status':'allowed'}]):
+   with self.assertRaises(b.ApiError):b.handle('login',{'email':'a','password':'example'},H)
+ def test_revocation_blocks_reads(self):
+  with patch.object(b,'remote',return_value={'companyId':b.COMPANY,'module':'pulso','status':'denied'}):
+   with self.assertRaises(b.ApiError):b.handle('panel',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+ def test_wrong_station_rejected(self):
+  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'installationId':'other','configured':True,'available':True,'rows':[]}]):
+   with self.assertRaises(b.ApiError):b.panel('jwt')
+ def test_only_whitelisted_tables_returned(self):
+  def remote(path,*args):
+   if 'module_access' in path:return {'companyId':b.COMPANY,'module':'pulso','status':'allowed'}
+   if 'closings' in path:return {'companyId':b.COMPANY,'installationId':b.STATION,'configured':True,'available':True,'rows':[],'queriedAt':'2026-10-07T12:00:00Z'}
+   raise b.ApiError('Not configured',502)
+  with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'password':'NEVER','contacts':[]}):
+   self.assertEqual(b.panel('jwt')['data'],{'dias':[]})
+if __name__=='__main__':unittest.main()
