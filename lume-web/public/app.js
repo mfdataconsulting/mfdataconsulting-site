@@ -20,7 +20,7 @@ async function post(path,data){await request(path,data);await refresh();}
 async function start(){context=await request('/api/context');csrf=context.token;document.body.classList.remove('signed-out');$('company-select').innerHTML=context.companies.map(c=>`<option value="${esc(c.id)}">${esc(companyLabel(c))}</option>`).join('');companyId=context.companies.some(c=>c.id===context.preferredCompany)?context.preferredCompany:context.companies[0]?.id;const destination=new URLSearchParams(location.search);const requestedCompany=destination.get('company');if(requestedCompany){if(context.companies.some(c=>c.id===requestedCompany&&c.products.includes('lume')))companyId=requestedCompany;else{$('content').innerHTML='<div class="panel"><h2>Aviso indisponível</h2><p>Você não tem acesso à empresa deste aviso.</p></div>';return;}}const requestedSection=destination.get('section');if(['invoices','orders','products','tasks','channels'].includes(requestedSection))page=requestedSection;$('company-select').value=companyId;if(!companyId){$('content').innerHTML='<div class="panel"><h2>Nenhuma empresa vinculada</h2><p class="muted">Solicite à Tectria o vínculo da sua conta ao negócio.</p></div>';return}await refresh();}
 function contact(id){return state.contacts.find(c=>c.id===id)?.name??'—'}
 function actions(row){const role=context.companies.find(c=>c.id===companyId)?.role;if(role==='viewer')return '';return (statuses[page]?.[row.status]??[]).filter(s=>s!=='Aprovado'||['owner','admin'].includes(role)).map(s=>`<button data-status="${esc(s)}" data-id="${row.id}">${esc(s)}</button>`).join('')}
-function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum registro ainda. Cadastre o primeiro para começar.</p>'}
+function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td data-label="${esc(headers[i])}">${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum registro ainda. Cadastre o primeiro para começar.</p>'}
 function render(){
  if(state.goalsSource){names.goals='Metas';icons.goals='◎'}else{delete names.goals;delete icons.goals}
  if(state.financial){names.financial='Financeiro';icons.financial='▣'}else{delete names.financial;delete icons.financial}
@@ -111,7 +111,7 @@ boot().catch(e=>$('login-error').textContent=e.message);
 
 
 $('open-pulso').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('pulso'))window.open('https://pulso.tectria.com.br/','_blank','noopener');};
-$('open-nexo').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('nexo'))window.open('https://nexo-web-lovat.vercel.app/?company='+encodeURIComponent(companyId),'_blank','noopener');};
+$('open-nexo').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('nexo'))window.open('https://nexo.tectria.com.br/?company='+encodeURIComponent(companyId),'_blank','noopener');};
 $('logout-all').hidden=true;
 $('service-status').textContent='● Lume Web';
 $('footer-status').textContent='Sua rotina no automático.';

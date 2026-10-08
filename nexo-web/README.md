@@ -9,3 +9,5 @@ Vercel: framework Other, root nexo-web, branch pulso-web-pilot. Variáveis SUPAB
 Migração: ../supabase/migrations/20261008_nexo_web_reads.sql. As três RPCs são somente leitura, sem EXECUTE para anon. Nove testes locais de segurança passaram; teste SQL transacional verificou acesso independente de Lume/Pulso, bloqueio entre empresas e bloqueio anônimo, sem persistir alterações.
 
 Layout mobile: cabeçalho preto brilhante com logo Tectria, identificação do módulo e da empresa, controles recolhidos. Prévia visual usa dados sintéticos somente em output/preview_tectria_mobile.py, fora do projeto publicado.
+
+Publicado em https://nexo.tectria.com.br/. Login e quatro consultas autenticadas verificados em 08/10/2026. Menu mobile corrigido para três barras, com saída à esquerda e Tectria à direita no cabeçalho compacto.

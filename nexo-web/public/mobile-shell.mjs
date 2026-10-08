@@ -8,28 +8,37 @@ if(sidebar&&topbar){
  const bars=document.createElement('span');bars.textContent='☰';bars.setAttribute('aria-hidden','true');toggle.append(bars,document.createTextNode(' Menu'));
  function closeMenu(){panel.hidden=true;toggle.setAttribute('aria-expanded','false');}
  toggle.onclick=()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));};
- const company=document.createElement('p');company.className='mobile-company';
+ const moduleRow=document.createElement('div');moduleRow.className='mobile-module-row';
+ const company=sidebar.querySelector('.company-label,.sidebar-company')||document.createElement('p');
+ const companyBlock=document.createElement('div');companyBlock.className='mobile-company-block';
+ const client=sidebar.querySelector('.client-logo-placeholder,.client-logo')||document.createElement('div');
+ if(!client.className){client.className='client-logo-placeholder';client.textContent='LOGO DA EMPRESA';}
+ const clientBlock=document.createElement('div');clientBlock.className='mobile-client-block';
+ const filterSection=document.createElement('section');filterSection.className='mobile-filter-section';
+ const filterHeading=document.createElement('h3');filterHeading.textContent='Filtros de período';
  const originals=[];const brand=sidebar.querySelector(':scope > .brand-logo,:scope > .logo');
  const filters=document.querySelector('.dashboard-filters,#date-filters');
  const query=matchMedia('(max-width:650px)');
- const updateCompany=()=>{const select=document.getElementById('company-select');company.textContent=select?.selectedOptions[0]?.textContent||sidebar.querySelector('.sidebar-company')?.childNodes[0]?.textContent||'Selecione uma empresa';};
  function move(node,parent){const marker=document.createComment('desktop control');node.before(marker);originals.push({node,marker});parent.append(node);}
  function layout(){
   if(query.matches){
    if(panel.isConnected)return;
-   document.body.prepend(topbar);brand?.after(company);company.after(toggle,panel);
-   [...sidebar.children].filter(node=>![brand,company,toggle,panel].includes(node)&&node.id!=='menu-toggle').forEach(node=>move(node,panel));
-   if(filters&&!panel.contains(filters))move(filters,panel);
-   closeMenu();updateCompany();
+   document.body.prepend(topbar);
+   const controls=[...sidebar.children].filter(node=>![brand,company,client].includes(node)&&node.id!=='menu-toggle');
+   sidebar.prepend(moduleRow,clientBlock,companyBlock,panel);
+   if(brand)move(brand,moduleRow);moduleRow.append(toggle);
+   if(client.parentNode)move(client,clientBlock);else clientBlock.append(client);
+   if(company.parentNode)move(company,companyBlock);else{company.textContent='Selecione uma empresa';companyBlock.append(company);}
+   controls.forEach(node=>move(node,panel));
+   if(filters){if(filters.id!=='date-filters')filterSection.append(filterHeading);move(filters,filterSection);panel.append(filterSection);}
+   closeMenu();
   }else{
    for(const {node,marker} of originals){marker.replaceWith(node);}originals.length=0;
    if(topMarker.parentNode)topMarker.after(topbar);
-   panel.remove();company.remove();toggle.remove();
+   panel.remove();moduleRow.remove();companyBlock.remove();clientBlock.remove();filterSection.remove();toggle.remove();
   }
  }
  query.addEventListener('change',layout);layout();
- document.getElementById('company-select')?.addEventListener('change',updateCompany);
- const select=document.getElementById('company-select');if(select)new MutationObserver(updateCompany).observe(select,{childList:true,subtree:true});
  sidebar.addEventListener('click',event=>{if(query.matches&&event.target.closest('[data-page],#nav button'))closeMenu();});
  document.addEventListener('keydown',event=>{if(query.matches&&event.key==='Escape'&&!panel.hidden){closeMenu();toggle.focus();}});
  document.addEventListener('click',event=>{if(query.matches&&!sidebar.contains(event.target))closeMenu();});

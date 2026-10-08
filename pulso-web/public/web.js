@@ -16,7 +16,7 @@ async function action(work){if(busy)return;busy=true;['sync','panel'].forEach(id
 $('login').onsubmit=e=>{e.preventDefault();const password=$('password').value;$('password').value='';action(async()=>{await request('login',{email:$('email').value.trim(),password});await load();});};
 $('sync').onclick=$('panel').onclick=()=>action(load);
 $('logout').onclick=()=>action(async()=>{await request('logout');disconnect();$('message').textContent='Sessão web encerrada.';});
-for(const [module,url] of Object.entries({nexo:'https://nexo-web-lovat.vercel.app/?company=f74efcfa-c48b-4f4c-a8d7-686d77369edb',lume:'https://lume.tectria.com.br/'}))$('open-'+module).onclick=()=>{if(!$('open-'+module).disabled)window.open(url,'_blank','noopener');};
+for(const [module,url] of Object.entries({nexo:'https://nexo.tectria.com.br/?company=f74efcfa-c48b-4f4c-a8d7-686d77369edb',lume:'https://lume.tectria.com.br/'}))$('open-'+module).onclick=()=>{if(!$('open-'+module).disabled)window.open(url,'_blank','noopener');};
 document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{page=button.dataset.page;document.querySelectorAll('[data-page]').forEach(b=>b.removeAttribute('aria-current'));button.setAttribute('aria-current','page');render();});
 $('date-start').onchange=$('date-end').onchange=render;
 $('clear-filters').onclick=()=>{$('date-start').value=$('date-end').value='';render();};
