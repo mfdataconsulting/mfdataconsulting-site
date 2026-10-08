@@ -10,7 +10,7 @@ class handler(BaseHTTPRequestHandler):
  def do_POST(self):
   try:
    length=int(self.headers.get('Content-Length','0'))
-   if not 0<length<=4096:raise ApiError('Requisição inválida.')
+   if not 0<length<=8192:raise ApiError('Requisição inválida.')
    data=json.loads(self.rfile.read(length))
    if not isinstance(data,dict):raise ApiError('Requisição inválida.')
    action=parse_qs(urlparse(self.path).query).get('action',[''])[0]

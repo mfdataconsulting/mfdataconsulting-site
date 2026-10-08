@@ -20,11 +20,13 @@ def authorize(headers):
         raise WorkerError('worker_unauthorized')
     return token
 
-def rpc(payload, opener=urllib.request.urlopen):
+def rpc(payload, opener=urllib.request.urlopen, function='lume_notifications_worker'):
     key = os.environ.get('SUPABASE_PUBLISHABLE_KEY', '')
     if os.environ.get('SUPABASE_URL', '').rstrip('/') != BASE or not key.startswith('sb_publishable_'):
         raise WorkerError('database_not_configured')
-    request = urllib.request.Request(BASE + '/rest/v1/rpc/lume_notifications_worker',
+    if function not in ('lume_notifications_worker', 'lume_push_worker'):
+        raise WorkerError('invalid_worker_function')
+    request = urllib.request.Request(BASE + '/rest/v1/rpc/' + function,
         data=json.dumps(payload).encode(), method='POST', headers={'apikey':key, 'Content-Type':'application/json'})
     try:
         with opener(request, timeout=15) as response:
@@ -54,4 +56,3 @@ def run(headers, database=rpc, provider=send):
         if database(ack).get('ok') is not True: raise WorkerError('ack_unconfirmed')
         counts[status] += 1
     return {'ok':True, **counts}
-

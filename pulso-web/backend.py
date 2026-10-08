@@ -66,7 +66,11 @@ def panel(token):
 def handle(action,data,headers):
  if action=='lume-notifications-worker':
   from lume_worker import run,WorkerError
-  try:return run(headers),None
+  try:
+   result=run(headers)
+   from lume_push import run as push_run
+   result['push']=push_run(headers)
+   return result,None
   except WorkerError as error:raise ApiError(str(error),403 if str(error)=='worker_unauthorized' else 503) from None
  origin=headers.get('Origin','');host=headers.get('Host','')
  parsed=urlparse(origin)
@@ -95,6 +99,26 @@ def handle(action,data,headers):
   try:access_token(headers)
   except MailError as error:raise ApiError('Autenticação das notificações não confirmada: '+error.code,503) from None
   return {'ok':True,'authenticated':True},None
+ if action in ('push-register','push-disable','push-status','push-test'):
+  if not token:raise ApiError('Entre com sua conta Tectria.',401)
+  if action!='push-disable':permit(token)
+  from uuid import UUID
+  payload={'company_id':COMPANY,'operation':{'push-register':'register','push-disable':'disable','push-status':'status','push-test':'test'}[action]}
+  if action=='push-register':
+   device=data.get('deviceToken')
+   if not isinstance(device,str) or not 20<=len(device)<=4096:raise ApiError('Dispositivo inválido.')
+   payload['device_token']=device
+  else:
+   try:payload['device_id']=str(UUID(data.get('deviceId','')))
+   except (ValueError,TypeError,AttributeError):raise ApiError('Aparelho não registrado.') from None
+  result=remote('/rest/v1/rpc/lume_push_device',payload,token)
+  if action=='push-test':
+   from lume_push import send
+   from lume_mail import MailError
+   try:send(result['deviceToken'],'Lume · Teste de notificações',headers,tag='lume-test')
+   except MailError as error:raise ApiError('Envio não confirmado: '+error.code,503) from None
+   return {'ok':True,'accepted':True},None
+  return result,None
  if action=='panel':return panel(token),None
  if action=='module-access':
   permit(token);states={}

@@ -7,7 +7,7 @@ import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'pulso-web'))
-from lume_push import access_token, send
+from lume_push import access_token, send, run
 from lume_mail import MailError
 
 CONFIG = {
@@ -68,5 +68,36 @@ class PushTests(unittest.TestCase):
 
  def test_invalid_device_never_contacts_google(self):
   with self.assertRaises(MailError):send('bad\ntoken','Lume',{},opener=lambda *a,**kw:self.fail())
+
+class PushWorkerTests(unittest.TestCase):
+ token='worker-token-at-least-forty-characters-push-testing'
+ job={'id':'b80d8d3e-3b36-45c8-b7a7-e02f85c9ab73','lease_id':'9b09d7ed-afb5-409c-8012-b678964a5b16','deviceToken':'device-token-long-enough'}
+ def test_unauthorized_worker_has_no_side_effect(self):
+  with patch.dict(os.environ,{'LUME_WORKER_TOKEN':self.token,'LUME_NOTIFICATIONS_ENABLED':'true'}):
+   with self.assertRaises(Exception):run({},lambda *a:self.fail(),lambda *a:self.fail())
+ def test_empty_queue_never_exchanges_identity(self):
+  with patch.dict(os.environ,{'LUME_WORKER_TOKEN':self.token,'LUME_NOTIFICATIONS_ENABLED':'true'}),patch('lume_push.access_token') as identity:
+   result=run({'Authorization':'Bearer '+self.token},lambda p:{'jobs':[]})
+   self.assertEqual(result['accepted'],0);identity.assert_not_called()
+ def test_delivery_ack_and_notification_tag_are_bound_to_lease(self):
+  calls=[]
+  def database(p):calls.append(p);return {'jobs':[self.job]} if p['operation']=='claim' else {'ok':True}
+  with patch.dict(os.environ,{'LUME_WORKER_TOKEN':self.token,'LUME_NOTIFICATIONS_ENABLED':'true'}),patch('lume_push.access_token',return_value='credential'),patch('lume_push.send') as provider:
+   provider.return_value='projects/tectria-notificacoes-b69a6/messages/test'
+   result=run({'Authorization':'Bearer '+self.token},database,provider)
+   self.assertEqual(result['accepted'],1)
+   self.assertEqual(calls[1]['lease'],self.job['lease_id']);self.assertEqual(provider.call_args.kwargs['tag'],'lume-'+self.job['id'])
+ def test_authentication_failure_does_not_send_and_remains_retryable(self):
+  calls=[]
+  def database(p):calls.append(p);return {'jobs':[self.job]} if p['operation']=='claim' else {'ok':True}
+  with patch.dict(os.environ,{'LUME_WORKER_TOKEN':self.token,'LUME_NOTIFICATIONS_ENABLED':'true'}),patch('lume_push.access_token',side_effect=MailError('push_connection',True)):
+   result=run({'Authorization':'Bearer '+self.token},database,lambda *a,**kw:self.fail())
+   self.assertEqual(result['deferred'],1);self.assertTrue(calls[1]['retryable']);self.assertEqual(calls[1]['error_code'],'push_auth_connection')
+ def test_failed_ack_aborts_remaining_sends(self):
+  sends=[]
+  def database(p):return {'jobs':[self.job,self.job]} if p['operation']=='claim' else {'ok':False}
+  with patch.dict(os.environ,{'LUME_WORKER_TOKEN':self.token,'LUME_NOTIFICATIONS_ENABLED':'true'}),patch('lume_push.access_token',return_value='credential'):
+   with self.assertRaises(Exception):run({'Authorization':'Bearer '+self.token},database,lambda *a,**kw:sends.append(a) or 'projects/tectria-notificacoes-b69a6/messages/test')
+   self.assertEqual(len(sends),1)
 
 if __name__=='__main__':unittest.main()

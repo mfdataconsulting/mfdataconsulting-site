@@ -74,19 +74,62 @@ def access_token(headers, opener=urllib.request.urlopen):
     return token
 
 
-def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen):
+def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen, credential=None, tag='lume-notification'):
     if not isinstance(device_token, str) or not re.fullmatch(r'[A-Za-z0-9_:.-]{20,4096}', device_token):
         raise MailError('push_device_invalid')
     if not isinstance(title, str) or not 1 <= len(title) <= 150 or '\n' in title or '\r' in title:
         raise MailError('push_title_invalid')
-    token = access_token(headers, opener)
+    token = credential or access_token(headers, opener)
     result = post('https://fcm.googleapis.com/v1/projects/' + PROJECT + '/messages:send', {
         'validate_only': validate_only,
         'message': {'token': device_token,
                     'notification': {'title': title, 'body': 'Há um novo aviso no Lume. Entre para consultar.'},
-                    'webpush': {'fcm_options': {'link': 'https://pulso.tectria.com.br/'}}},
+                    'webpush': {'notification': {'tag': tag, 'icon': 'https://pulso.tectria.com.br/tectria-logo.png'},
+                                'fcm_options': {'link': 'https://pulso.tectria.com.br/'}}},
     }, token, opener)
     name = result.get('name')
     if not isinstance(name, str) or not name.startswith('projects/' + PROJECT + '/messages/'):
         raise MailError('push_send_unconfirmed', True)
     return name
+
+
+def run(headers, database=None, provider=send):
+    from lume_worker import authorize, WorkerError, COMPANY, rpc
+    from uuid import UUID
+    worker_token = authorize(headers)
+    if database is None:
+        database = lambda payload: rpc(payload, function='lume_push_worker')
+    base = {'company_id': COMPANY, 'worker_token': worker_token}
+    jobs = database(base | {'operation': 'claim'}).get('jobs')
+    if not isinstance(jobs, list) or len(jobs) > 3:
+        raise WorkerError('invalid_push_queue')
+    counts = {'accepted': 0, 'failed': 0, 'deferred': 0}
+    credential = None
+    if jobs:
+        try:
+            credential = access_token(headers)
+        except MailError as error:
+            for job in jobs:
+                ack = base | {'operation': 'ack', 'job_id': str(UUID(job['id'])),
+                              'lease': str(UUID(job['lease_id'])), 'error_code': error.code.replace('push_', 'push_auth_', 1), 'retryable': True}
+                if database(ack).get('ok') is not True:
+                    raise WorkerError('push_ack_unconfirmed')
+                counts['deferred'] += 1
+            return counts
+    for job in jobs:
+        try:
+            identity, lease = str(UUID(job['id'])), str(UUID(job['lease_id']))
+        except (ValueError, KeyError, TypeError):
+            raise WorkerError('invalid_push_lease') from None
+        ack = base | {'operation': 'ack', 'job_id': identity, 'lease': lease}
+        try:
+            ack['provider'] = provider(job['deviceToken'], 'Lume · Novo aviso', headers,
+                                       credential=credential, tag='lume-' + identity)
+            status = 'accepted'
+        except MailError as error:
+            ack.update(error_code=error.code, retryable=error.retryable)
+            status = 'deferred' if error.retryable else 'failed'
+        if database(ack).get('ok') is not True:
+            raise WorkerError('push_ack_unconfirmed')
+        counts[status] += 1
+    return counts
