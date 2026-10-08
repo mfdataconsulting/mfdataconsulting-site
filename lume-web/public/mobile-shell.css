@@ -1,0 +1,31 @@
+.mobile-controls,.mobile-company{display:none}
+@media(max-width:650px){
+ body:not(.signed-out):not(:has(#login:not([hidden]))){display:flex;flex-direction:column}
+ body.signed-out>.topbar,body:not(.connected)>.pulso-topbar{display:none!important}
+ body>.topbar,body.connected>.pulso-topbar{order:-3;display:flex!important;position:relative!important;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:100%;height:auto!important;min-height:96px;margin:0;padding:16px!important;background:linear-gradient(165deg,#383838 0%,#0c0c0c 40%,#000 55%,#161616 100%)!important;border-bottom:1px solid #4a4a4a;box-shadow:0 4px 12px #0003;color:white}
+ body>.topbar .tectria-logo,body>.pulso-topbar .tectria-brand{order:-2;width:158px!important;max-height:48px;object-fit:contain;margin:0 auto!important}
+ body>.topbar>span,body>.pulso-topbar>span{display:none}
+ body>.topbar .session-actions,body>.pulso-topbar .portal-account{width:100%;display:flex!important;justify-content:center;margin:0!important}
+ body>.topbar .session-actions button,body>.pulso-topbar .portal-account button{font-size:11px!important;margin:0!important;padding:6px 10px!important;min-height:32px!important;background:#ffffff12!important;color:white!important;border-color:#ffffff40!important}
+ body:not(.signed-out)>aside{order:-2;position:relative!important;min-height:0!important;width:100%;padding:18px!important}
+ body.connected main{display:flex!important;flex-direction:column}
+ body.connected .pulso-sidebar{position:relative!important;height:auto!important;width:100%;padding:18px!important;overflow:visible;display:flex!important;flex-direction:column!important;gap:0!important}
+ body.connected .pulso-sidebar>.logo,body:not(.signed-out)>aside>.brand-logo{margin:0 auto 10px!important;display:flex;justify-content:center}
+ body.connected .pulso-sidebar>.logo{font-size:27px}.pulso-sidebar>.logo svg{width:42px!important;height:42px!important}
+ .mobile-company{display:block!important;text-align:center;font-size:13px;font-weight:600;margin:8px 0 14px!important;color:#354154}
+ .mobile-controls{display:block!important;background:#ffffff55;border:1px solid #a7b0bc;border-radius:10px;overflow:hidden}
+ .mobile-controls>summary{list-style:none;cursor:pointer;padding:13px 15px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;min-height:46px}
+ .mobile-controls>summary::-webkit-details-marker{display:none}.mobile-controls>summary:after{content:'+';font-size:20px}.mobile-controls[open]>summary:after{content:'−'}
+ .mobile-controls>summary:focus-visible{outline:2px solid #c9233c;outline-offset:-3px}
+ .mobile-controls>div,.mobile-controls>label,.mobile-controls>p,.mobile-controls>nav,.mobile-controls>footer,.mobile-controls>button{margin:10px 12px!important;max-width:calc(100% - 24px)}
+ .mobile-controls .client-logo-placeholder,.mobile-controls .client-logo{display:none!important}
+ .mobile-controls .company-label{display:block!important}.mobile-controls select{width:100%}
+ .mobile-controls nav,#pulso-menu .mobile-controls .dashboard-nav{display:grid!important;grid-template-columns:1fr 1fr!important;overflow:visible!important;gap:6px!important}
+ #pulso-menu .menu-toggle{display:none!important}
+ .mobile-controls .module-links{display:flex!important;flex-wrap:wrap}.mobile-controls .sidebar-footer{display:none!important}
+ .mobile-controls footer{display:block!important}
+ .mobile-controls .dashboard-filters{display:flex!important;flex-wrap:wrap;padding:12px;border-top:1px solid #bfc6ce;margin:0!important;max-width:100%}
+ body.connected .card>.logo{display:none!important}
+ body.connected .card{min-height:0!important;padding:18px 16px!important}
+ body:not(.signed-out)>main{margin:0!important;width:100%;min-width:0}
+}
