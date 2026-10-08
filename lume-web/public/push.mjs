@@ -71,7 +71,7 @@ export function setupPush(root,request,action,STORE='tectria-lume-device'){
  async function refresh(){
   if(!supported()){state(false);status.textContent='Abra no Chrome ou Edge para ativar notificações. No iPhone, use o atalho da Tela de Início.';return;}
   const deviceId=localStorage.getItem(STORE);
-  state(false);status.textContent='Receba avisos novos neste aparelho, mesmo com o Pulso fechado.';
+  state(false);status.textContent='Receba avisos novos neste aparelho, mesmo com o Lume fechado.';
   if(!deviceId)return;
   try{
    const result=await request('push-status',{deviceId});
