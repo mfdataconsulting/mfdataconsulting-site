@@ -19,9 +19,11 @@ export function setupPush(root,request,action,STORE='tectria-lume-device'){
  const title=document.createElement('h3');title.textContent='Notificações do Lume';
  const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
  const enable=document.createElement('button');enable.type='button';enable.textContent='Ativar neste aparelho';
+ const check=document.createElement('button');check.type='button';check.textContent='Verificar serviço de notificações';
  const test=document.createElement('button');test.type='button';test.textContent='Enviar aviso de teste';test.disabled=true;
  const disable=document.createElement('button');disable.type='button';disable.textContent='Desativar neste aparelho';disable.disabled=true;
- section.append(title,status,enable,test,disable);root.append(section);
+ section.append(title,status,check,enable,test,disable);root.append(section);
+ check.onclick=()=>action(async()=>{try{await request('push-auth-check');status.textContent='Serviço de notificações autenticado. Ative os avisos neste aparelho.';}catch(error){status.textContent=error.message;}});
  const supported=()=>window.isSecureContext&&'Notification' in window&&'serviceWorker' in navigator&&'PushManager' in window;
  function state(active){enable.disabled=active;test.disabled=disable.disabled=!active;}
  function listen(msg){
