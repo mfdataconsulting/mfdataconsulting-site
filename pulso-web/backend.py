@@ -64,6 +64,10 @@ def panel(token):
  return {'ok':True,'data':data,'company':'0001 - Tectria','metadata':{'queriedAt':queried,'exportedAt':datetime.now(timezone.utc).isoformat(),'source':'nexo'}}
 
 def handle(action,data,headers):
+ if action=='lume-notifications-worker':
+  from lume_worker import run,WorkerError
+  try:return run(headers),None
+  except WorkerError as error:raise ApiError(str(error),403 if str(error)=='worker_unauthorized' else 503) from None
  origin=headers.get('Origin','');host=headers.get('Host','')
  parsed=urlparse(origin)
  if parsed.scheme!='https' or parsed.netloc!=host or headers.get('X-Pulso-Request')!='1':raise ApiError('Requisição não autorizada.',403)
@@ -92,3 +96,4 @@ def handle(action,data,headers):
    except ApiError:states[module]='unknown'
   return {'modules':states},None
  raise ApiError('Não encontrado.',404)
+
