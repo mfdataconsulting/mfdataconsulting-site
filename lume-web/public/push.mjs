@@ -30,7 +30,7 @@ export function setupPush(root,request,action,STORE='tectria-lume-device'){
    status.textContent='Notificação recebida neste aparelho.';
    registration.showNotification(payload.notification?.title||'Lume · Novo aviso',{
     body:'Há um novo aviso no Lume. Entre para consultar.',icon:'/assets/tectria-logo.png',
-    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:'https://lume.tectria.com.br/'}
+    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:location.origin+'/'}
    }).catch(()=>{});
   });
  }

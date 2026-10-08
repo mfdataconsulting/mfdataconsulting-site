@@ -57,7 +57,7 @@ class PushTests(unittest.TestCase):
   self.assertEqual(result,name)
   payload=json.loads(calls[2].data)
   self.assertTrue(payload['validate_only'])
-  self.assertEqual(payload['message']['webpush']['fcm_options']['link'],'https://pulso.tectria.com.br/')
+  self.assertEqual(payload['message']['webpush']['fcm_options']['link'],'https://lume-web-cyan.vercel.app/')
 
  def test_error_does_not_leak_provider_body(self):
   def fail(*args,**kwargs):

@@ -84,8 +84,8 @@ def send(device_token, title, headers, *, validate_only=False, opener=urllib.req
         'validate_only': validate_only,
         'message': {'token': device_token,
                     'notification': {'title': title, 'body': 'Há um novo aviso no Lume. Entre para consultar.'},
-                    'webpush': {'notification': {'tag': tag, 'icon': 'https://pulso.tectria.com.br/tectria-logo.png'},
-                                'fcm_options': {'link': 'https://pulso.tectria.com.br/'}}},
+                    'webpush': {'notification': {'tag': tag, 'icon': 'https://lume-web-cyan.vercel.app/assets/tectria-logo.png'},
+                                'fcm_options': {'link': 'https://lume-web-cyan.vercel.app/'}}},
     }, token, opener)
     name = result.get('name')
     if not isinstance(name, str) or not name.startswith('projects/' + PROJECT + '/messages/'):
