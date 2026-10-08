@@ -29,7 +29,7 @@ class SecurityTests(unittest.TestCase):
    result,cookies=b.handle('login',{'email':'user@example.com','password':'password'},HEADERS)
    self.assertTrue(result['ok']);self.assertTrue(all('HttpOnly' in c and 'Secure' in c for c in cookies))
  def test_context_excludes_other_products(self):
-  with patch.object(b,'rpc',return_value={'companies':[{'id':COMPANY,'products':['nexo']},{'id':'other','products':['pulso']}]}):
+  with patch.object(b,'rpc',return_value={'companies':[{'id':COMPANY,'products':['nexo']},{'id':'other','products':['pulso']}],'userId':'test'}):
    result,_=b.handle('context',{},HEADERS,'GET');self.assertEqual(len(result['companies']),1)
  def test_missing_sources_do_not_become_zero_balances(self):
   with patch.object(b,'rpc',return_value={'configured':False,'rows':[]}):
@@ -37,4 +37,22 @@ class SecurityTests(unittest.TestCase):
  def test_other_company_packet_rejected(self):
   with patch.object(b,'rpc',side_effect=[{'configured':False},{'configured':True,'available':True,'companyId':'other','rows':[]}]):
    with self.assertRaises(b.ApiError):b.state(COMPANY,'identity')
+ def test_mobile_sale_requires_csrf(self):
+  with patch.object(b,'rpc') as rpc:
+   with self.assertRaises(b.ApiError):b.handle('sale',{},HEADERS|{'X-Nexo-Token':'wrong'})
+   rpc.assert_not_called()
+ def test_mobile_sale_validated_and_scoped(self):
+  from uuid import uuid4
+  rid=str(uuid4());day=str(uuid4());pid=str(uuid4())
+  def rpc(name,data,token):
+   if name=='tectria_module_access':return {'companyId':COMPANY,'module':'nexo','status':'allowed'}
+   self.assertEqual(name,'nexo_mobile_create_sale');self.assertEqual(data['company_id'],COMPANY);self.assertEqual(data['items'][0]['productId'],pid.replace('-',''));return {'id':str(uuid4()),'requestId':rid,'totalCents':100}
+  with patch.object(b,'rpc',side_effect=rpc):
+   result,_=b.handle('sale',{'requestId':rid,'dayId':day,'payment':'pix','items':[{'productId':pid,'qty':1,'priceCents':100}]},HEADERS)
+   self.assertEqual(result['totalCents'],100)
+ def test_mobile_sale_rejects_boolean_quantity(self):
+  from uuid import uuid4
+  with patch.object(b,'rpc',return_value={'companyId':COMPANY,'module':'nexo','status':'allowed'}) as rpc:
+   with self.assertRaises(b.ApiError):b.handle('sale',{'requestId':str(uuid4()),'dayId':str(uuid4()),'payment':'pix','items':[{'productId':str(uuid4()),'qty':True,'priceCents':100}]},HEADERS)
+   self.assertEqual(rpc.call_count,1)
 if __name__=='__main__':unittest.main()

@@ -1,4 +1,4 @@
-"""Nexo Web: authenticated company-scoped read access to synchronized snapshots."""
+"""Nexo Web: authenticated company-scoped snapshots and optional online mobile sales."""
 import hmac, json, os, secrets, urllib.error, urllib.request
 from http.cookies import SimpleCookie
 from urllib.parse import urlparse
@@ -22,7 +22,13 @@ def remote(path,payload,token=None):
  except urllib.error.HTTPError as error:
   if error.code in (401,403): raise ApiError('Entre com sua conta Tectria e confira o acesso ao Nexo.',401) from None
   if error.code==429: raise ApiError('Aguarde antes de tentar novamente.',429) from None
-  raise ApiError('Consulta central não confirmada.',502) from None
+  if error.code in (400,409):
+   try: detail=json.loads(error.read(12000));code=detail.get('code');message=detail.get('message','')
+   except (ValueError,TypeError):detail={};code=None;message=''
+   if code in ('22023','23505'):
+    allowed=('Venda inválida','Ative as vendas móveis','Abra e sincronize','Catálogo ainda','Quantidade','Agrupe os produtos','Venda móvel disponível','Estoque insuficiente','Produto sem preço','Venda acima','Confirmação pendente divergente','Preço atualizado')
+    raise ApiError(message if message.startswith(allowed) else 'Operação recusada. Atualize os dados e confira a venda.',409 if code=='23505' else 400) from None
+  raise ApiError('Operação central não confirmada. Confira antes de repetir.',502) from None
  except (urllib.error.URLError,TimeoutError,ValueError): raise ApiError('Base central temporariamente indisponível.',502) from None
 
 def rpc(name,payload,token): return remote('/rest/v1/rpc/'+name,payload,token)
@@ -84,10 +90,26 @@ def handle(path,data,headers,method='POST'):
  if path=='logout' and method=='POST':
   remote('/auth/v1/logout?scope=local',{},token); return {'ok':True},cookies()
  if path=='context' and method=='GET':
-  result=rpc('tectria_context',{},token); result['companies']=[c for c in result.get('companies',[]) if 'nexo' in c.get('products',[])]; result['token']=csrf; return result,None
- if path!='state' or method!='GET': raise ApiError('Não encontrado.',404)
+  result=rpc('tectria_context',{},token); result['companies']=[c for c in result.get('companies',[]) if 'nexo' in c.get('products',[])]; result['token']=csrf; result['userId']=rpc('nexo_mobile_identity',{},token)['userId']; return result,None
+ if (path,method) not in (('state','GET'),('mobile','GET'),('sale','POST')): raise ApiError('Não encontrado.',404)
  try: company=str(UUID(headers.get('X-Company-Id','')))
  except (TypeError,ValueError): raise ApiError('Selecione uma empresa.') from None
  access=rpc('tectria_module_access',{'company_id':company,'module_code':'nexo'},token)
  if access.get('companyId')!=company or access.get('module')!='nexo' or access.get('status')!='allowed': raise ApiError('Nexo não liberado para esta empresa.',403)
+ if path=='mobile': return rpc('nexo_mobile_catalog',{'company_id':company},token),None
+ if path=='sale':
+  try: request_id=str(UUID(data.get('requestId','')));day_id=str(UUID(data.get('dayId','')))
+  except (TypeError,ValueError,AttributeError): raise ApiError('Identificação da venda inválida.') from None
+  items=data.get('items');payment=data.get('payment')
+  if payment not in ('cash','pix','card') or not isinstance(items,list) or not 1<=len(items)<=100: raise ApiError('Venda inválida.')
+  normalized=[];ids=set()
+  for item in items:
+   if not isinstance(item,dict) or type(item.get('qty')) is not int or not 1<=item['qty']<=1000 or type(item.get('priceCents')) is not int or not 1<=item['priceCents']<=100000000:raise ApiError('Item de venda inválido.')
+   try:identity=UUID(item.get('productId',''))
+   except (ValueError,TypeError,AttributeError):raise ApiError('Produto inválido.') from None
+   if identity in ids:raise ApiError('Agrupe os produtos repetidos.')
+   ids.add(identity);normalized.append({'productId':identity.hex,'qty':item['qty'],'priceCents':item['priceCents']})
+  result=rpc('nexo_mobile_create_sale',{'company_id':company,'request_id':request_id,'payment':payment,'items':normalized,'day_id':day_id},token)
+  if result.get('requestId')!=request_id or not isinstance(result.get('id'),str) or type(result.get('totalCents')) is not int:raise ApiError('Confirmação divergente. Preserve a venda pendente.',502)
+  return result,None
  return state(company,token),None

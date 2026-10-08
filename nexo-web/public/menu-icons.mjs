@@ -14,7 +14,7 @@ const paths={
  goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.1-1.5 2.5M12 17h.01"/>'
 };
-const aliases={inicio:'dashboard',vendas:'sales',financeiro:'financial',colaboradores:'employees',estoque:'stock',clientes:'contacts',metas:'goals',ajuda:'help',products:'stock',financial:'financial',contacts:'contacts'};
+const aliases={mobile:'orders',inicio:'dashboard',vendas:'sales',financeiro:'financial',colaboradores:'employees',estoque:'stock',clientes:'contacts',metas:'goals',ajuda:'help',products:'stock',financial:'financial',contacts:'contacts'};
 function decorate(nav){
  for(const button of nav.querySelectorAll('button[data-page]')){
   const page=button.dataset.page,name=aliases[page]||page;
