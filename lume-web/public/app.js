@@ -73,7 +73,8 @@ function render(){
  }
  $('content').innerHTML=html;
  if(page==='channels'){
-  pushControls=setupPush($('content'),(action,data={})=>request('/api/'+action,data),async work=>{try{await work();}catch(error){$('notice').textContent=error.message;}},'tectria-lume-device:'+companyId);
+  const activeCompany=companyId;
+  pushControls=setupPush($('content'),(action,data={})=>{if(companyId!==activeCompany)throw Error('A empresa mudou. Abra as notificações da empresa atual.');return request('/api/'+action,data);},async work=>{try{await work();}catch(error){$('notice').textContent=error.message;}},'tectria-lume-device:'+activeCompany);
   pushControls.refresh();
  }
  if(page==='faq')mountLocalHelp($('content'),'Lume',faqGroups.flatMap(g=>g.items));
@@ -100,7 +101,7 @@ $('help').onclick=()=>{if(!state)return;page='faq';$('notice').textContent='';re
 $('form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{await post('/api/create/'+entity,Object.fromEntries(new FormData(e.target)));$('dialog').close();$('notice').textContent=''}catch(error){$('form-error').textContent=error.message}finally{button.disabled=false}};
 document.addEventListener('submit',async e=>{if(e.target.id!=='notification-form')return;e.preventDefault();const b=e.submitter;b.disabled=true;const data=new FormData(e.target);try{await post('/api/notifications',{enabled:data.has('enabled'),immediate:data.has('immediate'),digest:data.has('digest'),recipients:data.get('recipients').split(',').map(x=>x.trim()).filter(Boolean),digest_hour:Number(data.get('digest_hour')),lead_days:Number(data.get('lead_days')),kinds:data.getAll('kind')});$('notice').textContent='Preferências salvas.'}catch(error){$('notice').textContent=error.message;b.disabled=false}});
 $('login-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('login-error').textContent='';try{await request('/api/login',Object.fromEntries(new FormData(e.target)));e.target.reset();await start();}catch(error){if(document.body.classList.contains('signed-out'))$('login-error').textContent=error.message;else $('notice').textContent=error.message;}finally{b.disabled=false}};
-$('logout').onclick=async()=>{try{await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
+$('logout').onclick=async()=>{try{if(pushControls)try{await pushControls.off();}catch{}await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
 $('company-select').onchange=async e=>{companyId=e.target.value;page='dashboard';state=null;$('content').innerHTML='';$('nav').innerHTML='';$('notice').textContent='';try{await refresh()}catch(error){$('notice').textContent=error.message}};
 $('demo-enter').onclick=async()=>{const b=$('demo-enter');b.disabled=true;$('login-error').textContent='';try{await request('/api/demo-login',{role:$('demo-role').value});await start()}catch(error){$('login-error').textContent=error.message}finally{b.disabled=false}};
 async function boot(){const info=await request('/api/info');if(info.demo){$('login-form').hidden=true;$('demo-access').hidden=false;$('access-title').textContent='Bem-vindo de volta';$('access-description').textContent='Tectria';$('mode-badge').textContent='Local';$('service-status').textContent='● Serviço local conectado';$('footer-status').textContent='Sua rotina no automático.';}try{await start()}catch(e){if(!document.body.classList.contains('signed-out'))$('notice').textContent=e.message;else if(!e.message.includes('Entre com'))$('login-error').textContent=e.message}}
