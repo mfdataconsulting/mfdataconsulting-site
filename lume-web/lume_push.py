@@ -86,14 +86,14 @@ def send(device_token, title, headers, *, validate_only=False, opener=urllib.req
     if company_id:
         from uuid import UUID
         params['company'] = str(UUID(company_id))
-    link = 'https://lume-web-cyan.vercel.app/?' + urlencode(params)
+    link = 'https://lume.tectria.com.br/?' + urlencode(params)
     token = credential or access_token(headers, opener)
     result = post('https://fcm.googleapis.com/v1/projects/' + PROJECT + '/messages:send', {
         'validate_only': validate_only,
         'message': {'token': device_token,
                     'notification': {'title': title, 'body': 'Há um novo aviso no Lume. Entre para consultar.'},
                     'data': {'url': link},
-                    'webpush': {'notification': {'tag': tag, 'icon': 'https://lume-web-cyan.vercel.app/assets/tectria-logo.png'},
+                    'webpush': {'notification': {'tag': tag, 'icon': 'https://lume.tectria.com.br/assets/tectria-logo.png'},
                                 'fcm_options': {'link': link}}},
     }, token, opener)
     name = result.get('name')
