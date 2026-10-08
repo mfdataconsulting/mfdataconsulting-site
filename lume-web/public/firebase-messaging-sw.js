@@ -1,10 +1,15 @@
-// Generic notification clicks always return to the authenticated Pulso origin.
+// Open the section of the notification in the Lume origin.
 self.addEventListener('notificationclick',event=>{
  event.notification.close();event.stopImmediatePropagation();
- event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(windows=>{
+ event.waitUntil((async()=>{
+  const raw=event.notification.data?.url||event.notification.data?.FCM_MSG?.data?.url||self.location.origin+'/?section=channels';
+  let url;try{url=new URL(raw,self.location.origin)}catch{url=new URL('/?section=channels',self.location.origin)}
+  if(url.origin!==self.location.origin)url=new URL('/?section=channels',self.location.origin);
+  const windows=await clients.matchAll({type:'window',includeUncontrolled:true});
   const target=windows.find(w=>new URL(w.url).origin===self.location.origin);
-  return target?target.focus():clients.openWindow(self.location.origin+'/');
- }));
+  if(target){await target.navigate(url.href);return target.focus();}
+  return clients.openWindow(url.href);
+ })());
 });
 importScripts('https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/13.0.0/firebase-messaging-compat.js');

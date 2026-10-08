@@ -6,7 +6,7 @@ async function sdk(){
    import('https://www.gstatic.com/firebasejs/13.0.0/firebase-messaging.js'),
    fetch('/firebase-config.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Configuração indisponível.');return r.json();})
   ]);
-  if(!await msg.isSupported())throw Error('Este navegador não oferece notificações push. Abra o Pulso no Chrome ou Edge. No iPhone, adicione à Tela de Início e abra por esse atalho.');
+  if(!await msg.isSupported())throw Error('Este navegador não oferece notificações push. Abra o Lume no Chrome ou Edge. No iPhone, adicione à Tela de Início e abra por esse atalho.');
   messaging=msg.getMessaging(app.initializeApp(config.firebase));
   registration=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
   await navigator.serviceWorker.ready;
@@ -32,7 +32,7 @@ export function setupPush(root,request,action,STORE='tectria-lume-device'){
    status.textContent='Notificação recebida neste aparelho.';
    registration.showNotification(payload.notification?.title||'Lume · Novo aviso',{
     body:'Há um novo aviso no Lume. Entre para consultar.',icon:'/assets/tectria-logo.png',
-    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:location.origin+'/'}
+    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:payload.data?.url||location.origin+'/?section=channels'}
    }).catch(()=>{});
   });
  }

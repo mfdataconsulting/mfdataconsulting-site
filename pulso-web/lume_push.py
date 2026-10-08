@@ -74,18 +74,27 @@ def access_token(headers, opener=urllib.request.urlopen):
     return token
 
 
-def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen, credential=None, tag='lume-notification'):
+def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen, credential=None, tag='lume-notification', section='channels', company_id=None):
     if not isinstance(device_token, str) or not re.fullmatch(r'[A-Za-z0-9_:.-]{20,4096}', device_token):
         raise MailError('push_device_invalid')
     if not isinstance(title, str) or not 1 <= len(title) <= 150 or '\n' in title or '\r' in title:
         raise MailError('push_title_invalid')
+    sections = {'invoices', 'orders', 'products', 'tasks', 'channels'}
+    section = section if section in sections else 'channels'
+    from urllib.parse import urlencode
+    params = {'section': section}
+    if company_id:
+        from uuid import UUID
+        params['company'] = str(UUID(company_id))
+    link = 'https://lume-web-cyan.vercel.app/?' + urlencode(params)
     token = credential or access_token(headers, opener)
     result = post('https://fcm.googleapis.com/v1/projects/' + PROJECT + '/messages:send', {
         'validate_only': validate_only,
         'message': {'token': device_token,
                     'notification': {'title': title, 'body': 'Há um novo aviso no Lume. Entre para consultar.'},
+                    'data': {'url': link},
                     'webpush': {'notification': {'tag': tag, 'icon': 'https://lume-web-cyan.vercel.app/assets/tectria-logo.png'},
-                                'fcm_options': {'link': 'https://lume-web-cyan.vercel.app/'}}},
+                                'fcm_options': {'link': link}}},
     }, token, opener)
     name = result.get('name')
     if not isinstance(name, str) or not name.startswith('projects/' + PROJECT + '/messages/'):
@@ -124,7 +133,11 @@ def run(headers, database=None, provider=send):
         ack = base | {'operation': 'ack', 'job_id': identity, 'lease': lease}
         try:
             ack['provider'] = provider(job['deviceToken'], 'Lume · Novo aviso', headers,
-                                       credential=credential, tag='lume-' + identity)
+                                       credential=credential, tag='lume-' + identity,
+                                       section={'invoice_new':'invoices','invoice_due':'invoices',
+                                                'order_late':'orders','stock_low':'products',
+                                                'task_due':'tasks'}.get(job.get('kind'), 'channels'),
+                                       company_id=job.get('companyId'))
             status = 'accepted'
         except MailError as error:
             ack.update(error_code=error.code, retryable=error.retryable)

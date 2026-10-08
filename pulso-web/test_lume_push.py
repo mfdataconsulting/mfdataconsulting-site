@@ -57,7 +57,21 @@ class PushTests(unittest.TestCase):
   self.assertEqual(result,name)
   payload=json.loads(calls[2].data)
   self.assertTrue(payload['validate_only'])
-  self.assertEqual(payload['message']['webpush']['fcm_options']['link'],'https://lume-web-cyan.vercel.app/')
+  self.assertEqual(payload['message']['webpush']['fcm_options']['link'],'https://lume-web-cyan.vercel.app/?section=channels')
+
+ def test_section_link_and_company_are_shared_by_foreground_and_background(self):
+  from urllib.parse import urlparse, parse_qs
+  for section in ['invoices','orders','products','tasks','channels','https://invalid.example']:
+   calls=[]
+   send('device-token-long-enough','Lume',{},credential='service',section=section,
+    company_id='f74efcfa-c48b-4f4c-a8d7-686d77369edb',
+    opener=self.opener([{'name':'projects/tectria-notificacoes-b69a6/messages/123'}],calls))
+   message=json.loads(calls[0].data)['message']
+   self.assertEqual(message['data']['url'],message['webpush']['fcm_options']['link'])
+   target=urlparse(message['data']['url'])
+   self.assertEqual(target.netloc,'lume-web-cyan.vercel.app')
+   self.assertEqual(parse_qs(target.query)['section'],[section if section in ['invoices','orders','products','tasks','channels'] else 'channels'])
+   self.assertEqual(parse_qs(target.query)['company'],['f74efcfa-c48b-4f4c-a8d7-686d77369edb'])
 
  def test_error_does_not_leak_provider_body(self):
   def fail(*args,**kwargs):
