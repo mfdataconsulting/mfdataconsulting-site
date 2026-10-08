@@ -26,9 +26,9 @@ if(sidebar&&topbar){
    document.body.prepend(topbar);
    const controls=[...sidebar.children].filter(node=>![brand,company,client].includes(node)&&node.id!=='menu-toggle');
    sidebar.prepend(moduleRow,clientBlock,companyBlock,panel);
-   if(brand)move(brand,moduleRow);moduleRow.append(toggle);
+   if(brand)move(brand,moduleRow);
    if(client.parentNode)move(client,clientBlock);else clientBlock.append(client);
-   if(company.parentNode)move(company,companyBlock);else{company.textContent='Selecione uma empresa';companyBlock.append(company);}
+   if(company.parentNode)move(company,companyBlock);else{company.textContent='Selecione uma empresa';companyBlock.append(company);}companyBlock.append(toggle);
    controls.forEach(node=>move(node,panel));
    if(filters){if(filters.id!=='date-filters')filterSection.append(filterHeading);move(filters,filterSection);panel.append(filterSection);}
    closeMenu();
