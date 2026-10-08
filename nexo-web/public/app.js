@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id),escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let context,company,csrf,packet,page='stock',version=0;
+let context,company,csrf,packet,page='sales',version=0;
 function moduleButtons(){const active=context?.companies.find(c=>c.id===company);for(const module of ['lume','pulso']){const permitted=active?.products?.includes(module)===true;const available=permitted&&(module!=='pulso'||company==='f74efcfa-c48b-4f4c-a8d7-686d77369edb');const button=$('open-'+module),note=$(module+'-access-note');button.disabled=!available;button.classList.toggle('module-available',available);button.querySelector('.module-lock').toggleAttribute('hidden',available);note.hidden=available;note.textContent=permitted?'Acesso Web desta empresa ainda não disponível':'Módulo não liberado';}}
 const titles={stock:'Estoque',sales:'Vendas',closings:'Fechamentos',financial:'Financeiro'};
 const money=c=>(c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
