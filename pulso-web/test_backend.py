@@ -3,6 +3,18 @@ from unittest.mock import patch
 import backend as b
 H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
 class AccessTests(unittest.TestCase):
+ def test_push_check_requires_session(self):
+  with patch('lume_push.access_token') as credentials:
+   with self.assertRaises(b.ApiError):b.handle('push-auth-check',{},H)
+   credentials.assert_not_called()
+ def test_push_check_requires_lume_contract(self):
+  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'denied'}]),patch('lume_push.access_token') as credentials:
+   with self.assertRaises(b.ApiError):b.handle('push-auth-check',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+   credentials.assert_not_called()
+ def test_push_check_never_returns_credentials(self):
+  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'allowed'}]),patch('lume_push.access_token',return_value='secret'):
+   result,session=b.handle('push-auth-check',{},dict(H,Cookie=b.COOKIE+'=jwt'))
+   self.assertEqual(result,{'ok':True,'authenticated':True});self.assertIsNone(session)
  def test_module_availability_requires_session(self):
   with patch.object(b,'remote') as remote:
    with self.assertRaises(b.ApiError):b.handle('module-access',{},H)

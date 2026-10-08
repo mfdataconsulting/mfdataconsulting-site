@@ -86,6 +86,15 @@ def handle(action,data,headers):
  if action=='status':
   if not token:return {'connected':False},None
   permit(token);return {'connected':True},None
+ if action=='push-auth-check':
+  permit(token)
+  access=remote('/rest/v1/rpc/tectria_module_access',{'company_id':COMPANY,'module_code':'lume'},token)
+  if access.get('companyId')!=COMPANY or access.get('module')!='lume' or access.get('status')!='allowed':raise ApiError('Conta sem acesso ao Lume.',403)
+  from lume_push import access_token
+  from lume_mail import MailError
+  try:access_token(headers)
+  except MailError as error:raise ApiError('Autenticação das notificações não confirmada: '+error.code,503) from None
+  return {'ok':True,'authenticated':True},None
  if action=='panel':return panel(token),None
  if action=='module-access':
   permit(token);states={}
@@ -96,4 +105,3 @@ def handle(action,data,headers):
    except ApiError:states[module]='unknown'
   return {'modules':states},None
  raise ApiError('Não encontrado.',404)
-

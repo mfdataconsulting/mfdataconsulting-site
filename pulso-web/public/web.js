@@ -15,6 +15,9 @@ async function load(){packet=await request('panel');try{const access=await reque
 async function action(work){if(busy)return;busy=true;['sync','panel'].forEach(id=>$(id).disabled=true);$('login').querySelector('button').disabled=true;try{await work();}catch(e){$('message').textContent=e.message;}finally{busy=false;['sync','panel'].forEach(id=>$(id).disabled=false);$('login').querySelector('button').disabled=false;}}
 $('login').onsubmit=e=>{e.preventDefault();const password=$('password').value;$('password').value='';action(async()=>{await request('login',{email:$('email').value.trim(),password});await load();});};
 $('sync').onclick=$('panel').onclick=()=>action(load);
+const pushCheck=document.createElement('button');pushCheck.textContent='Verificar serviço de notificações';pushCheck.type='button';
+pushCheck.onclick=()=>action(async()=>{pushCheck.disabled=true;try{await request('push-auth-check');$('message').textContent='Serviço de notificações autenticado. O recebimento neste aparelho ainda será configurado.';}finally{pushCheck.disabled=false;}});
+$('connected').append(pushCheck);
 $('logout').onclick=()=>action(async()=>{await request('logout');disconnect();$('message').textContent='Sessão web encerrada.';});
 document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{page=button.dataset.page;document.querySelectorAll('[data-page]').forEach(b=>b.removeAttribute('aria-current'));button.setAttribute('aria-current','page');render();});
 $('date-start').onchange=$('date-end').onchange=render;
