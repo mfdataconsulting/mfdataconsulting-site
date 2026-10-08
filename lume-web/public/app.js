@@ -111,8 +111,7 @@ boot().catch(e=>$('login-error').textContent=e.message);
 
 
 $('open-pulso').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('pulso'))window.open('https://pulso.tectria.com.br/','_blank','noopener');};
-$('open-nexo').hidden=true;
-$('nexo-access-note').hidden=true;
+$('open-nexo').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('nexo'))window.open('https://nexo-web-lovat.vercel.app/?company='+encodeURIComponent(companyId),'_blank','noopener');};
 $('logout-all').hidden=true;
 $('service-status').textContent='● Lume Web';
 $('footer-status').textContent='Sua rotina no automático.';
