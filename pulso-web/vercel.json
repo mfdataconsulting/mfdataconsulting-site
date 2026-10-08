@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/lume-notifications-worker",
+      "destination": "/api/lume-worker"
+    },
+    {
       "source": "/api/:action",
       "destination": "/api/index?action=:action"
     }
@@ -26,3 +30,4 @@
     }
   ]
 }
+
