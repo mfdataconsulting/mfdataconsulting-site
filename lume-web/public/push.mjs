@@ -1,4 +1,3 @@
-const STORE='tectria-push-device';
 let sdkPromise, registration, messaging, unsubscribe;
 async function sdk(){
  if(!sdkPromise)sdkPromise=(async()=>{
@@ -15,7 +14,7 @@ async function sdk(){
  })().catch(error=>{sdkPromise=null;throw error;});
  return sdkPromise;
 }
-export function setupPush(root,request,action){
+export function setupPush(root,request,action,STORE='tectria-lume-device'){
  const section=document.createElement('section');section.className='push-settings';
  const title=document.createElement('h3');title.textContent='Notificações do Lume';
  const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
@@ -30,8 +29,8 @@ export function setupPush(root,request,action){
   unsubscribe=msg.onMessage(messaging,payload=>{
    status.textContent='Notificação recebida neste aparelho.';
    registration.showNotification(payload.notification?.title||'Lume · Novo aviso',{
-    body:'Há um novo aviso no Lume. Entre para consultar.',icon:'/tectria-logo.png',
-    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:'https://pulso.tectria.com.br/'}
+    body:'Há um novo aviso no Lume. Entre para consultar.',icon:'/assets/tectria-logo.png',
+    tag:payload.notification?.title?.includes('Teste')?'lume-test':'lume-notification',data:{url:'https://lume.tectria.com.br/'}
    }).catch(()=>{});
   });
  }

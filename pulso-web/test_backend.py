@@ -3,34 +3,13 @@ from unittest.mock import patch
 import backend as b
 H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
 class AccessTests(unittest.TestCase):
- def test_anonymous_push_registration_is_rejected(self):
-  with patch.object(b,'remote') as remote:
-   with self.assertRaises(b.ApiError):b.handle('push-register',{'deviceToken':'device-token-long-enough'},H)
-   remote.assert_not_called()
- def test_device_registration_keeps_company_server_owned(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'ok':True,'deviceId':'id'}]) as remote:
-   b.handle('push-register',{'company_id':'another-company','deviceToken':'device-token-long-enough'},dict(H,Cookie=b.COOKIE+'=jwt'))
-   self.assertEqual(remote.call_args.args[1]['company_id'],b.COMPANY)
- def test_push_test_never_returns_device_token(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'deviceToken':'private-device-token'}]),patch('lume_push.send') as send:
-   result,_=b.handle('push-test',{'deviceId':'b80d8d3e-3b36-45c8-b7a7-e02f85c9ab73'},dict(H,Cookie=b.COOKIE+'=jwt'))
-   self.assertEqual(result,{'ok':True,'accepted':True});send.assert_called_once()
- def test_push_test_with_foreign_device_never_sends(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},b.ApiError('Forbidden',403)]),patch('lume_push.send') as send:
-   with self.assertRaises(b.ApiError):b.handle('push-test',{'deviceId':'b80d8d3e-3b36-45c8-b7a7-e02f85c9ab73'},dict(H,Cookie=b.COOKIE+'=jwt'))
-   send.assert_not_called()
- def test_push_check_requires_session(self):
-  with patch('lume_push.access_token') as credentials:
-   with self.assertRaises(b.ApiError):b.handle('push-auth-check',{},H)
-   credentials.assert_not_called()
- def test_push_check_requires_lume_contract(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'denied'}]),patch('lume_push.access_token') as credentials:
-   with self.assertRaises(b.ApiError):b.handle('push-auth-check',{},dict(H,Cookie=b.COOKIE+'=jwt'))
-   credentials.assert_not_called()
- def test_push_check_never_returns_credentials(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'allowed'}]),patch('lume_push.access_token',return_value='secret'):
-   result,session=b.handle('push-auth-check',{},dict(H,Cookie=b.COOKIE+'=jwt'))
-   self.assertEqual(result,{'ok':True,'authenticated':True});self.assertIsNone(session)
+ def test_notification_controls_cannot_mutate_through_pulso(self):
+  with patch.object(b,'remote') as remote,patch('lume_push.send') as send:
+   for action in ('push-register','push-test','push-disable','push-status','push-auth-check'):
+    with self.subTest(action=action),self.assertRaises(b.ApiError) as failure:
+     b.handle(action,{},dict(H,Cookie=b.COOKIE+'=jwt'))
+    self.assertEqual(failure.exception.status,404)
+   remote.assert_not_called();send.assert_not_called()
  def test_module_availability_requires_session(self):
   with patch.object(b,'remote') as remote:
    with self.assertRaises(b.ApiError):b.handle('module-access',{},H)

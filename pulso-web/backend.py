@@ -90,35 +90,6 @@ def handle(action,data,headers):
  if action=='status':
   if not token:return {'connected':False},None
   permit(token);return {'connected':True},None
- if action=='push-auth-check':
-  permit(token)
-  access=remote('/rest/v1/rpc/tectria_module_access',{'company_id':COMPANY,'module_code':'lume'},token)
-  if access.get('companyId')!=COMPANY or access.get('module')!='lume' or access.get('status')!='allowed':raise ApiError('Conta sem acesso ao Lume.',403)
-  from lume_push import access_token
-  from lume_mail import MailError
-  try:access_token(headers)
-  except MailError as error:raise ApiError('Autenticação das notificações não confirmada: '+error.code,503) from None
-  return {'ok':True,'authenticated':True},None
- if action in ('push-register','push-disable','push-status','push-test'):
-  if not token:raise ApiError('Entre com sua conta Tectria.',401)
-  if action!='push-disable':permit(token)
-  from uuid import UUID
-  payload={'company_id':COMPANY,'operation':{'push-register':'register','push-disable':'disable','push-status':'status','push-test':'test'}[action]}
-  if action=='push-register':
-   device=data.get('deviceToken')
-   if not isinstance(device,str) or not 20<=len(device)<=4096:raise ApiError('Dispositivo inválido.')
-   payload['device_token']=device
-  else:
-   try:payload['device_id']=str(UUID(data.get('deviceId','')))
-   except (ValueError,TypeError,AttributeError):raise ApiError('Aparelho não registrado.') from None
-  result=remote('/rest/v1/rpc/lume_push_device',payload,token)
-  if action=='push-test':
-   from lume_push import send
-   from lume_mail import MailError
-   try:send(result['deviceToken'],'Lume · Teste de notificações',headers,tag='lume-test')
-   except MailError as error:raise ApiError('Envio não confirmado: '+error.code,503) from None
-   return {'ok':True,'accepted':True},None
-  return result,None
  if action=='panel':return panel(token),None
  if action=='module-access':
   permit(token);states={}

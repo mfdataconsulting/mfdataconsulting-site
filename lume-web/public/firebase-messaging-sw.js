@@ -3,7 +3,7 @@ self.addEventListener('notificationclick',event=>{
  event.notification.close();event.stopImmediatePropagation();
  event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(windows=>{
   const target=windows.find(w=>new URL(w.url).origin===self.location.origin);
-  return target?target.focus():clients.openWindow('https://pulso.tectria.com.br/');
+  return target?target.focus():clients.openWindow('https://lume.tectria.com.br/');
  }));
 });
 importScripts('https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js');

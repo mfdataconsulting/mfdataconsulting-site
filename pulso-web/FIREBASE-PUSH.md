@@ -1,5 +1,7 @@
 # Pulso web — validação Tectria
 
+Decisão de 08/10/2026: Pulso fica exclusivamente na visualização dos dados. Controles, registro de aparelhos e testes de notificações foram retirados de sua interface e API de usuário. Lume Web está sendo preparado em ../lume-web com acesso independente, sem exigir produto Pulso. O serviço técnico de envio permanece na infraestrutura central existente até migração própria; não há aparelhos registrados neste momento. As seções abaixo sobre os controles no Pulso são histórico da implementação anterior e não descrevem a interface atual.
+
 Destino previsto: https://pulso.tectria.com.br
 Projeto Vercel separado do site institucional, no mesmo espaço mf-data-consultings-projects.
 
