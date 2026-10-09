@@ -55,4 +55,21 @@ class SecurityTests(unittest.TestCase):
   with patch.object(b,'rpc',return_value={'companyId':COMPANY,'module':'nexo','status':'allowed'}) as rpc:
    with self.assertRaises(b.ApiError):b.handle('sale',{'requestId':str(uuid4()),'dayId':str(uuid4()),'payment':'pix','items':[{'productId':str(uuid4()),'qty':True,'priceCents':100}]},HEADERS)
    self.assertEqual(rpc.call_count,1)
+ def test_receipt_requires_csrf(self):
+  with patch.object(b,'rpc') as rpc:
+   with self.assertRaises(b.ApiError):b.handle('receipt',{},HEADERS|{'X-Nexo-Token':'wrong'})
+   rpc.assert_not_called()
+ def test_receipt_rejects_boolean_amount(self):
+  from uuid import uuid4
+  with patch.object(b,'rpc',return_value={'companyId':COMPANY,'module':'nexo','status':'allowed'}) as rpc:
+   with self.assertRaises(b.ApiError):b.handle('receipt',{'requestId':str(uuid4()),'saleId':str(uuid4()),'dayId':str(uuid4()),'amountCents':True,'method':'pix','person':'Pessoa'},HEADERS)
+   self.assertEqual(rpc.call_count,1)
+ def test_receipt_scoped_to_authenticated_company(self):
+  from uuid import uuid4
+  rid,sid,day=(str(uuid4()) for _ in range(3))
+  def rpc(name,data,token):
+   if name=='tectria_module_access':return {'companyId':COMPANY,'module':'nexo','status':'allowed'}
+   self.assertEqual(name,'nexo_mobile_receive_account');self.assertEqual(data['company_id'],COMPANY);self.assertEqual(data['amount_cents'],4000);return {'requestId':rid,'id':str(uuid4())}
+  with patch.object(b,'rpc',side_effect=rpc):
+   self.assertEqual(b.handle('receipt',{'requestId':rid,'saleId':sid,'dayId':day,'amountCents':4000,'method':'pix','person':'Pessoa'},HEADERS)[0]['requestId'],rid)
 if __name__=='__main__':unittest.main()

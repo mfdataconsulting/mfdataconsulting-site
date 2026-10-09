@@ -103,6 +103,24 @@ def convert(records, company_id):
                 bruto_centavos=g, cancelado_centavos=c, liquido_centavos=g-c))
         if sum(integer(p['netCents']) for p in doc['products']) != net:
             raise ValueError('Resumo de produtos não confere com receita')
+        settlement = doc.get('settlements')
+        if settlement is not None:
+            if settlement.get('schemaVersion') != 1 or sorted(r['method'] for r in settlement['methods']) != ['card','cash','pix']:
+                raise ValueError('Contrato de recebimentos inválido')
+            paid = 0
+            for r in settlement['methods']:
+                incoming, reversed_value = integer(r['incomingCents']), integer(r['reversedCents'])
+                if type(r['netCents']) is not int or r['netCents'] != incoming-reversed_value:
+                    raise ValueError('Recebimento não concilia')
+                paid += r['netCents']
+            for a in settlement['accounts']:
+                if integer(a['paidCents']) > integer(a['totalCents']): raise ValueError('Conta recebida acima do total')
+            # Revenue is retained in finance; cash receipts are a separate measure.
+            for r in tables['recebimentos'][-3:]:
+                receipt = next(x for x in settlement['methods'] if x['method']==r['meio'])
+                r['recebido_centavos'] = receipt['netCents']
+            base['recebido_centavos'] = paid
+            base['saldo_vendas_centavos'] = sum(a['totalCents']-a['paidCents'] for a in settlement['accounts'] if a['cancelledAt'] is None)
         product_keys = set()
         for p in doc['products']:
             pk = (str(UUID(p['productId'])), p['name'])

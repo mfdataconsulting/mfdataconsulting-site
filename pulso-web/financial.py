@@ -17,7 +17,8 @@ def convert(rows, company_id, source="lume",station=None):
         if row['kind'] not in ('A pagar','A receber'):
             raise ValueError('Tipo financeiro inválido.')
         amount,paid,balance=(row[k] for k in ('amountCents','paidCents','balanceCents'))
-        if any(type(v) is not int or v<0 for v in (amount,paid,balance)) or amount<=0 or amount!=paid+balance:
+        cancelled=source=='nexo' and row.get('cancelledAt') is not None
+        if any(type(v) is not int or v<0 for v in (amount,paid,balance)) or amount<=0 or (not cancelled and amount!=paid+balance) or (cancelled and (paid or balance)):
             raise ValueError('Saldo financeiro divergente.')
         date.fromisoformat(row['due'])
         payments=row['payments'];ids=set();calculated=0
@@ -30,7 +31,7 @@ def convert(rows, company_id, source="lume",station=None):
             if payment['reversedAt'] is None: calculated+=value
         if calculated!=paid:
             raise ValueError('Baixas não conciliam com o título.')
-        if row['status'] not in ('Em aberto','Parcial','Quitado','Vencido') or (row['status']=='Quitado')!=(balance==0):
+        if (cancelled and row['status']!='Cancelado') or (not cancelled and (row['status'] not in ('Em aberto','Parcial','Quitado','Vencido') or (row['status']=='Quitado')!=(balance==0))):
             raise ValueError('Situação financeira divergente.')
         prefix='lume' if source=='lume' else f'nexo:{station}'
         result.append(dict(empresa_id=company_id,origem=source,titulo_id=f'{prefix}:{identity}',

@@ -94,12 +94,20 @@ def handle(path,data,headers,method='POST'):
   return {'ok':True},cookies()
  if path=='context' and method=='GET':
   result=rpc('tectria_context',{},token); result['companies']=[c for c in result.get('companies',[]) if 'nexo' in c.get('products',[])]; result['token']=csrf; result['userId']=rpc('nexo_mobile_identity',{},token)['userId']; return result,None
- if (path,method) not in (('state','GET'),('mobile','GET'),('sale','POST')): raise ApiError('Não encontrado.',404)
+ if (path,method) not in (('state','GET'),('mobile','GET'),('sale','POST'),('receipt','POST')): raise ApiError('Não encontrado.',404)
  try: company=str(UUID(headers.get('X-Company-Id','')))
  except (TypeError,ValueError): raise ApiError('Selecione uma empresa.') from None
  access=rpc('tectria_module_access',{'company_id':company,'module_code':'nexo'},token)
  if access.get('companyId')!=company or access.get('module')!='nexo' or access.get('status')!='allowed': raise ApiError('Nexo não liberado para esta empresa.',403)
  if path=='mobile': return rpc('nexo_mobile_catalog',{'company_id':company},token),None
+ if path=='receipt':
+  try: rid=str(UUID(data.get('requestId','')));sid=str(UUID(data.get('saleId','')));day=str(UUID(data.get('dayId','')))
+  except (TypeError,ValueError,AttributeError):raise ApiError('Identificação inválida.') from None
+  amount=data.get('amountCents');method=data.get('method');person=data.get('person')
+  if type(amount) is not int or not 1<=amount<=1000000000 or method not in ('cash','pix','card') or not isinstance(person,str) or not 1<=len(person.strip())<=120:raise ApiError('Recebimento inválido.')
+  result=rpc('nexo_mobile_receive_account',{'company_id':company,'sale_id':sid,'request_id':rid,'day_id':day,'amount_cents':amount,'method':method,'person':person.strip()},token)
+  if result.get('requestId')!=rid:raise ApiError('Confirmação divergente.',502)
+  return result,None
  if path=='sale':
   try: request_id=str(UUID(data.get('requestId','')));day_id=str(UUID(data.get('dayId','')))
   except (TypeError,ValueError,AttributeError): raise ApiError('Identificação da venda inválida.') from None
@@ -112,7 +120,13 @@ def handle(path,data,headers,method='POST'):
    except (ValueError,TypeError,AttributeError):raise ApiError('Produto inválido.') from None
    if identity in ids:raise ApiError('Agrupe os produtos repetidos.')
    ids.add(identity);normalized.append({'productId':identity.hex,'qty':item['qty'],'priceCents':item['priceCents']})
-  result=rpc('nexo_mobile_create_sale',{'company_id':company,'request_id':request_id,'payment':payment,'items':normalized,'day_id':day_id},token)
+  params={'company_id':company,'request_id':request_id,'payment':payment,'items':normalized,'day_id':day_id}
+  name='nexo_mobile_create_sale'
+  if data.get('settlement') is not None:
+   name='nexo_mobile_sale_account';params['settlement']=data['settlement']
+   try:params['customer_id']=str(UUID(data['customerId'])) if data.get('customerId') else None
+   except (TypeError,ValueError,AttributeError):raise ApiError('Cliente inválido.') from None
+  result=rpc(name,params,token)
   if result.get('requestId')!=request_id or not isinstance(result.get('id'),str) or type(result.get('totalCents')) is not int:raise ApiError('Confirmação divergente. Preserve a venda pendente.',502)
   return result,None
  return state(company,token),None
