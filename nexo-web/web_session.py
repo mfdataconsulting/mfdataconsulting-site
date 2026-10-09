@@ -12,12 +12,21 @@ def lifetime(token):
   payload=token.split('.')[1];body=json.loads(base64.urlsafe_b64decode(payload+'='*(-len(payload)%4)))
   return max(0,min(3600,int(body['exp'])-int(time.time())))
  except (ValueError,KeyError,IndexError,TypeError):return 0
+def subject(token):
+ try:
+  payload=token.split('.')[1];body=json.loads(base64.urlsafe_b64decode(payload+'='*(-len(payload)%4)))
+  return body.get('sub') if isinstance(body.get('sub'),str) else ''
+ except (ValueError,KeyError,IndexError,TypeError):return ''
+
 def scoped(name,value,age):return f'{name}={value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age={age}'
 def session_bridge(module,error):
  def decorate(fn):
   @wraps(fn)
   def wrapped(action,data,headers,method='POST'):
    if not official(headers) or action=='lume-notifications-worker':return fn(action,data,headers) if module=='pulso' else fn(action,data,headers,method)
+   # Public page configuration precedes context adoption in the Lume boot flow.
+   # It returns no company data and must not rotate or adopt a session.
+   if module=='lume' and action=='info' and method=='GET':return fn(action,data,headers,method)
    jar=SimpleCookie();jar.load(headers.get('Cookie',''))
    own='__Host-'+module;csrf=own+'-csrf';blocked=own+'-signed-out'
    local=jar[own].value if own in jar else ''
@@ -36,6 +45,8 @@ def session_bridge(module,error):
     if name.lower()!='cookie':forwarded[name]=value
    forwarded['Cookie']='; '.join(k+'='+v.value for k,v in jar.items())
    result,returned=fn(action,data,forwarded) if module=='pulso' else fn(action,data,forwarded,method)
+   # UI draft isolation only; backend access remains checked by the RPC above.
+   if bootstrap and token and isinstance(result,dict):result={**result,'sessionUser':subject(token)}
    cookies=[] if not returned else [returned] if isinstance(returned,str) else list(returned)
    if action=='logout':cookies.append(scoped(blocked,'1',3600))
    elif action=='login':

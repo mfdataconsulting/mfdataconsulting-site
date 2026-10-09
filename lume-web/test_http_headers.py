@@ -11,6 +11,11 @@ def token():return 'e30.'+base64.urlsafe_b64encode(json.dumps({'exp':int(time.ti
 def headers(origin=None):
  h=Message();h['host']=f'{module}.tectria.com.br';h['origin']=origin or f'https://{module}.tectria.com.br';h[f'x-{module}-request']='1';return h
 class Tests(unittest.TestCase):
+ def test_info_precedes_shared_context_without_session_change(self):
+  h=headers();h['cookie']=SHARED+'='+token()
+  with patch.object(b,'remote') as remote,patch.object(b,'rpc') as rpc:
+   result,cookies=b.handle('info',{},h,'GET')
+   self.assertFalse(result['demo']);self.assertIsNone(cookies);remote.assert_not_called();rpc.assert_not_called()
  def test_lowercase_login_reaches_authentication(self):
   h=headers();jwt=token()
   with patch.object(b,'remote',return_value={'access_token':jwt,'expires_in':3600}) as remote,patch.object(b,'permit',create=True),patch.object(b,'rpc',return_value={'companies':[{'products':[module]}]},create=True):
