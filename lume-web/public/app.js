@@ -4,7 +4,7 @@ import {mountLocalHelp} from './help-local.mjs';
 import {setupPush} from './push.mjs';
 import {faqGroups} from './faq.js';
 let state, page='dashboard', entity, context, companyId, csrf, refreshVersion=0;
-let pushControls;
+let pushControls,pushProfile;
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>(v/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -14,12 +14,25 @@ const names={dashboard:'Visão geral',contacts:'Contatos',products:'Estoque',ord
 const icons={dashboard:'◈',contacts:'◎',products:'▤',orders:'↗',invoices:'▧',tasks:'◷',channels:'◇'};
 const statuses={orders:{Solicitado:['Aprovado','Cancelado'],Aprovado:['Enviado','Cancelado'],Enviado:['Recebido','Cancelado']},invoices:{'A conferir':['Conferida']},tasks:{Pendente:['Concluída']}};
 function updateModuleButtons(){const company=context?.companies.find(c=>c.id===companyId);for(const module of ['nexo','pulso']){const button=$('open-'+module),allowed=company?.products?.includes(module)===true;button.classList.toggle('module-available',allowed);const lock=button.querySelector('svg:not(.product-icon)');if(lock)lock.toggleAttribute("hidden",allowed);const note=$(module+'-access-note');note.hidden=allowed;note.textContent=company?'Módulo não liberado':'Verificando acesso…';if(allowed)button.removeAttribute('aria-describedby');else button.setAttribute('aria-describedby',module+'-access-note');}}
-function signedOut(){showCompany(null,null,document);refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
+function signedOut(){pushControls=null;pushProfile=null;showCompany(null,null,document);refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
 const recoverSession=sessionRecovery(async()=>{const previous=context?.sessionUser;const renewed=await request('/api/context');if(context&&(!previous||previous!==renewed.sessionUser)){signedOut();throw Error('A conta mudou. Entre novamente antes de continuar.');}context=renewed;csrf=renewed.token;showCompany(context,companyId,document);if(companyId&&!renewed.companies.some(c=>c.id===companyId&&c.products.includes('lume')))throw Error('A empresa selecionada não está disponível na sessão atual.');});
 async function request(path,data,retried=false){const options={headers:{'X-Company-Id':companyId||'','X-Lume-Request':'1'}};if(data!==undefined){options.method='POST';Object.assign(options.headers,{'Content-Type':'application/json','X-Lume-Request':'1','X-Lume-Token':csrf||''});options.body=JSON.stringify(data)}const r=await fetch(path,options);const body=await r.json();if(!r.ok){if(r.status===401)signedOut();const error=Error(body.error||'Não foi possível concluir.');error.status=r.status;if(path==='/api/context')throw error;return recoverSession({data,error,retried,retry:()=>request(path,data,true)});}return body;}
 async function refresh(){updateModuleButtons();const version=++refreshVersion;const company=context.companies.find(c=>c.id===companyId);if(!company||!company.products.includes('lume')){state=null;$('nav').innerHTML='';$('content').innerHTML='<div class="panel"><h2>Lume não habilitado</h2><p class="muted">Entre em contato com a Tectria para incluir o Lume no pacote desta empresa.</p></div>';return}const result=await request('/api/state');if(page==='channels')result.notifications=await request('/api/notifications');if(version!==refreshVersion)return;state=result;csrf=state.token;render();}
 async function post(path,data){await request(path,data);await refresh();}
-async function start(){context=await request('/api/context');csrf=context.token;document.body.classList.remove('signed-out');$('company-select').innerHTML=context.companies.map(c=>`<option value="${esc(c.id)}">${esc(companyLabel(c))}</option>`).join('');const destination=new URLSearchParams(location.search);const selected=chooseCompany({module:'lume',context,url:new URL(location.href),storage:sessionStorage});companyId=selected.id;if(companyId)history.replaceState(null,'',selected.cleanUrl);const requestedSection=destination.get('section');if(['invoices','orders','products','tasks','channels'].includes(requestedSection))page=requestedSection;$('company-select').value=companyId;showCompany(context,companyId,document);if(!companyId){$('content').innerHTML='<div class="panel"><h2>Nenhuma empresa vinculada</h2><p class="muted">Solicite à Tectria o vínculo da sua conta ao negócio.</p></div>';return}await refresh();}
+function ensurePush(root){
+ const activeCompany=companyId,activeUser=context.sessionUser,profile=activeCompany+':'+activeUser;
+ if(pushControls&&pushProfile===profile){root.append(pushControls.section);return pushControls;}
+ pushProfile=profile;
+ pushControls=setupPush(root,(action,data={})=>{if(companyId!==activeCompany||context?.sessionUser!==activeUser)throw Error('A conta ou empresa mudou. Abra as notificações da empresa atual.');return request('/api/'+action,data);},async work=>{try{await work()}catch(error){$('notice').textContent=error.message}},'tectria-lume-device:'+profile,{legacyStore:'tectria-lume-device:'+activeCompany});
+ return pushControls;
+}
+async function resumeRememberedPush(){
+ if(page==='channels'||!companyId||!context?.sessionUser)return;
+ const store='tectria-lume-device:'+companyId+':'+context.sessionUser;
+ if(!localStorage.getItem(store+':enabled')&&!localStorage.getItem(store)&&!localStorage.getItem('tectria-lume-device:'+companyId))return;
+ await ensurePush(document.createElement('div')).refresh();
+}
+async function start(){context=await request('/api/context');csrf=context.token;document.body.classList.remove('signed-out');$('company-select').innerHTML=context.companies.map(c=>`<option value="${esc(c.id)}">${esc(companyLabel(c))}</option>`).join('');const destination=new URLSearchParams(location.search);const selected=chooseCompany({module:'lume',context,url:new URL(location.href),storage:sessionStorage});companyId=selected.id;if(companyId)history.replaceState(null,'',selected.cleanUrl);const requestedSection=destination.get('section');if(['invoices','orders','products','tasks','channels'].includes(requestedSection))page=requestedSection;$('company-select').value=companyId;showCompany(context,companyId,document);if(!companyId){$('content').innerHTML='<div class="panel"><h2>Nenhuma empresa vinculada</h2><p class="muted">Solicite à Tectria o vínculo da sua conta ao negócio.</p></div>';return}await refresh();resumeRememberedPush().catch(()=>{});}
 function contact(id){return state.contacts.find(c=>c.id===id)?.name??'—'}
 function actions(row){const role=context.companies.find(c=>c.id===companyId)?.role;if(role==='viewer')return '';return (statuses[page]?.[row.status]??[]).filter(s=>s!=='Aprovado'||['owner','admin'].includes(role)).map(s=>`<button data-status="${esc(s)}" data-id="${row.id}">${esc(s)}</button>`).join('')}
 function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td data-label="${esc(headers[i])}">${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum registro ainda. Cadastre o primeiro para começar.</p>'}
@@ -75,9 +88,7 @@ function render(){
  }
  $('content').innerHTML=html;
  if(page==='channels'){
-  const activeCompany=companyId;
-  pushControls=setupPush($('content'),(action,data={})=>{if(companyId!==activeCompany)throw Error('A empresa mudou. Abra as notificações da empresa atual.');return request('/api/'+action,data);},async work=>{try{await work();}catch(error){$('notice').textContent=error.message;}},'tectria-lume-device:'+activeCompany);
-  pushControls.refresh();
+  ensurePush($('content')).refresh();
  }
  if(page==='faq')mountLocalHelp($('content'),'Lume',faqGroups.flatMap(g=>g.items));
  if(fromNexo)document.querySelectorAll('[data-new="products"],[data-new="movements"]').forEach(b=>b.remove());
@@ -103,8 +114,8 @@ $('help').onclick=()=>{if(!state)return;page='faq';$('notice').textContent='';re
 $('form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{await post('/api/create/'+entity,Object.fromEntries(new FormData(e.target)));$('dialog').close();$('notice').textContent=''}catch(error){$('form-error').textContent=error.message}finally{button.disabled=false}};
 document.addEventListener('submit',async e=>{if(e.target.id!=='notification-form')return;e.preventDefault();const b=e.submitter;b.disabled=true;const data=new FormData(e.target);try{await post('/api/notifications',{enabled:data.has('enabled'),immediate:data.has('immediate'),digest:data.has('digest'),recipients:data.get('recipients').split(',').map(x=>x.trim()).filter(Boolean),digest_hour:Number(data.get('digest_hour')),lead_days:Number(data.get('lead_days')),kinds:data.getAll('kind')});$('notice').textContent='Preferências salvas.'}catch(error){$('notice').textContent=error.message;b.disabled=false}});
 $('login-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('login-error').textContent='';try{await request('/api/login',Object.fromEntries(new FormData(e.target)));e.target.reset();await start();}catch(error){if(document.body.classList.contains('signed-out'))$('login-error').textContent=error.message;else $('notice').textContent=error.message;}finally{b.disabled=false}};
-$('logout').onclick=async()=>{try{if(pushControls)try{await pushControls.off();}catch{}await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
-$('company-select').onchange=async e=>{companyId=e.target.value;rememberCompany('lume',context.sessionUser,companyId,sessionStorage);showCompany(context,companyId,document);page='dashboard';state=null;$('content').innerHTML='';$('nav').innerHTML='';$('notice').textContent='';try{await refresh()}catch(error){$('notice').textContent=error.message}};
+$('logout').onclick=async()=>{try{if(pushControls)try{await pushControls.pause();}catch{}await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
+$('company-select').onchange=async e=>{companyId=e.target.value;rememberCompany('lume',context.sessionUser,companyId,sessionStorage);showCompany(context,companyId,document);page='dashboard';state=null;$('content').innerHTML='';$('nav').innerHTML='';$('notice').textContent='';try{await refresh();resumeRememberedPush().catch(()=>{})}catch(error){$('notice').textContent=error.message}};
 $('demo-enter').onclick=async()=>{const b=$('demo-enter');b.disabled=true;$('login-error').textContent='';try{await request('/api/demo-login',{role:$('demo-role').value});await start()}catch(error){$('login-error').textContent=error.message}finally{b.disabled=false}};
 async function boot(){const info=await request('/api/info');if(info.demo){$('login-form').hidden=true;$('demo-access').hidden=false;$('access-title').textContent='Bem-vindo de volta';$('access-description').textContent='Tectria';$('mode-badge').textContent='Local';$('service-status').textContent='● Serviço local conectado';$('footer-status').textContent='Sua rotina no automático.';}try{await start()}catch(e){if(!document.body.classList.contains('signed-out'))$('notice').textContent=e.message;else if(!e.message.includes('Entre com'))$('login-error').textContent=e.message}}
 boot().catch(e=>$('login-error').textContent=e.message);
