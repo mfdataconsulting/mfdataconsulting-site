@@ -1,0 +1,8 @@
+/* Company identity follows the Pulso sidebar. */
+aside .company-label.sidebar-company{display:block;border-top:1px solid #8d97a64d;padding:18px 8px 24px;margin:0;font-size:14px;font-weight:600;line-height:1.5;color:#252d3a}
+.sidebar-company>strong{display:block;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.sidebar-company>.company-slogan{display:block;font-size:8px;letter-spacing:1px;color:#566172;margin-top:9px}
+.sidebar-company #company-picker{display:block;margin:12px 0 0;font-size:10px;font-weight:400;color:#566172}
+.sidebar-company #company-picker[hidden]{display:none!important}
+.sidebar-company #company-select{display:block;width:100%;margin-top:5px}
+@media(max-width:650px){.mobile-company-block .sidebar-company>.company-slogan{display:none}.mobile-company-block .sidebar-company>strong{font-size:14px}.mobile-company-block .sidebar-company #company-picker{margin-top:8px}}
