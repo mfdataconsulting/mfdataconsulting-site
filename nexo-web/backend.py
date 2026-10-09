@@ -72,6 +72,8 @@ def state(company,token):
   'sync':{'inventory':inventory.get('receivedAt'),'closings':max((r['received_at'] for r in records),default=None),'financial':finance_packet.get('receivedAt')},
   'availability':{'inventory':inventory.get('available') is True,'closings':configured and packet.get('available') is True,'financial':finance_packet.get('source')=='nexo' and finance_packet.get('available') is not False}}
 
+from web_session import session_bridge,official
+@session_bridge('nexo',ApiError)
 def handle(path,data,headers,method='POST'):
  if headers.get('X-Nexo-Request')!='1' or (method=='POST' and (urlparse(headers.get('Origin','')).scheme!='https' or urlparse(headers.get('Origin','')).netloc!=headers.get('Host',''))): raise ApiError('Requisição não autorizada.',403)
  jar=SimpleCookie()
@@ -88,7 +90,8 @@ def handle(path,data,headers,method='POST'):
  if not token: raise ApiError('Entre com sua conta Tectria.',401)
  if method=='POST' and (not csrf or not hmac.compare_digest(csrf,headers.get('X-Nexo-Token',''))): raise ApiError('Atualize a página e tente novamente.',403)
  if path=='logout' and method=='POST':
-  remote('/auth/v1/logout?scope=local',{},token); return {'ok':True},cookies()
+  if not official(headers):remote('/auth/v1/logout?scope=local',{},token)
+  return {'ok':True},cookies()
  if path=='context' and method=='GET':
   result=rpc('tectria_context',{},token); result['companies']=[c for c in result.get('companies',[]) if 'nexo' in c.get('products',[])]; result['token']=csrf; result['userId']=rpc('nexo_mobile_identity',{},token)['userId']; return result,None
  if (path,method) not in (('state','GET'),('mobile','GET'),('sale','POST')): raise ApiError('Não encontrado.',404)

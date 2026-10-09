@@ -20,5 +20,6 @@ class handler(BaseHTTPRequestHandler):
   except Exception:self.respond({'error':'Serviço temporariamente indisponível.'},503)
  def respond(self,result,status,session=None):
   self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Cache-Control','private, no-store');self.send_header('X-Content-Type-Options','nosniff')
-  if session:self.send_header('Set-Cookie',session)
+  if session:
+   for value in ([session] if isinstance(session,str) else session):self.send_header('Set-Cookie',value)
   self.end_headers();self.wfile.write(json.dumps(result,ensure_ascii=False).encode())

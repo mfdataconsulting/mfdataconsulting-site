@@ -43,6 +43,8 @@ def permit(company,token):
  access=rpc('tectria_module_access',{'company_id':company,'module_code':'lume'},token)
  if access.get('companyId')!=company or access.get('module')!='lume' or access.get('status')!='allowed':raise ApiError('Lume não liberado para esta empresa.',403)
 
+from web_session import session_bridge,official
+@session_bridge('lume',ApiError)
 def handle(path,data,headers,method='POST'):
  origin=headers.get('Origin','');host=headers.get('Host','')
  if headers.get('X-Lume-Request')!='1' or (method=='POST' and (urlparse(origin).scheme!='https' or urlparse(origin).netloc!=host)):
@@ -64,7 +66,7 @@ def handle(path,data,headers,method='POST'):
  if not token:raise ApiError('Entre com sua conta Tectria.',401)
  if method=='POST' and (not csrf or not hmac.compare_digest(csrf,headers.get('X-Lume-Token',''))):raise ApiError('Atualize a página e tente novamente.',403)
  if path=='logout' and method=='POST':
-  remote('/auth/v1/logout?scope=local',{},token)
+  if not official(headers):remote('/auth/v1/logout?scope=local',{},token)
   return {'ok':True},cookies()
  if path=='context' and method=='GET':
   result=rpc('tectria_context',{},token)

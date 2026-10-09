@@ -8,7 +8,6 @@ from financial import collect as financial
 from goals import convert as goals
 
 COMPANY='f74efcfa-c48b-4f4c-a8d7-686d77369edb'
-STATION='c5c27476-9cb4-4e3f-9739-5a7d53ab8e03'
 COOKIE='__Host-pulso'
 class ApiError(Exception):
  def __init__(self,message,status=400):self.status=status;super().__init__(message)
@@ -37,12 +36,15 @@ def cookie(token='',age=0):
  return f'{COOKIE}={token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age={age}'
 
 def panel(token):
- permit(token);records=[];day=None;identity=None;queried=None
+ permit(token);records=[];day=None;identity=None;queried=None;station=None
  for _ in range(101):
   p=remote('/rest/v1/rpc/pulso_nexo_closings',{'company_id':COMPANY,'after_day':day,'after_id':identity,'page_size':100},token)
-  if p.get('companyId')!=COMPANY or p.get('installationId')!=STATION or not p.get('configured') or not p.get('available'):raise ApiError('Fonte da empresa indisponível ou diferente da estação validada.',409)
+  if p.get('companyId')!=COMPANY or (station is not None and p.get('installationId')!=station) or not p.get('configured') or not p.get('available'):raise ApiError('Fonte da empresa indisponível ou diferente da estação validada.',409)
+  from uuid import UUID
+  try:station=str(UUID(p.get('installationId','')))
+  except (ValueError,TypeError,AttributeError):raise ApiError('Estação da fonte inválida.',502) from None
   rows=p.get('rows')
-  if not isinstance(rows,list) or len(rows)>100 or any(r.get('installation_id')!=STATION for r in rows):raise ApiError('Lote de dados divergente.',502)
+  if not isinstance(rows,list) or len(rows)>100 or any(r.get('installation_id')!=station or r.get('company_id')!=COMPANY for r in rows):raise ApiError('Lote de dados divergente.',502)
   queried=p.get('queriedAt');records.extend(rows)
   if not rows or len(rows)<100:break
   cursor=(rows[-1]['business_date'],rows[-1]['day_id'])
@@ -53,16 +55,18 @@ def panel(token):
  # Missing integrations remain missing, never a fabricated zero.
  for kind in ('financeiro','metas'):
   try:
-   if kind=='financeiro':tables[kind],_=financial(remote,COMPANY,token,station=STATION)
-   else:tables[kind]=goals(remote('/rest/v1/rpc/pulso_goals_read',{'company_id':COMPANY},token),COMPANY,STATION)
+   if kind=='financeiro':tables[kind],_=financial(remote,COMPANY,token,station=station)
+   else:tables[kind]=goals(remote('/rest/v1/rpc/pulso_goals_read',{'company_id':COMPANY},token),COMPANY,station)
   except ApiError as e:
    if e.status in (401,403):raise
   except (ValueError,KeyError,TypeError):pass
  allowed=('dias','recebimentos','produtos_vendidos','estoque','transacoes','clientes_vendas','funcionarios_vendas','financeiro','metas')
  data={k:tables[k] for k in allowed if k in tables}
- if any(not isinstance(rows,list) or any(r.get('empresa_id')!=COMPANY or r.get('estacao_id',STATION)!=STATION for r in rows) for rows in data.values()):raise ApiError('Dados não correspondem à empresa autorizada.',502)
+ if any(not isinstance(rows,list) or any(r.get('empresa_id')!=COMPANY or r.get('estacao_id',station)!=station for r in rows) for rows in data.values()):raise ApiError('Dados não correspondem à empresa autorizada.',502)
  return {'ok':True,'data':data,'company':'0001 - Tectria','metadata':{'queriedAt':queried,'exportedAt':datetime.now(timezone.utc).isoformat(),'source':'nexo'}}
 
+from web_session import session_bridge,official
+@session_bridge('pulso',ApiError)
 def handle(action,data,headers):
  if action=='lume-notifications-worker':
   from lume_worker import run,WorkerError
@@ -85,7 +89,7 @@ def handle(action,data,headers):
   auth=remote('/auth/v1/token?grant_type=password',{'email':email,'password':password});token=auth['access_token'];permit(token)
   return {'ok':True},cookie(token,min(int(auth['expires_in']),3600))
  if action=='logout':
-  if token:remote('/auth/v1/logout?scope=local',{},token)
+  if token and not official(headers):remote('/auth/v1/logout?scope=local',{},token)
   return {'ok':True},cookie()
  if action=='status':
   if not token:return {'connected':False},None
