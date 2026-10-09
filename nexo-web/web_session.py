@@ -2,6 +2,7 @@
 import base64,json,secrets,time
 from http.cookies import SimpleCookie
 from functools import wraps
+from email.message import Message
 
 HOSTS={'nexo.tectria.com.br','lume.tectria.com.br','pulso.tectria.com.br'}
 SHARED='__Secure-tectria-session'
@@ -28,7 +29,12 @@ def session_bridge(module,error):
    if token:jar[own]=token
    else:jar.pop(own,None)
    if module!='pulso' and bootstrap and token and (csrf not in jar or shared!=local):jar[csrf]=secrets.token_urlsafe(32)
-   forwarded=dict(headers);forwarded['Cookie']='; '.join(k+'='+v.value for k,v in jar.items())
+   # HTTP field names are case-insensitive, including after session adoption.
+   # Replace the cookie header rather than retaining a lowercase duplicate.
+   forwarded=Message()
+   for name,value in headers.items():
+    if name.lower()!='cookie':forwarded[name]=value
+   forwarded['Cookie']='; '.join(k+'='+v.value for k,v in jar.items())
    result,returned=fn(action,data,forwarded) if module=='pulso' else fn(action,data,forwarded,method)
    cookies=[] if not returned else [returned] if isinstance(returned,str) else list(returned)
    if action=='logout':cookies.append(scoped(blocked,'1',3600))
