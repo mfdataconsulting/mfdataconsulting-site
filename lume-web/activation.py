@@ -19,16 +19,19 @@ def handle(action,data,headers):
   if not bearer.startswith('Bearer '):raise ApiError('Acesso exclusivo ao Atlas.',403)
   token=bearer[7:];admin_guard(token)
   invitation=rpc('tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
-  hash=data.get('token_hash','')
-  if not invitation.get('user_id') or (not invitation.get('existing_account') and (not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash))):raise ApiError('Convite inválido.')
+  hash=data.get('token_hash','');kind=data.get('token_type','invite')
+  if kind not in ('invite','recovery'):raise ApiError('Link inválido.')
+  if not invitation.get('user_id') or ((not invitation.get('existing_account') or kind=='recovery') and (not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash))):raise ApiError('Convite inválido.')
   key=os.environ.get('LUME_RESEND_API_KEY','')
   if not key:raise ApiError('Envio não configurado.',503)
-  link='https://lume.tectria.com.br/ativar.html#token_hash='+hash
+  link='https://lume.tectria.com.br/ativar.html#token_hash='+hash+'&type='+kind
   body={'from':'Tectria <contato@tectria.com.br>','to':[invitation['email']],
    'subject':'Ative seu acesso à Tectria',
    'text':'Bem-vindo à Tectria. Para ativar seu cadastro e definir sua senha, abra:\n'+link+'\n\nSeu usuário é este e-mail. O link tem validade limitada. Se não esperava este cadastro, ignore esta mensagem.',
    'html':'<h1>Bem-vindo à Tectria</h1><p>Ative seu cadastro e defina sua senha para acessar os módulos contratados.</p><p><a href="'+link+'">Ativar cadastro</a></p><p>Seu usuário é este e-mail. O link tem validade limitada. Se não esperava este cadastro, ignore esta mensagem.</p>'}
-  if invitation.get('existing_account'):
+  if kind=='recovery':
+   body.update(subject='Defina sua senha Tectria',text='Para definir uma nova senha para sua conta Tectria, abra:\n'+link+'\n\nA senha será usada em todas as empresas vinculadas à sua conta. Se não solicitou, ignore este e-mail.',html='<h1>Defina sua senha Tectria</h1><p><a href="'+link+'">Definir senha</a></p><p>A senha será usada em todas as empresas vinculadas à sua conta. Se não solicitou, ignore este e-mail.</p>')
+  elif invitation.get('existing_account'):
    company=invitation.get('company','');code=invitation.get('company_code','')
    body.update(subject='Novo acesso de empresa na Tectria',
     text='Sua conta Tectria foi vinculada à empresa '+code+' — '+company+'. Use seu e-mail e a senha atual para acessar os módulos contratados em https://lume.tectria.com.br/. Cada empresa mantém seus próprios dados e permissões.',
@@ -45,7 +48,9 @@ def handle(action,data,headers):
  if action=='activation-exchange':
   hash=data.get('token_hash','')
   if not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash):raise ApiError('Link inválido.')
-  auth=remote('/auth/v1/verify',{'token_hash':hash,'type':'invite'})
+  kind=data.get('token_type','invite')
+  if kind not in ('invite','recovery'):raise ApiError('Link inválido.')
+  auth=remote('/auth/v1/verify',{'token_hash':hash,'type':kind})
   return {'access_token':auth['access_token']}
  if action=='activation-password':
   token=data.get('access_token','');password=data.get('password','')
