@@ -21,7 +21,7 @@ def handle(action,data,headers):
   invitation=rpc('tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
   hash=data.get('token_hash','');kind=data.get('token_type','invite')
   if kind not in ('invite','recovery'):raise ApiError('Link inválido.')
-  if not invitation.get('user_id') or ((not invitation.get('existing_account') or kind=='recovery') and (not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash))):raise ApiError('Convite inválido.')
+  if not invitation.get('user_id') or ((not invitation.get('existing_account') or kind=='recovery') and (not isinstance(hash,str) or not re.fullmatch(r'(?:[a-fA-F0-9]{56}|[a-fA-F0-9]{64})',hash))):raise ApiError('Convite inválido.')
   key=os.environ.get('LUME_RESEND_API_KEY','')
   if not key:raise ApiError('Envio não configurado.',503)
   link='https://lume.tectria.com.br/ativar.html#token_hash='+hash+'&type='+kind
@@ -47,7 +47,7 @@ def handle(action,data,headers):
  if origin.scheme!='https' or origin.netloc!=headers.get('Host') or headers.get('X-Tectria-Activation')!='1':raise ApiError('Origem inválida.',403)
  if action=='activation-exchange':
   hash=data.get('token_hash','')
-  if not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash):raise ApiError('Link inválido.')
+  if not isinstance(hash,str) or not re.fullmatch(r'(?:[a-fA-F0-9]{56}|[a-fA-F0-9]{64})',hash):raise ApiError('Link inválido.')
   kind=data.get('token_type','invite')
   if kind not in ('invite','recovery'):raise ApiError('Link inválido.')
   auth=remote('/auth/v1/verify',{'token_hash':hash,'type':kind})
