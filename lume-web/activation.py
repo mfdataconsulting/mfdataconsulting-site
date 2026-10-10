@@ -1,5 +1,5 @@
 """Account activation and Atlas mail relay. No credentials or links in logs."""
-import json,os,re,urllib.request,urllib.error
+import json,os,re,urllib.request,urllib.error,html
 from urllib.parse import urlparse
 from backend import ApiError,BASE,rpc,remote
 
@@ -10,7 +10,7 @@ def handle(action,data,headers):
   token=bearer[7:];rpc('tectria_atlas_guard',{},token)
   invitation=rpc('tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
   hash=data.get('token_hash','')
-  if not invitation.get('user_id') or not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash):raise ApiError('Convite inválido.')
+  if not invitation.get('user_id') or (not invitation.get('existing_account') and (not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash))):raise ApiError('Convite inválido.')
   key=os.environ.get('LUME_RESEND_API_KEY','')
   if not key:raise ApiError('Envio não configurado.',503)
   link='https://lume.tectria.com.br/ativar.html#token_hash='+hash
@@ -18,6 +18,11 @@ def handle(action,data,headers):
    'subject':'Ative seu acesso à Tectria',
    'text':'Bem-vindo à Tectria. Para ativar seu cadastro e definir sua senha, abra:\n'+link+'\n\nSeu usuário é este e-mail. O link tem validade limitada. Se não esperava este cadastro, ignore esta mensagem.',
    'html':'<h1>Bem-vindo à Tectria</h1><p>Ative seu cadastro e defina sua senha para acessar os módulos contratados.</p><p><a href="'+link+'">Ativar cadastro</a></p><p>Seu usuário é este e-mail. O link tem validade limitada. Se não esperava este cadastro, ignore esta mensagem.</p>'}
+  if invitation.get('existing_account'):
+   company=invitation.get('company','');code=invitation.get('company_code','')
+   body.update(subject='Novo acesso de empresa na Tectria',
+    text='Sua conta Tectria foi vinculada à empresa '+code+' — '+company+'. Use seu e-mail e a senha atual para acessar os módulos contratados em https://lume.tectria.com.br/. Cada empresa mantém seus próprios dados e permissões.',
+    html='<h1>Novo acesso na Tectria</h1><p>Sua conta foi vinculada à empresa '+html.escape(code+' — '+company)+'.</p><p>Use seu e-mail e a senha atual para acessar os módulos contratados.</p><p><a href="https://lume.tectria.com.br/">Acessar Tectria</a></p>')
   request=urllib.request.Request('https://api.resend.com/emails',data=json.dumps(body).encode(),method='POST',headers={
    'Authorization':'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':'atlas-invite/'+invitation['id']})
   try:
