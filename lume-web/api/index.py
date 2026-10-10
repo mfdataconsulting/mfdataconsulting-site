@@ -17,7 +17,12 @@ class handler(BaseHTTPRequestHandler):
     data=json.loads(self.rfile.read(length))
     if not isinstance(data,dict):raise ApiError('Requisição inválida.')
    action=parse_qs(urlparse(self.path).query).get('action',[''])[0]
-   result,session=handle(action,data,self.headers,method);self.respond(result,200,session)
+   if action in ('activation-mail','activation-exchange','activation-password'):
+    if method!='POST':raise ApiError('Operação inválida.',405)
+    from activation import handle as activate
+    self.respond(activate(action,data,self.headers),200)
+   else:
+    result,session=handle(action,data,self.headers,method);self.respond(result,200,session)
   except ApiError as e:self.respond({'error':str(e)},e.status,cookies() if e.status==401 else None)
   except (ValueError,KeyError,TypeError):self.respond({'error':'Requisição inválida.'},400)
   except Exception:self.respond({'error':'Serviço temporariamente indisponível.'},503)
