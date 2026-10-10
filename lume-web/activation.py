@@ -3,11 +3,21 @@ import json,os,re,urllib.request,urllib.error,html
 from urllib.parse import urlparse
 from backend import ApiError,BASE,rpc,remote
 
+def admin_guard(token):
+ request=urllib.request.Request(BASE+'/rest/v1/rpc/tectria_atlas_guard',data=b'{}',method='POST',headers={
+  'apikey':os.environ.get('SUPABASE_PUBLISHABLE_KEY',''),'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+ try:
+  with urllib.request.urlopen(request,timeout=20) as response:
+   raw=response.read()
+   if raw.strip() and json.loads(raw) not in (None,''):raise ApiError('Validação administrativa inválida.',403)
+ except urllib.error.HTTPError:raise ApiError('Acesso exclusivo ao Atlas.',403) from None
+ except (urllib.error.URLError,ValueError,OSError):raise ApiError('Validação administrativa indisponível.',502) from None
+
 def handle(action,data,headers):
  if action=='activation-mail':
   bearer=headers.get('Authorization','')
   if not bearer.startswith('Bearer '):raise ApiError('Acesso exclusivo ao Atlas.',403)
-  token=bearer[7:];rpc('tectria_atlas_guard',{},token)
+  token=bearer[7:];admin_guard(token)
   invitation=rpc('tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
   hash=data.get('token_hash','')
   if not invitation.get('user_id') or (not invitation.get('existing_account') and (not isinstance(hash,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',hash))):raise ApiError('Convite inválido.')
