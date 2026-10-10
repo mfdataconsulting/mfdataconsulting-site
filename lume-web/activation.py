@@ -24,10 +24,11 @@ def handle(action,data,headers):
     text='Sua conta Tectria foi vinculada à empresa '+code+' — '+company+'. Use seu e-mail e a senha atual para acessar os módulos contratados em https://lume.tectria.com.br/. Cada empresa mantém seus próprios dados e permissões.',
     html='<h1>Novo acesso na Tectria</h1><p>Sua conta foi vinculada à empresa '+html.escape(code+' — '+company)+'.</p><p>Use seu e-mail e a senha atual para acessar os módulos contratados.</p><p><a href="https://lume.tectria.com.br/">Acessar Tectria</a></p>')
   request=urllib.request.Request('https://api.resend.com/emails',data=json.dumps(body).encode(),method='POST',headers={
-   'Authorization':'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':'atlas-invite/'+invitation['id']})
+   'Authorization':'Bearer '+key,'Content-Type':'application/json','User-Agent':'Tectria-Lume/1.0','Idempotency-Key':'atlas-invite/'+invitation['id']})
   try:
    with urllib.request.urlopen(request,timeout=15) as r:json.load(r)
-  except (urllib.error.URLError,ValueError,OSError):raise ApiError('Envio não confirmado.',502) from None
+  except urllib.error.HTTPError as exc:raise ApiError('Envio não confirmado pelo provedor (HTTP '+str(exc.code)+').',502) from None
+  except (urllib.error.URLError,ValueError,OSError):raise ApiError('Envio não confirmado: conexão com o provedor.',502) from None
   return {'ok':True}
  origin=urlparse(headers.get('Origin',''))
  if origin.scheme!='https' or origin.netloc!=headers.get('Host') or headers.get('X-Tectria-Activation')!='1':raise ApiError('Origem inválida.',403)
