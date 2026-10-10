@@ -1,0 +1,15 @@
+/* Tectria login pattern: same proportions, fields and mobile behavior as Pulso. */
+.signed-out .login-panel{grid-template-columns:1fr 1fr;font-family:"Segoe UI",Arial,sans-serif;color:#252d3a;background:radial-gradient(ellipse at 85% 8%,#f0e1e5aa,transparent 48%),#f8f7f5}
+.login-panel .login-story{padding:70px 12%;min-height:100vh;background:linear-gradient(140deg,#e5e7eb,#cbd1da 60%,#b7c0cf)}
+.login-panel .login-story .brand-logo{margin-bottom:62px}
+.login-panel .login-story h1{font-size:42px;line-height:1.2;letter-spacing:-1px;margin:23px 0}
+.login-panel .login-story h1 em{font-style:normal;color:#bd1a33}
+.login-panel .login-story p{max-width:410px;font-size:16px;color:#515e71;line-height:1.8;margin:0 0 35px}
+.login-panel .login-card{width:min(465px,100%);padding:35px;margin:auto}
+.login-panel .login-card h2{font-size:28px;margin:13px 0}
+.login-panel .login-card label{display:block;margin:20px 0 7px;font-size:13px}
+.login-panel .login-card input{width:100%;padding:12px;border:1px solid #d2d9e3;border-radius:7px;font:inherit;background:#ffffffeb}
+.login-panel .login-card form button{width:100%;padding:12px 16px;border:1px solid #b51d34;border-radius:8px;background:linear-gradient(145deg,#dc2e47,#bd1a33);font:inherit;box-shadow:inset 0 1px 0 #ffffff30,0 4px 10px #bc1e351a}
+.login-panel .login-fine{font-size:12px;color:#747e8e;margin-top:25px}
+@media(max-width:1000px){.login-panel .login-story{padding:55px 9%}.login-panel .login-story h1{font-size:34px}}
+@media(max-width:650px){.signed-out .login-panel{grid-template-columns:1fr}.login-panel .login-story{display:none}.login-panel .login-card{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:30px 25px}.login-panel .login-card>.brand-logo{display:block;margin-bottom:35px}}

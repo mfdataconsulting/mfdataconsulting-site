@@ -1,0 +1,38 @@
+/* Curvas finas no rodapé, inspiradas no acabamento do Pulso. */
+body{isolation:isolate}
+body:before{display:none}
+aside:before,aside:after{display:none}
+aside{background-image:url('/assets/surface-texture.svg'),linear-gradient(128deg,#e0e2e6,#cbd0d7 43%,#b5bdc9);background-size:320px 320px,cover;background-position:left bottom,center;background-repeat:no-repeat}
+.page-body{position:relative;isolation:isolate;min-height:calc(100vh - 77px);background-image:none}
+.page-body:after{content:"";position:absolute;width:min(600px,60%);height:520px;right:0;top:0;background:repeating-radial-gradient(ellipse at 100% 0,transparent 0 74px,#ffffff70 75px 76px,transparent 77px 96px);opacity:.34;pointer-events:none;z-index:-1}
+.login-story{background-image:url('/assets/surface-texture.svg'),linear-gradient(140deg,#e5e7eb,#cbd1da 60%,#b7c0cf);background-size:600px 600px,cover;background-position:left bottom,center;background-repeat:no-repeat}
+.topbar{background-image:linear-gradient(180deg,#373b43,#171b23 50%,#11151d 52%,#1b202a)}
+
+/* Entrada alinhada à apresentação do Nexo. */
+.signed-out .login-panel{background:radial-gradient(ellipse at 85% 8%,#f0e1e5aa,transparent 48%),radial-gradient(ellipse at 95% 95%,#e2e9f0aa,transparent 55%),#f8f7f5}
+.login-panel .login-story{position:relative;isolation:isolate;overflow:hidden;padding:65px 60px;height:auto;min-height:100vh;justify-content:flex-start;background:linear-gradient(140deg,#e5e7eb,#cbd1da 60%,#b7c0cf);color:#27313f;border-right:1px solid #b8c1ce66}
+.login-story:after{content:"";position:absolute;width:720px;height:720px;left:-250px;bottom:-440px;border-radius:50%;border:1px solid #ffffff9c;box-shadow:0 0 0 25px #ffffff08,0 0 0 26px #ffffff65,0 0 0 51px #ffffff08,0 0 0 52px #ffffff40;pointer-events:none;z-index:-1}
+.login-story .brand-logo{width:270px;margin:0}
+.login-story .login-badge{align-self:flex-start;margin-top:70px;color:#4f5c70;border-color:#8b96a54d;background:#ffffff52;font-size:11px;padding:5px 9px}
+.login-story h1{font-size:clamp(28px,3.2vw,48px);line-height:1.25;letter-spacing:-1.2px;font-weight:650;margin:30px 0 32px}
+.login-story em{font-style:normal;color:#b7253c}
+.login-story p{max-width:390px;font-size:13px;line-height:1.8;margin:0;color:#515e71}
+.login-bottom{margin-top:auto;padding-top:70px;font-size:12px;color:#4d5a6e}
+.login-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#36b986;margin-right:10px}
+.login-panel .login-card{max-width:480px;width:100%;padding:50px}
+.login-card .eyebrow{font-weight:700;margin-bottom:12px}
+.login-card h2{font-size:27px;letter-spacing:-.5px;margin:0 0 12px;color:#293344}
+.login-card>p{font-size:13px;line-height:1.6}
+.login-card form,.login-card #demo-access{margin-top:30px}
+.login-card label{font-size:12px;color:#525b6b;font-weight:600;margin:0 0 15px}
+.login-card input,.login-card select{min-height:41px;margin-top:7px;padding:9px 11px;border-radius:6px}
+.login-card button{margin-top:0;padding:12px 19px;font-weight:600}
+.login-card .login-fine{font-size:11px;color:#747e8e;margin:18px 0 0;line-height:1.65}
+#login-error:empty{display:none}
+@media(max-width:750px){.signed-out .login-panel{grid-template-columns:1fr}.login-panel .login-story{display:flex;min-height:0;padding:30px}.login-story .brand-logo{width:210px}.login-story .login-badge{margin-top:25px}.login-story h1{font-size:29px;margin-bottom:20px}.login-bottom{padding-top:20px}.login-panel .login-card{padding:35px 25px}.login-card>.brand-logo{display:none}}
+/* Entrada ocupa toda a janela, sem encolher a coluna da marca. */
+body.signed-out{display:block;min-height:100dvh}
+.signed-out .login-panel{width:100%;min-height:100dvh;margin:0;padding:0;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;justify-items:stretch}
+.login-panel .login-story{width:100%;min-width:0;min-height:100dvh}
+.login-panel .login-card{min-width:0;align-self:center;justify-self:center}
+@media(max-width:750px){.signed-out .login-panel{grid-template-columns:minmax(0,1fr)}.login-panel .login-story{min-height:0}}
