@@ -7,7 +7,6 @@ import urllib.request
 from uuid import UUID
 from lume_mail import send, MailError
 
-COMPANY = 'f74efcfa-c48b-4f4c-a8d7-686d77369edb'
 BASE = 'https://elllxemtglgyqpthndji.supabase.co'
 
 class WorkerError(Exception): pass
@@ -34,9 +33,49 @@ def rpc(payload, opener=urllib.request.urlopen, function='lume_notifications_wor
     except (urllib.error.URLError, TimeoutError, ValueError, OSError):
         raise WorkerError('database_unavailable') from None
 
+def companies():
+    """Server-only tenant credentials; never accept company selection from a request."""
+    try:
+        entries = json.loads(os.environ.get('LUME_WORKER_COMPANIES', '{}'))
+        if isinstance(entries, list):
+            if not 1 <= len(entries) <= 10 or len(set(entries)) != len(entries):
+                raise ValueError()
+            root = os.environ.get('LUME_WORKER_TOKEN', '')
+            if not 40 <= len(root) <= 200:
+                raise ValueError()
+            entries = {identity: hmac.new(root.encode(), ('lume-company-v1:' + identity).encode(), 'sha256').hexdigest()
+                       for identity in entries}
+        if not isinstance(entries, dict) or not 1 <= len(entries) <= 10:
+            raise ValueError()
+        result = {}
+        for identity, token in entries.items():
+            company = str(UUID(identity))
+            if company != identity or not isinstance(token, str) or not 40 <= len(token) <= 200:
+                raise ValueError()
+            if token in result.values():
+                raise ValueError()
+            result[company] = token
+        return result
+    except (ValueError, TypeError, AttributeError):
+        raise WorkerError('companies_not_configured') from None
+
+
 def run(headers, database=rpc, provider=send):
-    token = authorize(headers)
-    base = {'company_id':COMPANY, 'worker_token':token}
+    authorize(headers)
+    results = []
+    for company, token in companies().items():
+        try:
+            result = run_company(company, token, database, provider)
+        except WorkerError as error:
+            result = {'ok': False, 'error': str(error)}
+        results.append({'companyId': company, **result})
+    return {'ok': all(r['ok'] for r in results),
+            **{key: sum(r.get(key, 0) for r in results) for key in ('accepted', 'deferred', 'failed')},
+            'companies': results}
+
+
+def run_company(company, token, database, provider):
+    base = {'company_id':company, 'worker_token':token}
     packet = database(base | {'operation':'claim'})
     jobs = packet.get('jobs')
     if not isinstance(jobs,list) or len(jobs)>10: raise WorkerError('invalid_queue')

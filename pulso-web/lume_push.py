@@ -103,15 +103,32 @@ def send(device_token, title, headers, *, validate_only=False, opener=urllib.req
 
 
 def run(headers, database=None, provider=send):
-    from lume_worker import authorize, WorkerError, COMPANY, rpc
-    from uuid import UUID
-    worker_token = authorize(headers)
+    from lume_worker import authorize, WorkerError, companies, rpc
+    authorize(headers)
     if database is None:
         database = lambda payload: rpc(payload, function='lume_push_worker')
-    base = {'company_id': COMPANY, 'worker_token': worker_token}
+    results = []
+    for company, token in companies().items():
+        try:
+            result = run_company(headers, company, token, database, provider)
+            result['ok'] = True
+        except WorkerError as error:
+            result = {'ok': False, 'error': str(error)}
+        results.append({'companyId': company, **result})
+    return {'ok': all(r['ok'] for r in results),
+            **{key: sum(r.get(key, 0) for r in results) for key in ('accepted', 'deferred', 'failed')},
+            'companies': results}
+
+
+def run_company(headers, company, worker_token, database, provider):
+    from lume_worker import WorkerError
+    from uuid import UUID
+    base = {'company_id': company, 'worker_token': worker_token}
     jobs = database(base | {'operation': 'claim'}).get('jobs')
     if not isinstance(jobs, list) or len(jobs) > 3:
         raise WorkerError('invalid_push_queue')
+    if any(not isinstance(job, dict) or job.get('companyId') != company for job in jobs):
+        raise WorkerError('push_company_mismatch')
     counts = {'accepted': 0, 'failed': 0, 'deferred': 0}
     credential = None
     if jobs:
@@ -137,7 +154,7 @@ def run(headers, database=None, provider=send):
                                        section={'invoice_new':'invoices','invoice_due':'invoices',
                                                 'order_late':'orders','stock_low':'products',
                                                 'task_due':'tasks'}.get(job.get('kind'), 'channels'),
-                                       company_id=job.get('companyId'))
+                                       company_id=company)
             status = 'accepted'
         except MailError as error:
             ack.update(error_code=error.code, retryable=error.retryable)
