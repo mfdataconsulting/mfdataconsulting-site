@@ -1,26 +1,30 @@
-// Ajuda local com respostas sobre os recursos efetivamente disponíveis.
 export const faqGroups=[
- {title:'Primeiros passos',subtitle:'Conheça sua rotina no Lume',items:[
-  ['Por onde começo?','Abra Visão geral para identificar estoque abaixo do mínimo, compras atrasadas e tarefas pendentes. Depois, experimente Compras, Notas e Prazos e tarefas.'],
-  ['Como cadastro fornecedores e clientes?','Em Contatos, clique em Novo registro. Informe o nome, escolha Fornecedor, Cliente ou Ambos e preencha e-mail e telefone, se desejar. Para registrar uma compra, o contato precisa ser Fornecedor ou Ambos.'],
-  ['Como funcionam os perfis de acesso?','Entre com sua conta Tectria e selecione a empresa autorizada. Administrador pode cadastrar e aprovar compras; operador pode cadastrar e acompanhar as etapas; somente consulta visualiza os registros. A disponibilidade depende das permissões da empresa.'],
-  ['Como os dados ficam armazenados?','No ambiente conectado, os registros são mantidos na base central. O modo de demonstração usa exemplos e não deve ser usado como base de trabalho. A posição recebida do Nexo depende da sincronização da estação autorizada.']
+ {title:'Seu Lume',subtitle:'Configure o que precisa lembrar e acompanhar',items:[
+  ['Por onde começo?','Em Automações, escolha as rotinas e a antecedência dos lembretes. Em Notificações, configure quem recebe os e-mails e ative o push nos aparelhos disponíveis. Consulte Integrações para verificar as fontes da sua empresa.'],
+  ['Posso usar somente o Lume?','Sim. Em Dados acompanhados, cadastre contatos, itens, compras e documentos. Em Prazos e tarefas, registre o que deve ser feito, por quem e até quando. O uso avulso não depende de contratar Nexo ou Pulso.'],
+  ['Como funciona com o Nexo?','Quando a fonte estiver conectada, estoque e contas a pagar são consultados a partir da posição sincronizada pelo Nexo. Registre as movimentações operacionais na fonte conectada. A contratação de um módulo, por si só, não confirma que a fonte esteja conectada.'],
+  ['Como funcionam as permissões?','Proprietários e administradores configuram regras e destinatários. Operadores acompanham e registram as rotinas autorizadas; o perfil de consulta apenas visualiza. Regras, destinatários e históricos pertencem à empresa selecionada. Confira o nome da empresa antes de configurar.']
  ]},
- {title:'Estoque e compras',subtitle:'Acompanhe reposições e entregas',items:[
-  ['Como registro uma entrada ou saída de estoque?','Em Estoque, clique em Movimentar estoque. Escolha o item, informe uma quantidade positiva para entrada ou negativa para saída e descreva o motivo. Uma saída que deixaria o saldo negativo é bloqueada.'],
-  ['Quando aparece um alerta de reposição?','Quando o saldo fica abaixo do mínimo cadastrado no item. Os alertas da Visão geral são recalculados ao carregar a página. Uma solicitação de compra ainda precisa ser registrada pelo operador.'],
-  ['Como acompanho uma compra?','Cadastre a compra com fornecedor, descrição, valor e entrega prevista. As etapas são Solicitado, Aprovado, Enviado e Recebido. A aprovação exige Administrador. Uma compra em andamento com entrega prevista anterior ao dia atual aparece como atrasada.'],
-  ['Receber a compra atualiza o estoque?','Nesta versão, o recebimento da compra e a entrada de estoque são registros separados. Ao conferir a entrega, registre a entrada em Movimentar estoque.']
+ {title:'Automações e notificações',subtitle:'Escolha rotinas, horários e canais',items:[
+  ['O que posso acompanhar?','Estoque no mínimo, novas notas, prazos de conferência, vencimentos de contas a pagar, compras atrasadas e prazos de tarefas. As informações vêm dos cadastros do Lume ou de fontes conectadas.'],
+  ['Como escolho quando receber?','Em Automações, selecione avisos por mudança, resumo diário, horário de Brasília e quantos dias antes do prazo deseja ser lembrado. Essas preferências são salvas por empresa.'],
+  ['Como funciona o e-mail?','Em Notificações, informe até cinco destinatários e ative os avisos. A primeira ativação registra a posição atual sem reenviar avisos antigos. No Histórico de execução, Enviado significa que o provedor aceitou o e-mail para envio.'],
+  ['Como ativo o push pelo Firebase?','No Lume web, abra Notificações e clique em Ativar neste aparelho. Permita notificações no navegador e use Enviar aviso de teste. A ativação é vinculada ao aparelho, à conta e à empresa. No aplicativo local, use o link para abrir o Lume web.'],
+  ['O push usa as mesmas rotinas?','Os avisos automáticos no aparelho acompanham as regras da empresa e exigem o acompanhamento ativo, além da ativação do aparelho. O aviso de teste serve para conferir o canal.'],
+  ['Há SMS ou WhatsApp automático?','Esses canais ainda não estão conectados. As opções disponíveis são e-mail e push no Lume web.'],
+  ['Onde confiro o resultado?','No Histórico de execução, consulte os e-mails, tentativas, falhas e movimentações das rotinas. O histórico de e-mails atualiza automaticamente enquanto a tela estiver aberta. O teste de push é conferido em Notificações no aparelho.']
  ]},
- {title:'Notas, prazos e notificações',subtitle:'Entenda cada pendência',items:[
-  ['O Lume emite notas fiscais?','Nesta versão, o Lume registra notas emitidas ou recebidas para acompanhamento. Informe número, contato, valor e prazo de conferência. A emissão fiscal, os arquivos XML e a consulta à SEFAZ ainda não estão disponíveis.'],
-  ['Como vinculo uma nota à compra?','Em Notas, cadastre o documento e selecione a compra correspondente. A nota e a compra devem pertencer ao mesmo contato. Notas com o mesmo número, tipo e contato não podem ser cadastradas novamente.'],
-  ['Uma nota conferida significa que foi paga?','Conferida indica somente a conferência do documento. Não registra pagamento nem altera o estoque. O prazo informado na nota é de conferência, não de vencimento financeiro.'],
-  ['Como acompanho tarefas e prazos?','Em Prazos e tarefas, informe a tarefa, o responsável e o prazo. Pendências com prazo de hoje ou anterior aparecem na Visão geral. Ao finalizar o trabalho, marque a tarefa como Concluída.'],
-  ['Há envio de e-mail, SMS ou WhatsApp?','Os alertas disponíveis são internos ao painel. Nenhuma mensagem, cotação ou pedido é enviado nesta versão. A etapa Enviado da compra é uma marcação manual.']
+ {title:'Dados acompanhados',subtitle:'Informações para alimentar as regras',items:[
+  ['Como cadastro fornecedores e clientes?','Abra Dados acompanhados → Contatos e cadastre o nome e o tipo. Uma compra exige um contato do tipo Fornecedor ou Ambos.'],
+  ['Como acompanho o estoque?','Com a fonte do Nexo conectada, o estoque é somente consulta. No uso avulso, cadastre itens e registre entradas e saídas em Dados acompanhados → Estoque. O aviso considera o saldo no mínimo ou abaixo dele.'],
+  ['Como acompanho entregas?','Em Dados acompanhados → Compras, registre fornecedor, descrição, valor e entrega prevista. A aprovação exige administrador. A etapa Enviado é um registro manual da compra, separado do envio de notificações.'],
+  ['Receber uma compra atualiza o estoque?','O acompanhamento da compra e a entrada no estoque são separados. Registre a entrada no Nexo quando ele for a fonte conectada, ou no estoque avulso do Lume.'],
+  ['O Lume emite notas fiscais?','Notas e documentos servem para acompanhar cadastros e prazos de conferência. Emissão fiscal, XML e consulta à SEFAZ ainda não estão disponíveis. Conferir um documento não registra pagamento nem altera estoque.'],
+  ['Como acompanho tarefas e prazos?','Em Prazos e tarefas, informe título, responsável e prazo. Pendências aparecem na Visão geral. Ao finalizar, marque a tarefa como Concluída.'],
+  ['E se o Nexo estiver sem internet?','O Nexo continua a operação local. O Lume usa a última posição central recebida; novos avisos dependem da sincronização. Consulte a data em Integrações.']
  ]},
- {title:'Produtos e ajuda',subtitle:'Conheça a família Tectria',items:[
-  ['O Lume já está integrado ao Nexo e ao Pulso?','O Lume consulta as fontes autorizadas de estoque, financeiro e metas sincronizadas pelo Nexo. Nexo organiza a operação, Pulso apresenta indicadores e Lume acompanha ações e rotinas. Os atalhos entre módulos locais dependem da instalação, contratação e permissão da empresa.'],
-  ['Como peço ajuda?','Consulte a documentação desta página ou use Falar com a Tectria pelo WhatsApp. O link prepara sua dúvida; confira o texto e envie no WhatsApp. Nenhuma mensagem é enviada automaticamente.']
+ {title:'Produtos e ajuda',subtitle:'Seu ecossistema Tectria',items:[
+  ['Qual é o papel de cada módulo?','Nexo registra a operação, Lume configura acompanhamentos e avisos e Pulso apresenta indicadores gerenciais. As fontes disponíveis dependem da contratação, da conexão e das permissões da empresa.'],
+  ['Como peço ajuda?','Use a ajuda do Lume ou o contato com a Tectria pelo WhatsApp. Confira o texto antes de enviar. Esse contato não envia mensagens automaticamente.']
  ]}
 ];

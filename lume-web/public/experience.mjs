@@ -1,0 +1,39 @@
+export const experiencePages={automations:'Automações',integrations:'Integrações',sources:'Dados acompanhados',executions:'Histórico de execução'};
+export const notificationPages=['automations','channels','integrations','executions'];
+export const defaultSettings={enabled:false,recipients:[],immediate:true,digest:true,digest_hour:8,lead_days:3,kinds:['stock_low','invoice_new','invoice_due','account_due','order_late','task_due']};
+const rules={stock_low:['Estoque no mínimo','Avisar quando o saldo atingir o mínimo ou ficar abaixo dele.'],invoice_new:['Nova nota cadastrada','Avisar quando uma nota for registrada para acompanhamento.'],invoice_due:['Conferência de documentos','Lembrar o prazo de conferência das notas.'],account_due:['Vencimento de contas','Lembrar contas a pagar próximas do vencimento.'],order_late:['Compras atrasadas','Avisar sobre compras que ultrapassaram a entrega prevista.'],task_due:['Prazos e tarefas','Lembrar tarefas pendentes próximas do prazo.']};
+export function settingsForm(n,page,canConfigure,esc){
+ const s=n.settings||defaultSettings;
+ const automations=page==='automations';
+ const field=(name,label,type,value,extra='')=>`<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
+ const check=(name,label,value)=>`<label><input type="checkbox" name="${name}" ${value?'checked':''}> ${label}</label>`;
+ let body=automations?`<h3>1. O que acompanhar</h3>${Object.entries(rules).map(([key,[title,description]])=>`<label><input type="checkbox" name="kind" value="${key}" ${s.kinds.includes(key)?'checked':''}> ${title}</label><p class="muted">${description}</p>`).join('')}<h3>2. Quando avisar</h3>${field('lead_days','Avisar quantos dias antes do prazo','number',s.lead_days,'min="0" max="30" required')}${check('immediate','Avisar quando ocorrer uma mudança',s.immediate)}${check('digest','Enviar resumo diário',s.digest)}${field('digest_hour','Horário do resumo · Brasília','number',s.digest_hour,'min="0" max="23" required')}`:`${check('enabled','Ativar acompanhamento e avisos por e-mail',s.enabled)}${field('recipients','Quem recebe por e-mail (até 5, separados por vírgula)','text',s.recipients.join(', '),'required maxlength="1274"')}<p class="muted">Remetente: contato@tectria.com.br. As regras e o resumo diário são definidos em Automações.</p>`;
+ return `<div class="intro"><h2>${automations?'O que você quer lembrar e acompanhar?':'Como você quer receber os avisos?'}</h2><p>${automations?'Escolha as rotinas da sua empresa e a antecedência dos lembretes.':'Configure os destinatários por empresa e ative o push nos aparelhos que você usa.'}</p></div><div class="panel"><h2>${automations?'Minhas regras de acompanhamento':`E-mail · ${s.enabled?'Ativo':'Pausado'}`}</h2>${automations?`<p>Acompanhamento ${s.enabled?'ativo':'pausado'}. Ative os avisos em Notificações.</p>`:''}<form id="notification-form" data-mode="${automations?'automations':'channels'}"><fieldset ${canConfigure?'':'disabled'}>${body}${canConfigure?'<button class="primary" type="submit">Salvar preferências</button>':'<p class="muted">A configuração exige administrador desta empresa.</p>'}</fieldset></form><p class="muted">${automations?'As regras usam os dados cadastrados no Lume e as fontes conectadas. Configure destinatários e aparelhos em Notificações.':'A primeira ativação registra a posição atual sem enviar avisos antigos. Enviado indica que o provedor aceitou o e-mail para envio.'}</p><button type="button" data-page="${automations?'channels':'automations'}">${automations?'Configurar notificações':'Configurar automações'}</button> <button type="button" data-page="executions">Consultar histórico</button></div>`;
+}
+export function settingsPayload(data,settings,mode){
+ const s=settings||defaultSettings;
+ const base={enabled:s.enabled,recipients:[...s.recipients],immediate:s.immediate,digest:s.digest,digest_hour:s.digest_hour,lead_days:s.lead_days,kinds:[...s.kinds]};
+ if(mode==='automations')return {...base,immediate:data.has('immediate'),digest:data.has('digest'),digest_hour:Number(data.get('digest_hour')),lead_days:Number(data.get('lead_days')),kinds:data.getAll('kind')};
+ return {...base,enabled:data.has('enabled'),recipients:String(data.get('recipients')||'').split(',').map(x=>x.trim()).filter(Boolean)};
+}
+export function sourcesHtml(state,esc){
+ const rows=[['contacts','Contatos','Fornecedores e clientes usados nos acompanhamentos.'],['products','Estoque',state.nexoInventory?.configured?'Consultar a posição recebida do Nexo.':'Cadastrar itens e movimentações para acompanhar reposições.'],['orders','Compras','Registrar entregas previstas e acompanhar atrasos.'],['invoices','Notas e documentos','Registrar documentos e prazos de conferência.']];
+ if(state.financial)rows.push(['financial','Vencimentos','Dados usados para lembrar contas a pagar.']);
+ return '<div class="intro"><h2>Informações que alimentam suas rotinas</h2><p>Use os cadastros do Lume de forma avulsa ou consulte as fontes conectadas da sua empresa.</p></div><div class="cards">'+rows.map(([page,title,description])=>`<div class="panel"><h2>${esc(title)}</h2><p>${esc(description)}</p><button data-page="${page}">Abrir ${esc(title.toLowerCase())}</button></div>`).join('')+'</div>';
+}
+export function integrationsHtml(state,company,esc,{webPush=false}={}){
+ const contracted=company?.products||[];
+ const last=value=>value?esc(new Date(value).toLocaleString('pt-BR')):'Ainda não recebida';
+ const card=(title,description,status,position)=>`<div class="panel"><h2>${title}</h2><p>${description}</p><p><strong>${status}</strong></p>${position===undefined?'':`<p class="muted">Última posição recebida: ${last(position)}</p>`}</div>`;
+ const stock=state.nexoInventory;
+ let html='<div class="intro"><h2>Fontes e canais da sua empresa</h2><p>O Lume funciona com seus próprios cadastros e com os módulos contratados. As configurações e os registros pertencem à empresa selecionada.</p></div>';
+ html+=card('Cadastros do Lume','Contatos, compras, documentos e tarefas registrados neste módulo.','Disponíveis para acompanhamento');
+ html+=card('Nexo · estoque','Fonte para avisos de reposição.',!contracted.includes('nexo')?'Nexo não contratado':stock?.configured?(stock.available?'Fonte conectada':'Aguardando dados da fonte'):'Fonte não conectada',contracted.includes('nexo')&&stock?.configured?(stock.receivedAt||null):undefined);
+ html+=card('Nexo · vencimentos','Fonte para lembretes de contas a pagar.',!contracted.includes('nexo')?'Nexo não contratado':state.financialSource?.source==='nexo'?'Fonte conectada':'Posição não disponível nesta consulta',state.financialSource?.source==='nexo'?state.financialSource.receivedAt:undefined);
+ html+=card('Pulso','Acompanhamento gerencial dos dados autorizados da empresa.',contracted.includes('pulso')?'Módulo contratado':'Pulso não contratado');
+ html+=card('E-mail','Avisos e resumo diário enviados aos destinatários configurados.',state.notifications?.settings?.enabled?'Ativo para esta empresa':'Pausado para esta empresa');
+ html+=card('Notificações no aparelho · Firebase',webPush?'Ative, verifique o serviço e teste o recebimento em Notificações.':'A ativação por aparelho está disponível no Lume web. Entre com a mesma conta e confira a empresa selecionada.',webPush?'Ativação disponível neste navegador':'Configuração no Lume web');
+ if(!webPush)html+='<div class="panel"><a href="https://lume.tectria.com.br/" target="_blank" rel="noopener">Abrir Lume web para configurar push</a></div>';
+ html+='<div class="panel"><button data-page="channels">Configurar canais e destinatários</button><p class="muted">SMS e WhatsApp ainda não estão disponíveis. Para conectar a fonte do Nexo, use Configurações → Integrações no Nexo com uma conta autorizada.</p></div>';
+ return html;
+}
