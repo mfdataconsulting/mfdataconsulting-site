@@ -53,3 +53,19 @@ export function financialPlanHtml(t){
  return html;
 }
 
+const labels={stock_low:'Estoque no mínimo',invoice_new:'Nota para conferir',invoice_due:'Conferência de documentos',account_due:'Conta a pagar',receivable_due:'Conta a receber',order_late:'Compra atrasada',task_due:'Lembrete pessoal'};
+export function pendingDestination(item){
+ if(!item||!labels[item.kind])return null;
+ if(item.kind==='task_due'&&/^lume:\d+:/.test(item.entity_key))return {page:'tasks',taskId:Number(item.entity_key.split(':')[1])};
+ return {page:{stock_low:'products',invoice_new:'invoices',invoice_due:'invoices',account_due:'financial',receivable_due:'financial',order_late:'orders',task_due:'tasks'}[item.kind],nexo:item.entity_key.startsWith('nexo:')};
+}
+export function pendingNotificationsHtml(notifications,esc,canManage){
+ const items=(notifications?.pending||[]).filter(pendingDestination);
+ let html='<section class="panel"><h2>Pendências acompanhadas</h2><p>Selecione o que deseja resolver. Lembretes pessoais são concluídos no Lume; pagamentos, recebimentos e reposições são registrados no sistema de gestão.</p>';
+ if(notifications?.checkedAt)html+=`<p class="muted">Consulta: ${esc(new Date(notifications.checkedAt).toLocaleString('pt-BR'))}. Dados integrados dependem da última sincronização.</p>`;
+ if(!notifications?.settings?.enabled)html+='<p class="muted">E-mail pausado. As pendências continuam disponíveis; confira também o canal de notificações no aparelho abaixo.</p>';
+ if(!items.length)return html+'<p class="empty">Nenhuma pendência nas regras e no período de aviso configurados.</p><button data-pending-refresh>Atualizar pendências</button></section>';
+ html+='<div class="list">'+items.map(item=>{return `<label class="list-row"><span><input type="radio" style="display:inline-block;width:auto;margin-right:8px" name="notification-pending" value="${esc(item.entity_key+'|'+item.kind)}"> <strong>${esc(labels[item.kind])}</strong><br>${esc(item.line)}</span></label>`}).join('')+'</div><div class="form-actions"><button class="primary" data-pending-resolve>Resolver selecionado</button><button data-pending-refresh>Atualizar pendências</button></div>';
+ if(!canManage)html+='<p class="muted">Seu acesso permite consulta. A conclusão de lembretes exige proprietário ou administrador.</p>';
+ return html+'</section>';
+}

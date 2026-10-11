@@ -1,4 +1,4 @@
-import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml} from './experience.mjs';
+import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml} from './experience.mjs';
 import {companyLabel,chooseCompany,rememberCompany,showCompany} from './company-context.mjs';
 import {sessionRecovery} from './session-recovery.mjs';
 import {mountLocalHelp} from './help-local.mjs';
@@ -72,7 +72,7 @@ function render(){
  }else if(page==='automations'||page==='channels'){
   const n=state.notifications||{};
   const canConfigure=['owner','admin'].includes(context.companies.find(c=>c.id===companyId)?.role)&&!n.demo;
-  html=settingsForm(n,page,canConfigure,esc);
+  html=(page==='channels'?pendingNotificationsHtml(n,esc,canConfigure):'')+settingsForm(n,page,canConfigure,esc);
  }else if(page==='integrations'){
   html=integrationsHtml(state,context.companies.find(c=>c.id===companyId),esc,{webPush:true});
  }else if(page==='sources'){
@@ -113,7 +113,7 @@ function openForm(kind){if(kind!=='tasks')throw Error('Registre esta operação 
  if(['financial','payments'].includes(kind))f+=`<input type="hidden" name="request_id" value="${crypto.randomUUID()}">`;
  $('form').reset();$('fields').innerHTML=f;$('form-title').textContent=kind==='movements'?'Movimentar estoque':'Novo registro';$('form-error').textContent='';$('dialog').showModal();
 }
-document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.dataset.page){page=b.dataset.page;await refresh()}if(b.dataset.new)openForm(b.dataset.new);if(b.dataset.payment){openForm('payments');$('form').elements.title_id.value=b.dataset.payment;}if(b.dataset.reverse&&confirm('Estornar esta baixa? O valor voltará ao saldo da conta e o histórico será preservado.')){b.disabled=true;await post('/api/financial-reverse',{id:Number(b.dataset.reverse)})}if(b.dataset.status){b.disabled=true;await post('/api/status',{entity:page,id:Number(b.dataset.id),status:b.dataset.status})}}catch(error){$('notice').textContent=error.message;b.disabled=false}});
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.hasAttribute('data-pending-refresh')){b.disabled=true;await refresh();return;}if(b.hasAttribute('data-pending-resolve')){const selected=document.querySelector('input[name="notification-pending"]:checked');const item=state.notifications?.pending?.find(p=>p.entity_key+'|'+p.kind===selected?.value);const destination=pendingDestination(item);if(!destination){$('notice').textContent='Selecione uma pendência para continuar.';return;}if(destination.taskId){const role=context.companies.find(c=>c.id===companyId)?.role;if(!['owner','admin'].includes(role))throw Error('Seu acesso permite somente consulta.');if(!confirm('Concluir este lembrete pessoal? '+item.line))return;b.disabled=true;await post('/api/status',{entity:'tasks',id:destination.taskId,status:'Concluída'});$('notice').textContent='Lembrete concluído. Ele saiu das pendências.';}else{page=destination.page;await refresh();$('notice').textContent=destination.nexo?'Confira o item e abra o Nexo pelo botão do menu para resolver. Depois sincronize e atualize as pendências.':'Confira o item no sistema de gestão de origem. Após resolver, atualize as pendências.';if(destination.nexo&&context.companies.find(c=>c.id===companyId)?.products.includes('nexo'))$('content').insertAdjacentHTML('afterbegin','<div class="panel"><button data-pending-nexo>Abrir Nexo para resolver</button></div>');}return;}if(b.hasAttribute('data-pending-nexo')){$('open-nexo').click();return;}if(b.dataset.page){page=b.dataset.page;await refresh()}if(b.dataset.new)openForm(b.dataset.new);if(b.dataset.payment){openForm('payments');$('form').elements.title_id.value=b.dataset.payment;}if(b.dataset.reverse&&confirm('Estornar esta baixa? O valor voltará ao saldo da conta e o histórico será preservado.')){b.disabled=true;await post('/api/financial-reverse',{id:Number(b.dataset.reverse)})}if(b.dataset.status){b.disabled=true;await post('/api/status',{entity:page,id:Number(b.dataset.id),status:b.dataset.status})}}catch(error){$('notice').textContent=error.message;b.disabled=false}});
 $('close').onclick=()=>$('dialog').close();
 $('help').onclick=()=>{if(!state)return;page='faq';$('notice').textContent='';render();};
 $('form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{await post('/api/create/'+entity,Object.fromEntries(new FormData(e.target)));$('dialog').close();$('notice').textContent=''}catch(error){$('form-error').textContent=error.message}finally{button.disabled=false}};
