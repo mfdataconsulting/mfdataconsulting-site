@@ -71,10 +71,10 @@ function render(){
   const n=state.notifications||{},s=n.settings||{enabled:false,recipients:['contato@tectria.com.br'],immediate:true,digest:true,digest_hour:8,lead_days:3,kinds:['stock_low','invoice_new','invoice_due','account_due','order_late','task_due']};
   const canConfigure=['owner','admin'].includes(context.companies.find(c=>c.id===companyId)?.role)&&!n.demo;
   const rules={stock_low:'Estoque no limite',invoice_new:'Nova nota cadastrada',invoice_due:'Prazo de conferência',account_due:'Conta a pagar vencendo',order_late:'Compra atrasada',task_due:'Prazo de tarefa'};
-  const labels={pending:'Na fila',sending:'Enviando',accepted:'Aceito pela Resend',failed:'Falha',review:'Revisão necessária',cancelled:'Cancelado'};
+  const labels={pending:'Na fila',sending:'Enviando',accepted:'Enviado',failed:'Falha',review:'Revisão necessária',cancelled:'Cancelado'};
   html='<div class="intro"><h2>Sua rotina sob acompanhamento</h2><p>Avisos por e-mail e resumo diário, com regras e histórico por empresa.</p></div>';
-  html+=`<div class="panel"><h2>E-mail · ${s.enabled?'Ativo':'Pausado'}</h2><p>Remetente: contato@tectria.com.br</p><p class="muted">Os avisos usam dados confirmados na base central. Um notebook sem internet precisa sincronizar antes de gerar novos avisos. Aceito pela Resend indica recebimento pelo provedor, sem confirmar entrega na caixa de entrada.</p><form id="notification-form"><fieldset ${canConfigure?'':'disabled'}><label><input type="checkbox" name="enabled" ${s.enabled?'checked':''}> Ativar avisos por e-mail</label><label>Destinatários (até 5, separados por vírgula)<input name="recipients" required maxlength="1274" value="${esc(s.recipients.join(', '))}"></label><label><input type="checkbox" name="immediate" ${s.immediate?'checked':''}> Avisar quando ocorrer uma mudança</label><label><input type="checkbox" name="digest" ${s.digest?'checked':''}> Enviar resumo diário</label><label>Horário do resumo · Brasília<input type="number" name="digest_hour" min="0" max="23" required value="${s.digest_hour}"></label><label>Avisar quantos dias antes do prazo<input type="number" name="lead_days" min="0" max="30" required value="${s.lead_days}"></label><h3>Rotinas acompanhadas</h3>${Object.entries(rules).map(([k,v])=>`<label><input type="checkbox" name="kind" value="${k}" ${s.kinds.includes(k)?'checked':''}> ${v}</label>`).join('')}${canConfigure?'<button class="primary" type="submit">Salvar preferências</button>':''}</fieldset></form><p class="muted">A primeira ativação registra a posição atual sem enviar avisos antigos. SMS e WhatsApp ainda não estão conectados.</p></div>`;
-  html+='<div class="panel"><h2>Histórico de e-mails</h2>'+table(['Data','Assunto','Situação','Tentativas'],(n.history||[]).map(j=>[esc(new Date(j.created_at).toLocaleString('pt-BR')),esc(j.subject),esc(labels[j.status]||j.status),j.attempts]))+'</div>';
+  html+=`<div class="panel"><h2>E-mail · ${s.enabled?'Ativo':'Pausado'}</h2><p>Remetente: contato@tectria.com.br</p><p class="muted">Os avisos usam dados confirmados na base central. Um notebook sem internet precisa sincronizar antes de gerar novos avisos. Enviado indica que o provedor aceitou o e-mail para envio.</p><form id="notification-form"><fieldset ${canConfigure?'':'disabled'}><label><input type="checkbox" name="enabled" ${s.enabled?'checked':''}> Ativar avisos por e-mail</label><label>Destinatários (até 5, separados por vírgula)<input name="recipients" required maxlength="1274" value="${esc(s.recipients.join(', '))}"></label><label><input type="checkbox" name="immediate" ${s.immediate?'checked':''}> Avisar quando ocorrer uma mudança</label><label><input type="checkbox" name="digest" ${s.digest?'checked':''}> Enviar resumo diário</label><label>Horário do resumo · Brasília<input type="number" name="digest_hour" min="0" max="23" required value="${s.digest_hour}"></label><label>Avisar quantos dias antes do prazo<input type="number" name="lead_days" min="0" max="30" required value="${s.lead_days}"></label><h3>Rotinas acompanhadas</h3>${Object.entries(rules).map(([k,v])=>`<label><input type="checkbox" name="kind" value="${k}" ${s.kinds.includes(k)?'checked':''}> ${v}</label>`).join('')}${canConfigure?'<button class="primary" type="submit">Salvar preferências</button>':''}</fieldset></form><p class="muted">A primeira ativação registra a posição atual sem enviar avisos antigos. SMS e WhatsApp ainda não estão conectados.</p></div>`;
+  html+='<div class="panel" id="notification-history">'+notificationHistory(n)+'</div>';
  }else{
   const descriptions={contacts:'Fornecedores e clientes do seu negócio.',products:fromNexo?'Estoque do Nexo, somente consulta. Registre entradas, perdas e vendas no Nexo.':'Saldo calculado pelas movimentações. Compras e notas não alteram o saldo.',orders:'Acompanhe cada compra até o recebimento. Enviado é um registro manual; não envia mensagens.',invoices:'Controle documental manual. Conferida não significa paga. Sem emissão fiscal ou consulta à SEFAZ.',tasks:'Defina quem faz o quê e acompanhe o prazo.'};
   html=`<div class="toolbar"><p class="muted">${descriptions[page]}</p><div><button class="primary" data-new="${page}">+ Novo registro</button>${page==='products'?' <button data-new="movements">Movimentar estoque</button>':''}</div></div><div class="panel">`;
@@ -128,3 +128,25 @@ $('open-nexo').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.pro
 $('logout-all').hidden=true;
 $('service-status').textContent='● Lume Web';
 $('footer-status').textContent='Sua rotina no automático.';
+
+let notificationRefreshPending=false;
+async function refreshNotificationHistory(){
+ if(notificationRefreshPending||page!=='channels'||!state||!context||document.hidden)return;
+ const selectedCompany=companyId,version=refreshVersion;
+ notificationRefreshPending=true;
+ try{
+  const notifications=await request('/api/notifications');
+  if(selectedCompany!==companyId||version!==refreshVersion||page!=='channels'||!state)return;
+  state.notifications=notifications;
+  const history=$('notification-history');
+  if(history)history.innerHTML=notificationHistory(notifications);
+ }catch(error){if(page==='channels'&&selectedCompany===companyId)$('notice').textContent=error.message;}
+ finally{notificationRefreshPending=false;}
+}
+function notificationHistory(n){
+ const labels={pending:'Na fila',sending:'Enviando',accepted:'Enviado',failed:'Falha',review:'Revisão necessária',cancelled:'Cancelado'};
+ return '<h2>Histórico de e-mails</h2>'+table(['Data','Assunto','Situação','Tentativas'],(n.history||[]).map(j=>[esc(new Date(j.created_at).toLocaleString('pt-BR')),esc(j.subject),esc(labels[j.status]||j.status),j.attempts]));
+}
+setInterval(refreshNotificationHistory,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNotificationHistory();});
+window.addEventListener('focus',refreshNotificationHistory);
