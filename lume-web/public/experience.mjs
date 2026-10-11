@@ -38,3 +38,18 @@ export function integrationsHtml(state,company,esc,{webPush=false}={}){
  html+='<div class="panel"><button data-page="channels">Configurar canais e destinatários</button><p class="muted">SMS e WhatsApp ainda não estão disponíveis. Para conectar a fonte do Nexo, use Configurações → Integrações no Nexo com uma conta autorizada.</p></div>';
  return html;
 }
+
+export function financialPlanHtml(t){
+ const currency=v=>(Number(v)/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ if(t.kind!=='A receber')return '—';
+ const method={pix:'Pix',cash:'Dinheiro',card:'Cartão'}[t.remainingMethod]||'Não informada';
+ const parts=t.installments||[];
+ let html=`<div>Modalidade prevista: ${method}</div>`;
+ if(t.advanceCents!=null)html+=`<div>Entrada prevista: ${currency(t.advanceCents)}</div>`;
+ if(!parts.length)return html+'<div>Parcelamento não informado</div>';
+ for(const p of parts)html+=`<div>Parcela ${safe(p.number)} de ${parts.length} · ${safe(String(p.due).split('-').reverse().join('/'))} · ${currency(p.amountCents)} · saldo ${currency(p.balanceCents)}</div>`;
+ if(t.unplannedBalanceCents>0)html+=`<div>Entrada pendente: ${currency(t.unplannedBalanceCents)}</div>`;
+ return html;
+}
+

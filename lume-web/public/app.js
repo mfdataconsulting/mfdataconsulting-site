@@ -1,4 +1,4 @@
-import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml} from './experience.mjs';
+import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml} from './experience.mjs';
 import {companyLabel,chooseCompany,rememberCompany,showCompany} from './company-context.mjs';
 import {sessionRecovery} from './session-recovery.mjs';
 import {mountLocalHelp} from './help-local.mjs';
@@ -67,7 +67,7 @@ function render(){
   const canWrite=false;
   html=`<div class="toolbar"><p class="muted">${fromNexoFinancial?'Contas a pagar e a receber do Nexo, somente consulta. Cadastre e registre pagamentos no Nexo.':'Contas a pagar e a receber, somente consulta. Registre pagamentos no sistema de gestão de origem.'}</p>${canWrite?'<button class="primary" data-new="financial">+ Nova conta</button>':''}</div><div class="panel">`;
   if(fromNexoFinancial)html+=`<p class="muted">Última posição recebida: ${state.financialSource.receivedAt?new Date(state.financialSource.receivedAt).toLocaleString('pt-BR'):'Ainda não recebida'}. Os lançamentos antigos do Lume permanecem preservados.</p>`;
-  html+=table(['Conta','Descrição','Categoria','Contato','Tipo','Vencimento','Valor','Quitado','Saldo','Situação',''],state.financial.map(t=>[`#${String(t.id).slice(0,8)}`,esc(t.description||'—'),esc(t.category||'Não classificado'),esc(t.partner),esc(t.kind),date(t.due),money(t.amountCents),money(t.paidCents),money(t.balanceCents),esc(t.status),canWrite&&t.balanceCents>0?`<button data-payment="${t.id}">Registrar baixa</button>`:'']));
+  html+=table(['Conta','Descrição','Categoria','Contato','Tipo','Vencimento','Valor','Quitado','Saldo','Plano de recebimento','Situação',''],state.financial.map(t=>[`#${String(t.id).slice(0,8)}`,esc(t.description||'—'),esc(t.category||'Não classificado'),esc(t.partner),esc(t.kind),date(t.due),money(t.amountCents),money(t.paidCents),money(t.balanceCents),financialPlanHtml(t),esc(t.status),canWrite&&t.balanceCents>0?`<button data-payment="${t.id}">Registrar baixa</button>`:'']));
   html+='</div><div class="panel"><h2>Histórico de pagamentos e recebimentos</h2>'+table(['Conta','Data','Valor','Meio','Situação',''],state.financial.flatMap(t=>t.payments.map(p=>[`#${String(t.id).slice(0,8)}`,date(p.paidOn),money(p.amountCents),esc(p.method),p.reversedAt?'Estornado':'Confirmado',false?`<button data-reverse="${p.id}">Estornar</button>`:''])))+'</div>';
  }else if(page==='automations'||page==='channels'){
   const n=state.notifications||{};
@@ -155,3 +155,4 @@ function notificationHistory(n){
 setInterval(refreshNotificationHistory,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNotificationHistory();});
 window.addEventListener('focus',refreshNotificationHistory);
+
