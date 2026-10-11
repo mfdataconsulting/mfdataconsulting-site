@@ -69,3 +69,6 @@ export function pendingNotificationsHtml(notifications,esc,canManage){
  if(!canManage)html+='<p class="muted">Seu acesso permite consulta. A conclusão de lembretes exige proprietário ou administrador.</p>';
  return html+'</section>';
 }
+
+
+export function formatQuantity(value){if(value===null||value===undefined||value==='')return '—';const number=Number(value);return Number.isFinite(number)?number.toLocaleString('pt-BR',{minimumFractionDigits:Number.isInteger(number)?0:2,maximumFractionDigits:2}):'—';}
