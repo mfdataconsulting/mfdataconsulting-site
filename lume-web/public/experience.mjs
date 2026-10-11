@@ -18,7 +18,7 @@ export function settingsPayload(data,settings,mode){
 }
 export function sourcesHtml(state,esc){
  const rows=[['contacts','Contatos','Fornecedores e clientes usados nos acompanhamentos.'],['products','Estoque',state.nexoInventory?.configured?'Consultar a posição recebida do Nexo.':'Cadastrar itens e movimentações para acompanhar reposições.'],['orders','Compras','Registrar entregas previstas e acompanhar atrasos.'],['invoices','Notas e documentos','Registrar documentos e prazos de conferência.']];
- if(state.financial)rows.push(['financial','Vencimentos','Dados usados para lembrar contas a pagar.']);
+ if(state.financial)rows.push(['financial','Vencimentos','Consultar contas a pagar e a receber, pagamentos e saldos.']);
  return '<div class="intro"><h2>Informações que alimentam suas rotinas</h2><p>Use os cadastros do Lume de forma avulsa ou consulte as fontes conectadas da sua empresa.</p></div><div class="cards">'+rows.map(([page,title,description])=>`<div class="panel"><h2>${esc(title)}</h2><p>${esc(description)}</p><button data-page="${page}">Abrir ${esc(title.toLowerCase())}</button></div>`).join('')+'</div>';
 }
 export function integrationsHtml(state,company,esc,{webPush=false}={}){
@@ -29,7 +29,8 @@ export function integrationsHtml(state,company,esc,{webPush=false}={}){
  let html='<div class="intro"><h2>Fontes e canais da sua empresa</h2><p>O Lume funciona com seus próprios cadastros e com os módulos contratados. As configurações e os registros pertencem à empresa selecionada.</p></div>';
  html+=card('Cadastros do Lume','Contatos, compras, documentos e tarefas registrados neste módulo.','Disponíveis para acompanhamento');
  html+=card('Nexo · estoque','Fonte para avisos de reposição.',!contracted.includes('nexo')?'Nexo não contratado':stock?.configured?(stock.available?'Fonte conectada':'Aguardando dados da fonte'):'Fonte não conectada',contracted.includes('nexo')&&stock?.configured?(stock.receivedAt||null):undefined);
- html+=card('Nexo · vencimentos','Fonte para lembretes de contas a pagar.',!contracted.includes('nexo')?'Nexo não contratado':state.financialSource?.source==='nexo'?'Fonte conectada':'Posição não disponível nesta consulta',state.financialSource?.source==='nexo'?state.financialSource.receivedAt:undefined);
+ html+=card('Nexo · contas a pagar e a receber','Consulte vencimentos, pagamentos e saldos. Os lançamentos são feitos no Nexo.',!contracted.includes('nexo')?'Nexo não contratado':state.financialSource?.source==='nexo'?'Fonte conectada':'Posição não disponível nesta consulta',state.financialSource?.source==='nexo'?state.financialSource.receivedAt:undefined);
+ if(state.financialSource?.source==='nexo'&&state.financial)html+='<div class="panel"><button data-page="financial">Consultar vencimentos</button></div>';
  html+=card('Pulso','Acompanhamento gerencial dos dados autorizados da empresa.',contracted.includes('pulso')?'Módulo contratado':'Pulso não contratado');
  html+=card('E-mail','Avisos e resumo diário enviados aos destinatários configurados.',state.notifications?.settings?.enabled?'Ativo para esta empresa':'Pausado para esta empresa');
  html+=card('Notificações no aparelho · Firebase',webPush?'Ative, verifique o serviço e teste o recebimento em Notificações.':'A ativação por aparelho está disponível no Lume web. Entre com a mesma conta e confira a empresa selecionada.',webPush?'Ativação disponível neste navegador':'Configuração no Lume web');
