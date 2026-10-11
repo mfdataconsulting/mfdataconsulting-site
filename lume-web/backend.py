@@ -34,6 +34,24 @@ def remote(path,payload,token=None):
  except (urllib.error.URLError,TimeoutError,ValueError):raise ApiError('Base central temporariamente indisponível.',502) from None
 
 def rpc(name,payload,token):return remote('/rest/v1/rpc/'+name,payload,token)
+
+def financial_position(company,token):
+ rows=[];cursor=0;source=None;revision=None;metadata=None
+ while True:
+  packet=rpc('lume_financial_read',{'company_id':company,'after_id':cursor,'page_size':100},token)
+  current=packet.get('source')
+  if packet.get('companyId')!=company or current not in ('lume','nexo') or (source and current!=source):raise ApiError('Fonte financeira divergente.',502)
+  source=current
+  if source=='lume':return None
+  if revision is not None and revision!=packet.get('snapshotRevision'):raise ApiError('A posição mudou; atualize a consulta.',409)
+  revision=packet.get('snapshotRevision')
+  metadata={k:packet[k] for k in ('source','receivedAt','snapshotRevision','installationId') if k in packet}
+  batch=packet.get('rows')
+  if not isinstance(batch,list) or len(batch)>100:raise ApiError('Lote financeiro inválido.',502)
+  if not batch:return {'financial':rows,'financialSource':metadata}
+  next_id=packet.get('nextCursor')
+  if type(next_id) is not int or next_id<=cursor or len(rows)+len(batch)>10000:raise ApiError('Paginação financeira inválida.',502)
+  rows.extend(batch);cursor=next_id
 def cookies(token='',csrf='',age=0):
  for value in (token,csrf):
   if any(c not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-' for c in value):raise ApiError('Sessão inválida.',502)
@@ -83,6 +101,8 @@ def handle(path,data,headers,method='POST'):
   if path=='state':
    result=rpc('lume_state',{'company_id':company},token)
    result['nexoInventory']=rpc('lume_nexo_inventory',{'company_id':company},token)
+   financial=financial_position(company,token)
+   if financial is not None:result.update(financial)
    result['token']=csrf
    return result,None
   if path=='notifications':return rpc('lume_notifications_read',{'company_id':company},token),None
