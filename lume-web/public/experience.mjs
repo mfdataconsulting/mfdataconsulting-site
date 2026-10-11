@@ -18,17 +18,17 @@ export function settingsPayload(data,settings,mode){
  return {...base,enabled:data.has('enabled'),recipients:String(data.get('recipients')||'').split(',').map(x=>x.trim()).filter(Boolean)};
 }
 export function sourcesHtml(state,esc){
- const rows=[['contacts','Contatos','Fornecedores e clientes usados nos acompanhamentos.'],['products','Estoque',state.nexoInventory?.configured?'Consultar a posição recebida do Nexo.':'Cadastrar itens e movimentações para acompanhar reposições.'],['orders','Compras','Registrar entregas previstas e acompanhar atrasos.'],['invoices','Notas e documentos','Registrar documentos e prazos de conferência.']];
+ const rows=[['contacts','Contatos','Fornecedores e clientes usados nos acompanhamentos.'],['products','Estoque',state.nexoInventory?.configured?'Consultar a posição recebida do Nexo.':'Consultar registros anteriores enquanto a fonte de estoque não estiver conectada.'],['orders','Compras','Consultar entregas previstas e acompanhar atrasos.'],['invoices','Notas e documentos','Consultar documentos e prazos de conferência.']];
  if(state.financial)rows.push(['financial','Vencimentos','Consultar contas a pagar e a receber, pagamentos e saldos.']);
- return '<div class="intro"><h2>Informações que alimentam suas rotinas</h2><p>Use os cadastros do Lume de forma avulsa ou consulte as fontes conectadas da sua empresa.</p></div><div class="cards">'+rows.map(([page,title,description])=>`<div class="panel"><h2>${esc(title)}</h2><p>${esc(description)}</p><button data-page="${page}">Abrir ${esc(title.toLowerCase())}</button></div>`).join('')+'</div>';
+ return '<div class="intro"><h2>Informações que alimentam suas rotinas</h2><p>Consulte as informações acompanhadas. Cadastros e movimentações operacionais pertencem ao Nexo ou ao sistema de gestão de origem.</p></div><div class="cards">'+rows.map(([page,title,description])=>`<div class="panel"><h2>${esc(title)}</h2><p>${esc(description)}</p><button data-page="${page}">Abrir ${esc(title.toLowerCase())}</button></div>`).join('')+'</div>';
 }
 export function integrationsHtml(state,company,esc,{webPush=false}={}){
  const contracted=company?.products||[];
  const last=value=>value?esc(new Date(value).toLocaleString('pt-BR')):'Ainda não recebida';
  const card=(title,description,status,position)=>`<div class="panel"><h2>${title}</h2><p>${description}</p><p><strong>${status}</strong></p>${position===undefined?'':`<p class="muted">Última posição recebida: ${last(position)}</p>`}</div>`;
  const stock=state.nexoInventory;
- let html='<div class="intro"><h2>Fontes e canais da sua empresa</h2><p>O Lume funciona com seus próprios cadastros e com os módulos contratados. As configurações e os registros pertencem à empresa selecionada.</p></div>';
- html+=card('Cadastros do Lume','Contatos, compras, documentos e tarefas registrados neste módulo.','Disponíveis para acompanhamento');
+ let html='<div class="intro"><h2>Fontes e canais da sua empresa</h2><p>O Lume configura acompanhamentos e avisos sobre as fontes conectadas. As configurações e os registros pertencem à empresa selecionada.</p></div>';
+ html+=card('Informações acompanhadas','Dados das fontes conectadas e registros anteriores preservados. Cadastros operacionais são feitos no sistema de gestão.','Somente consulta');
  html+=card('Nexo · estoque','Fonte para avisos de reposição.',!contracted.includes('nexo')?'Nexo não contratado':stock?.configured?(stock.available?'Fonte conectada':'Aguardando dados da fonte'):'Fonte não conectada',contracted.includes('nexo')&&stock?.configured?(stock.receivedAt||null):undefined);
  html+=card('Nexo · contas a pagar e a receber','Consulte vencimentos, pagamentos e saldos. Os lançamentos são feitos no Nexo.',!contracted.includes('nexo')?'Nexo não contratado':state.financialSource?.source==='nexo'?'Fonte conectada':'Posição não disponível nesta consulta',state.financialSource?.source==='nexo'?state.financialSource.receivedAt:undefined);
  html+=card('Pulso','Acompanhamento gerencial dos dados autorizados da empresa.',contracted.includes('pulso')?'Módulo contratado':'Pulso não contratado');

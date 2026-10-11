@@ -97,6 +97,8 @@ def handle(path,data,headers,method='POST'):
   device=str(UUID(data.get('deviceId','')))
   return rpc('lume_push_device',{'company_id':company,'operation':'disable','device_id':device},token),None
  permit(company,token)
+ if method=='POST' and ((path.startswith('create/') and path!='create/tasks') or (path=='status' and data.get('entity')!='tasks') or path=='financial-reverse'):
+  raise ApiError('Registre esta operação no Nexo ou no sistema de gestão de origem. O Lume acompanha os dados.',403)
  if method=='GET':
   if path=='state':
    result=rpc('lume_state',{'company_id':company},token)
