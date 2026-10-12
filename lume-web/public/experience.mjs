@@ -74,7 +74,7 @@ export function pendingNotificationsHtml(notifications,esc,canManage){
 
 export function formatQuantity(value){if(value===null||value===undefined||value==='')return '—';const number=Number(value);return Number.isFinite(number)?number.toLocaleString('pt-BR',{minimumFractionDigits:Number.isInteger(number)?0:2,maximumFractionDigits:2}):'—';}
 
-export const financialFilterDefaults={query:'',kind:'',status:'',from:'',to:'',order:'due-asc'};
+export const financialFilterDefaults={query:'',category:'',kind:'',status:'',from:'',to:'',order:'due-asc'};
 export function financialRows(rows,filters={},today=''){
  const f={...financialFilterDefaults,...filters};
  const normalize=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -83,6 +83,7 @@ export function financialRows(rows,filters={},today=''){
   const balance=Number(t.balanceCents)||0,paid=Number(t.paidCents)||0;
   if(query&&!normalize([t.id,t.description,t.category,t.partner].join(' ')).includes(query))return false;
   if(f.kind&&t.kind!==f.kind)return false;
+  if(f.category&&(t.category||'Não classificado')!==f.category)return false;
   if(f.from&&(!t.due||t.due<f.from))return false;
   if(f.to&&(!t.due||t.due>f.to))return false;
   if(f.status==='pending'&&balance<=0)return false;
@@ -100,10 +101,11 @@ export function financialRows(rows,filters={},today=''){
   return result||String(a.id).localeCompare(String(b.id));
  });
 }
-export function financialFiltersHtml(filters,esc){
+export function financialFiltersHtml(filters,esc,rows=[]){
  const f={...financialFilterDefaults,...filters};
- const select=(name,label,options)=>`<label>${label}<select name="${name}">${options.map(([v,text])=>`<option value="${v}" ${f[name]===v?'selected':''}>${text}</option>`).join('')}</select></label>`;
- return `<form id="financial-filters"><div class="financial-filter-row"><label>Buscar<input name="query" placeholder="Conta ou contato" type="search" value="${esc(f.query)}"></label>${select('kind','Tipo',[['','Todos'],['A pagar','A pagar'],['A receber','A receber']])}${select('status','Situação',[['','Todas'],['pending','Em aberto'],['partial','Parciais'],['paid','Quitadas'],['overdue','Vencidas com saldo']])}<label>Vencimento de<input name="from" type="date" value="${esc(f.from)}"></label><label>Vencimento até<input name="to" type="date" value="${esc(f.to)}"></label>${select('order','Ordenação',[['due-asc','Vencimento crescente'],['due-desc','Vencimento decrescente'],['balance-desc','Saldo: maior primeiro'],['balance-asc','Saldo: menor primeiro'],['amount-desc','Valor: maior primeiro'],['amount-asc','Valor: menor primeiro'],['partner-asc','Contato: A a Z']])}<div class="financial-filter-actions"><button type="submit" class="primary">Aplicar</button><button type="button" data-financial-clear>Limpar</button></div></div><p class="muted" id="financial-filter-error" role="alert"></p></form>`;
+ const categories=[...new Set(rows.map(t=>t.category||'Não classificado'))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ const select=(name,label,options)=>`<label>${label}<select name="${name}">${options.map(([v,text])=>`<option value="${esc(v)}" ${f[name]===v?'selected':''}>${esc(text)}</option>`).join('')}</select></label>`;
+ return `<form id="financial-filters"><div class="financial-filter-row"><label>Buscar<input name="query" placeholder="Conta ou contato" type="search" value="${esc(f.query)}"></label>${select('kind','Tipo',[['','Todos'],['A pagar','A pagar'],['A receber','A receber']])}${select('category','Categoria',[['','Todas'],...categories.map(c=>[c,c])])}${select('status','Situação',[['','Todas'],['pending','Em aberto'],['partial','Parciais'],['paid','Quitadas'],['overdue','Vencidas com saldo']])}<label>Vencimento de<input name="from" type="date" value="${esc(f.from)}"></label><label>Vencimento até<input name="to" type="date" value="${esc(f.to)}"></label>${select('order','Ordenação',[['due-asc','Vencimento crescente'],['due-desc','Vencimento decrescente'],['balance-desc','Saldo: maior primeiro'],['balance-asc','Saldo: menor primeiro'],['amount-desc','Valor: maior primeiro'],['amount-asc','Valor: menor primeiro'],['partner-asc','Contato: A a Z']])}<div class="financial-filter-actions"><button type="submit" class="primary">Aplicar</button><button type="button" data-financial-clear>Limpar</button></div></div><p class="muted" id="financial-filter-error" role="alert"></p></form>`;
 }
 
 export function dashboardHtml(state,company,esc,today){
