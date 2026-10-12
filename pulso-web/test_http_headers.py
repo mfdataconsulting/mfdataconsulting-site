@@ -13,17 +13,17 @@ def headers(origin=None):
 class Tests(unittest.TestCase):
  def test_lowercase_login_reaches_authentication(self):
   h=headers();jwt=token()
-  with patch.object(b,'remote',return_value={'access_token':jwt,'expires_in':3600}) as remote,patch.object(b,'permit',create=True),patch.object(b,'rpc',return_value={'companies':[{'products':[module]}]},create=True):
+  with patch.object(b,'remote',side_effect=[{'access_token':jwt,'expires_in':3600},{'companies':[{'id':b.COMPANY,'products':[module]}]}]) as remote,patch.object(b,'permit'):
    result,cookies=b.handle('login',{'email':'fixture@example.invalid','password':'fixture'},h)
-   self.assertTrue(result['ok']);remote.assert_called_once();self.assertTrue(any('Domain=tectria.com.br' in x for x in cookies))
+   self.assertTrue(result['ok']);self.assertEqual(remote.call_count,2);self.assertEqual(remote.call_args_list[0].args[0],'/auth/v1/token?grant_type=password');self.assertTrue(any('Domain=tectria.com.br' in x for x in cookies))
  def test_foreign_origin_still_rejected(self):
   with patch.object(b,'remote') as remote:
    with self.assertRaises(b.ApiError) as error:b.handle('login',{'email':'fixture@example.invalid','password':'fixture'},headers('https://evil.example'))
    self.assertEqual(error.exception.status,403);remote.assert_not_called()
  def test_lowercase_cookie_is_replaced_once(self):
   h=headers();jwt=token();h['cookie']=SHARED+'='+jwt
-  with patch.object(b,'permit',create=True) as permit,patch.object(b,'rpc',side_effect=[{'companies':[{'products':[module]}]},{'userId':'fixture'}],create=True) as rpc:
-   if module=='pulso':result,cookies=b.handle('status',{},h);self.assertTrue(result['connected']);permit.assert_called_once_with(jwt)
+  with patch.object(b,'permit') as permit,patch.object(b,'remote',return_value={'companies':[{'id':b.COMPANY,'products':[module]}]}) as rpc:
+   if module=='pulso':result,cookies=b.handle('status',{},h);self.assertTrue(result['connected']);permit.assert_called_once_with(jwt,b.COMPANY)
    else:result,cookies=b.handle('context',{},h,'GET');self.assertTrue(result['token']);self.assertTrue(all(c.args[2]==jwt for c in rpc.call_args_list))
    self.assertTrue(any(SHARED+'=' in c for c in cookies))
  def test_missing_request_header_still_rejected(self):

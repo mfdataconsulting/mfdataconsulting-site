@@ -38,7 +38,9 @@ def convert(rows, company_id, source="lume",station=None):
             parceiro_id=f"{prefix}:{row['contactId']}" if row.get('contactId') else None,parceiro=row['partner'],tipo=row['kind'],
             descricao=row.get('description',''),categoria=row.get('category','N\u00e3o classificado'),competencia=row.get('competence'),
             vencimento=row['due'],valor_centavos=amount,liquidado_centavos=paid,
-            saldo_centavos=balance,situacao=row['status']))
+            saldo_centavos=balance,situacao=row['status'],modalidade_prevista=row.get('remainingMethod'),
+            meio_ultimo_pagamento=next((p.get('method') for p in sorted(payments,key=lambda p:p['paidOn'],reverse=True) if p['reversedAt'] is None),None),
+            pagamentos=[dict(conta=row.get('description',''),data=p['paidOn'],valor_centavos=p['amountCents'],meio=p.get('method','Não informado'),situacao='Estornado' if p['reversedAt'] else 'Confirmado') for p in payments]))
     return result
 
 

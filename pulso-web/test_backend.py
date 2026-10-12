@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 import backend as b
+CONTEXT={'companies':[{'id':b.COMPANY,'name':'Teste','products':['pulso']}]}
 H={'Origin':'https://pulso.tectria.com.br','Host':'pulso.tectria.com.br','X-Pulso-Request':'1'}
 class AccessTests(unittest.TestCase):
  def test_selected_new_station_is_accepted(self):
@@ -9,8 +10,8 @@ class AccessTests(unittest.TestCase):
    if 'module_access' in path:return {'companyId':b.COMPANY,'module':'pulso','status':'allowed'}
    if 'closings' in path:return {'companyId':b.COMPANY,'installationId':station,'configured':True,'available':True,'rows':[]}
    raise b.ApiError('Not configured',502)
-  with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[]}):
-   self.assertEqual(b.panel('jwt')['data'],{'dias':[]})
+  with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}}):
+   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}})
  def test_row_from_different_station_is_rejected(self):
   with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'installationId':'c5c27476-9cb4-4e3f-9739-5a7d53ab8e03','configured':True,'available':True,'rows':[{'company_id':b.COMPANY,'installation_id':'0b076f52-e464-478d-a9b3-b05d588b80af'}]}]):
    with self.assertRaises(b.ApiError):b.panel('jwt')
@@ -26,12 +27,12 @@ class AccessTests(unittest.TestCase):
    with self.assertRaises(b.ApiError):b.handle('module-access',{},H)
    remote.assert_not_called()
  def test_module_availability_is_bound_to_company_and_user(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'nexo','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'not_contracted'}]) as remote:
+  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'nexo','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'not_contracted'}]) as remote:
    result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
    self.assertEqual(result,{'modules':{'nexo':'allowed','lume':'not_contracted'}})
-   for call in remote.call_args_list:self.assertEqual(call.args[1]['company_id'],b.COMPANY);self.assertEqual(call.args[2],'jwt')
+   for call in remote.call_args_list[1:]:self.assertEqual(call.args[1]['company_id'],b.COMPANY);self.assertEqual(call.args[2],'jwt')
  def test_module_availability_rejects_mismatched_company(self):
-  with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':'other','module':'nexo','status':'allowed'},b.ApiError('Unavailable',502)]):
+  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':'other','module':'nexo','status':'allowed'},b.ApiError('Unavailable',502)]):
    result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
    self.assertEqual(result['modules'],{'nexo':'unknown','lume':'unknown'})
  def test_expired_session_cannot_read(self):
@@ -52,7 +53,7 @@ class AccessTests(unittest.TestCase):
    with self.assertRaises(b.ApiError):b.handle('panel',{},H)
    remote.assert_not_called()
  def test_login_checks_contract_and_sets_secure_cookie(self):
-  with patch.object(b,'remote',side_effect=[{'access_token':'jwt.token.value','expires_in':7200},{'companyId':b.COMPANY,'module':'pulso','status':'allowed'}]):
+  with patch.object(b,'remote',side_effect=[{'access_token':'jwt.token.value','expires_in':7200},CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'}]):
    result,c=b.handle('login',{'email':'a@example.com','password':'example'},H)
    self.assertTrue(result['ok']);self.assertIn('HttpOnly; Secure; SameSite=Strict',c[0]);self.assertIn('Max-Age=3600',c[0])
  def test_other_company_cannot_login(self):
@@ -70,5 +71,5 @@ class AccessTests(unittest.TestCase):
    if 'closings' in path:return {'companyId':b.COMPANY,'installationId':'c5c27476-9cb4-4e3f-9739-5a7d53ab8e03','configured':True,'available':True,'rows':[],'queriedAt':'2026-10-07T12:00:00Z'}
    raise b.ApiError('Not configured',502)
   with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'password':'NEVER','contacts':[]}):
-   self.assertEqual(b.panel('jwt')['data'],{'dias':[]})
+   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}})
 if __name__=='__main__':unittest.main()

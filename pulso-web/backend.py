@@ -55,7 +55,7 @@ def panel(token,company=COMPANY):
  # Missing integrations remain missing, never a fabricated zero.
  for kind in ('financeiro','metas'):
   try:
-   if kind=='financeiro':tables[kind],_=financial(remote,company,token,station=station)
+   if kind=='financeiro':tables[kind],financial_metadata=financial(remote,company,token,station=station,include_metadata=True)
    else:tables[kind]=goals(remote('/rest/v1/rpc/pulso_goals_read',{'company_id':company},token),company,station)
   except ApiError as e:
    if e.status in (401,403):raise
@@ -63,6 +63,8 @@ def panel(token,company=COMPANY):
  allowed=('dias','recebimentos','produtos_vendidos','estoque','transacoes','clientes_vendas','funcionarios_vendas','financeiro','metas')
  data={k:tables[k] for k in allowed if k in tables}
  if any(not isinstance(rows,list) or any(r.get('empresa_id')!=company or r.get('estacao_id',station)!=station for r in rows) for rows in data.values()):raise ApiError('Dados não correspondem à empresa autorizada.',502)
+ if 'financeiro' in data:data['financeiro_metadata']=financial_metadata
+ data['in_progress']={'available':False,'web':True,'payments':[p for row in data.get('financeiro',[]) if row['tipo']=='A pagar' for p in row.get('pagamentos',[])]}
  return {'ok':True,'data':data,'company':company,'metadata':{'queriedAt':queried,'exportedAt':datetime.now(timezone.utc).isoformat(),'source':'nexo'}}
 
 from web_session import session_bridge,official

@@ -29,3 +29,6 @@ document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{pag
 $('date-start').onchange=$('date-end').onchange=render;
 $('clear-filters').onclick=()=>{$('date-start').value=$('date-end').value='';render();};
 action(async()=>{const status=await request('status');adopt(status);if(status.connected)await load();else disconnect();});
+
+document.addEventListener('pulso-detail',event=>{const destination=event.detail?.page;if(!['vendas','financeiro','estoque','metas'].includes(destination))return;page=destination;document.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.page===page)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});render();});
+setInterval(()=>{if(packet&&!busy&&!document.hidden)action(load);},60000);

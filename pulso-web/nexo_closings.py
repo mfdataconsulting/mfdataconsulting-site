@@ -52,6 +52,21 @@ def convert(records, company_id):
         employee_version=doc.get('employeeSchemaVersion')
         if employee_version not in (None,1):raise ValueError('Versao de funcionarios nao suportada')
         sales = doc['sales']
+        finance = doc['finance']
+        methods=sorted(f['payment'] for f in finance)
+        if methods not in (['card','cash','pix'],['card','cash','credit','pix','table']):
+            raise ValueError('Resumo de modalidades incompleto ou duplicado')
+        extended='credit' in methods
+        account_kinds={}
+        for account in (doc.get('settlements') or {}).get('accounts',[]):
+            sale_id=str(UUID(account['saleId']))
+            if sale_id in account_kinds or account['kind'] not in ('credit','table'):
+                raise ValueError('Classificação de conta inválida ou duplicada')
+            account_kinds[sale_id]=account['kind']
+        if extended and any(id not in {str(UUID(s['id'])) for s in sales} for id in account_kinds):
+            raise ValueError('Conta sem venda neste fechamento')
+        def reference(sale):
+            return account_kinds.get(str(UUID(sale['id'])),sale['payment']) if extended else sale['payment']
         if doc.get('customerSchemaVersion') not in (None,1):raise ValueError('Versão de clientes não suportada')
         if len({str(UUID(s['id'])) for s in sales}) != len(sales):
             raise ValueError('Venda duplicada')
@@ -68,7 +83,7 @@ def convert(records, company_id):
                 if employee_id is not None:
                     employee_id=str(UUID(employee_id))
                     if not isinstance(employee_name,str) or not employee_name.strip() or len(employee_name)>130:raise ValueError('Nome de funcionario invalido')
-                    tables['funcionarios_vendas'].append(dict(base,funcionario_id=station+':'+employee_id,funcionario=employee_name,venda_id=str(UUID(s['id'])),criada_em=s['createdAt'],meio=s['payment'],total_centavos=integer(s['totalCents']),situacao='Cancelada' if s['cancelledAt'] is not None else 'Confirmada'))
+                    tables['funcionarios_vendas'].append(dict(base,funcionario_id=station+':'+employee_id,funcionario=employee_name,venda_id=str(UUID(s['id'])),criada_em=s['createdAt'],meio=reference(s),total_centavos=integer(s['totalCents']),situacao='Cancelada' if s['cancelledAt'] is not None else 'Confirmada'))
             elif employee_id is not None or employee_name is not None:raise ValueError('Funcionario sem contrato de atribuicao')
             customer_version=doc.get('customerSchemaVersion')
             if customer_version not in (None,1):raise ValueError('Versão de clientes não suportada')
@@ -80,18 +95,15 @@ def convert(records, company_id):
                     customer_id=str(UUID(customer_id))
                     if not isinstance(customer_name,str) or not customer_name.strip() or len(customer_name)>120:raise ValueError('Nome de cliente inválido')
                     tables['clientes_vendas'].append(dict(base,cliente_id=station+':'+customer_id,cliente=customer_name,
-                        venda_id=str(UUID(s['id'])),criada_em=s['createdAt'],meio=s['payment'],
+                        venda_id=str(UUID(s['id'])),criada_em=s['createdAt'],meio=reference(s),
                         total_centavos=integer(s['totalCents']),situacao='Cancelada' if s['cancelledAt'] is not None else 'Confirmada'))
             elif customer_id is not None or customer_name is not None:raise ValueError('Cliente sem contrato de identificação')
             tables['transacoes'].append(dict(base, venda_id=str(UUID(s['id'])),
-                criada_em=s['createdAt'], meio=s['payment'], total_centavos=integer(s['totalCents']),custo_centavos=s.get('costCents'),
+                criada_em=s['createdAt'], meio=reference(s), total_centavos=integer(s['totalCents']),custo_centavos=s.get('costCents'),
                 situacao='Cancelada' if s['cancelledAt'] is not None else 'Confirmada'))
-        finance = doc['finance']
-        if sorted(f['payment'] for f in finance) != ['card', 'cash', 'pix']:
-            raise ValueError('Resumo de recebimentos incompleto ou duplicado')
         gross = cancelled = net = 0
         for f in finance:
-            group = [s for s in sales if s['payment'] == f['payment']]
+            group = [s for s in sales if reference(s) == f['payment']]
             g = sum(integer(s['totalCents']) for s in group)
             c = sum(integer(s['totalCents']) for s in group if s['cancelledAt'] is not None)
             if (integer(f['salesCount']), integer(f['grossCents']), integer(f['cancelledCents']), integer(f['netCents'])) != (len(group), g, c, g-c):
@@ -116,9 +128,9 @@ def convert(records, company_id):
             for a in settlement['accounts']:
                 if integer(a['paidCents']) > integer(a['totalCents']): raise ValueError('Conta recebida acima do total')
             # Revenue is retained in finance; cash receipts are a separate measure.
-            for r in tables['recebimentos'][-3:]:
-                receipt = next(x for x in settlement['methods'] if x['method']==r['meio'])
-                r['recebido_centavos'] = receipt['netCents']
+            for r in tables['recebimentos'][-len(finance):]:
+                receipt = next((x for x in settlement['methods'] if x['method']==r['meio']),None)
+                r['recebido_centavos'] = receipt['netCents'] if receipt else 0
             base['recebido_centavos'] = paid
             base['saldo_vendas_centavos'] = sum(a['totalCents']-a['paidCents'] for a in settlement['accounts'] if a['cancelledAt'] is None)
         product_keys = set()
