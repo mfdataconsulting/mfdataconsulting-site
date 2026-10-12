@@ -45,7 +45,7 @@ def financial_position(company,token):
   if source=='lume':return None
   if revision is not None and revision!=packet.get('snapshotRevision'):raise ApiError('A posição mudou; atualize a consulta.',409)
   revision=packet.get('snapshotRevision')
-  metadata={k:packet[k] for k in ('source','receivedAt','snapshotRevision','installationId') if k in packet}
+  metadata={k:packet[k] for k in ('source','available','receivedAt','snapshotRevision','installationId') if k in packet}
   batch=packet.get('rows')
   if not isinstance(batch,list) or len(batch)>100:raise ApiError('Lote financeiro inválido.',502)
   if not batch:return {'financial':rows,'financialSource':metadata}
