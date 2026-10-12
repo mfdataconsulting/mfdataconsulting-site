@@ -1,10 +1,11 @@
-import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml,formatQuantity} from './experience.mjs';
+import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml,formatQuantity,financialFilterDefaults,financialRows,financialFiltersHtml} from './experience.mjs';
 import {companyLabel,chooseCompany,rememberCompany,showCompany} from './company-context.mjs';
 import {sessionRecovery} from './session-recovery.mjs';
 import {mountLocalHelp} from './help-local.mjs';
 import {setupPush} from './push.mjs';
 import {faqGroups} from './faq.js';
 let pendingReturn=false,pendingRecord=null;
+const financialFiltersByCompany=new Map();
 let state, page='dashboard', entity, context, companyId, csrf, refreshVersion=0;
 let pushControls,pushProfile;
 const $=id=>document.getElementById(id);
@@ -16,7 +17,7 @@ const names={dashboard:'Visão geral',contacts:'Contatos',products:'Estoque',ord
 const icons={dashboard:'◈',contacts:'◎',products:'▤',orders:'↗',invoices:'▧',tasks:'◷',channels:'◇'};
 const statuses={orders:{Solicitado:['Aprovado','Cancelado'],Aprovado:['Enviado','Cancelado'],Enviado:['Recebido','Cancelado']},invoices:{'A conferir':['Conferida']},tasks:{Pendente:['Concluída']}};
 function updateModuleButtons(){const company=context?.companies.find(c=>c.id===companyId);for(const module of ['nexo','pulso']){const button=$('open-'+module),allowed=company?.products?.includes(module)===true;button.classList.toggle('module-available',allowed);const lock=button.querySelector('svg:not(.product-icon)');if(lock)lock.toggleAttribute("hidden",allowed);const note=$(module+'-access-note');note.hidden=allowed;note.textContent=company?'Módulo não liberado':'Verificando acesso…';if(allowed)button.removeAttribute('aria-describedby');else button.setAttribute('aria-describedby',module+'-access-note');}}
-function signedOut(){pendingRecord=null;pendingReturn=false;pushControls=null;pushProfile=null;showCompany(null,null,document);refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
+function signedOut(){financialFiltersByCompany.clear();pendingRecord=null;pendingReturn=false;pushControls=null;pushProfile=null;showCompany(null,null,document);refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
 const recoverSession=sessionRecovery(async()=>{const previous=context?.sessionUser;const renewed=await request('/api/context');if(context&&(!previous||previous!==renewed.sessionUser)){signedOut();throw Error('A conta mudou. Entre novamente antes de continuar.');}context=renewed;csrf=renewed.token;showCompany(context,companyId,document);if(companyId&&!renewed.companies.some(c=>c.id===companyId&&c.products.includes('lume')))throw Error('A empresa selecionada não está disponível na sessão atual.');});
 async function request(path,data,retried=false){const options={headers:{'X-Company-Id':companyId||'','X-Lume-Request':'1'}};if(data!==undefined){options.method='POST';Object.assign(options.headers,{'Content-Type':'application/json','X-Lume-Request':'1','X-Lume-Token':csrf||''});options.body=JSON.stringify(data)}const r=await fetch(path,options);const body=await r.json();if(!r.ok){if(r.status===401)signedOut();const error=Error(body.error||'Não foi possível concluir.');error.status=r.status;if(path==='/api/context')throw error;return recoverSession({data,error,retried,retry:()=>request(path,data,true)});}return body;}
 async function refresh(){updateModuleButtons();const version=++refreshVersion;const company=context.companies.find(c=>c.id===companyId);if(!company||!company.products.includes('lume')){state=null;$('nav').innerHTML='';$('content').innerHTML='<div class="panel"><h2>Lume não habilitado</h2><p class="muted">Entre em contato com a Tectria para incluir o Lume no pacote desta empresa.</p></div>';return}const result=await request('/api/state');if(notificationPages.includes(page))result.notifications=await request('/api/notifications');if(version!==refreshVersion)return;state=result;csrf=state.token;render();}
@@ -64,13 +65,16 @@ function render(){
   html+=alerts.length?alerts.map(a=>`<div class="alert">${a}</div>`).join(''):'<p class="muted">Nenhum alerta no momento. Os alertas são recalculados ao abrir ou atualizar o painel.</p>';
   html+='</div><div class="panel"><h2>Atividade recente</h2>'+table(['Data (UTC)','Registro'],state.events.map(e=>[esc(e.created),esc(e.description)]))+'</div>';
  }else if(page==='financial'){
+  const filters=pendingRecord?financialFilterDefaults:(financialFiltersByCompany.get(companyId)||financialFilterDefaults);
+  const visibleFinancial=financialRows(state.financial.filter(matchesPending),filters,today());
   const role=context.companies.find(c=>c.id===companyId)?.role;
   const fromNexoFinancial=state.financialSource?.source==='nexo';
   const canWrite=false;
   html=`<div class="toolbar"><p class="muted">${fromNexoFinancial?'Contas a pagar e a receber do Nexo, somente consulta. Cadastre e registre pagamentos no Nexo.':'Contas a pagar e a receber, somente consulta. Registre pagamentos no sistema de gestão de origem.'}</p>${canWrite?'<button class="primary" data-new="financial">+ Nova conta</button>':''}</div><div class="panel">`;
   if(fromNexoFinancial)html+=`<p class="muted">Última posição recebida: ${state.financialSource.receivedAt?new Date(state.financialSource.receivedAt).toLocaleString('pt-BR'):'Ainda não recebida'}. Os lançamentos antigos do Lume permanecem preservados.</p>`;
-  html+=table(['Conta','Descrição','Categoria','Contato','Tipo','Vencimento','Valor','Quitado','Saldo','Plano de recebimento','Situação',''],state.financial.filter(matchesPending).map(t=>[`#${String(t.id).slice(0,8)}`,esc(t.description||'—'),esc(t.category||'Não classificado'),esc(t.partner),esc(t.kind),date(t.due),money(t.amountCents),money(t.paidCents),money(t.balanceCents),financialPlanHtml(t),esc(t.status),canWrite&&t.balanceCents>0?`<button data-payment="${t.id}">Registrar baixa</button>`:'']));
-  html+='</div><div class="panel"><h2>Histórico de pagamentos e recebimentos</h2>'+table(['Conta','Data','Valor','Meio','Situação',''],state.financial.filter(matchesPending).flatMap(t=>t.payments.map(p=>[`#${String(t.id).slice(0,8)}`,date(p.paidOn),money(p.amountCents),esc(p.method),p.reversedAt?'Estornado':'Confirmado',false?`<button data-reverse="${p.id}">Estornar</button>`:''])))+'</div>';
+  html+=financialFiltersHtml(filters,esc)+`<p class="muted" role="status">${visibleFinancial.length} de ${state.financial.filter(matchesPending).length} contas.</p>`;
+  html+=table(['Conta','Descrição','Categoria','Contato','Tipo','Vencimento','Valor','Quitado','Saldo','Plano de recebimento','Situação',''],visibleFinancial.map(t=>[`#${String(t.id).slice(0,8)}`,esc(t.description||'—'),esc(t.category||'Não classificado'),esc(t.partner),esc(t.kind),date(t.due),money(t.amountCents),money(t.paidCents),money(t.balanceCents),financialPlanHtml(t),esc(t.status),canWrite&&t.balanceCents>0?`<button data-payment="${t.id}">Registrar baixa</button>`:'']));
+  html+='</div><div class="panel"><h2>Histórico de pagamentos e recebimentos</h2>'+table(['Conta','Data','Valor','Meio','Situação',''],visibleFinancial.flatMap(t=>(t.payments||[]).map(p=>[`#${String(t.id).slice(0,8)}`,date(p.paidOn),money(p.amountCents),esc(p.method),p.reversedAt?'Estornado':'Confirmado',false?`<button data-reverse="${p.id}">Estornar</button>`:''])))+'</div>';
  }else if(page==='automations'||page==='channels'){
   const n=state.notifications||{};
   const canConfigure=['owner','admin'].includes(context.companies.find(c=>c.id===companyId)?.role)&&!n.demo;
@@ -157,3 +161,8 @@ function notificationHistory(n){
 setInterval(refreshNotificationHistory,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNotificationHistory();});
 window.addEventListener('focus',refreshNotificationHistory);
+
+
+
+document.addEventListener('submit',e=>{if(e.target.id!=='financial-filters')return;e.preventDefault();const values=Object.fromEntries(new FormData(e.target));if(values.from&&values.to&&values.from>values.to){$('financial-filter-error').textContent='A data inicial deve ser anterior ou igual à data final.';return;}financialFiltersByCompany.set(companyId,values);pendingRecord=null;render();});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-financial-clear]'))return;financialFiltersByCompany.delete(companyId);pendingRecord=null;render();});

@@ -73,3 +73,35 @@ export function pendingNotificationsHtml(notifications,esc,canManage){
 
 
 export function formatQuantity(value){if(value===null||value===undefined||value==='')return '—';const number=Number(value);return Number.isFinite(number)?number.toLocaleString('pt-BR',{minimumFractionDigits:Number.isInteger(number)?0:2,maximumFractionDigits:2}):'—';}
+
+export const financialFilterDefaults={query:'',kind:'',status:'',from:'',to:'',order:'due-asc'};
+export function financialRows(rows,filters={},today=''){
+ const f={...financialFilterDefaults,...filters};
+ const normalize=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+ const query=normalize(f.query.trim());
+ return rows.filter(t=>{
+  const balance=Number(t.balanceCents)||0,paid=Number(t.paidCents)||0;
+  if(query&&!normalize([t.id,t.description,t.category,t.partner].join(' ')).includes(query))return false;
+  if(f.kind&&t.kind!==f.kind)return false;
+  if(f.from&&(!t.due||t.due<f.from))return false;
+  if(f.to&&(!t.due||t.due>f.to))return false;
+  if(f.status==='pending'&&balance<=0)return false;
+  if(f.status==='paid'&&balance>0)return false;
+  if(f.status==='partial'&&!(balance>0&&paid>0))return false;
+  if(f.status==='overdue'&&!(balance>0&&t.due&&t.due<today))return false;
+  return true;
+ }).sort((a,b)=>{
+  let result=0;
+  if(f.order.startsWith('due-')){if(!a.due||!b.due)return a.due?-1:b.due?1:String(a.id).localeCompare(String(b.id));result=a.due.localeCompare(b.due);}
+  else if(f.order.startsWith('balance-'))result=Number(a.balanceCents)-Number(b.balanceCents);
+  else if(f.order.startsWith('amount-'))result=Number(a.amountCents)-Number(b.amountCents);
+  else result=String(a.partner??'').localeCompare(String(b.partner??''),'pt-BR');
+  if(f.order.endsWith('-desc'))result=-result;
+  return result||String(a.id).localeCompare(String(b.id));
+ });
+}
+export function financialFiltersHtml(filters,esc){
+ const f={...financialFilterDefaults,...filters};
+ const select=(name,label,options)=>`<label>${label}<select name="${name}">${options.map(([v,text])=>`<option value="${v}" ${f[name]===v?'selected':''}>${text}</option>`).join('')}</select></label>`;
+ return `<form id="financial-filters"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:0 16px"><label>Buscar conta, descrição ou contato<input name="query" type="search" value="${esc(f.query)}"></label>${select('kind','Tipo',[['','Todos'],['A pagar','A pagar'],['A receber','A receber']])}${select('status','Situação',[['','Todas'],['pending','Com saldo em aberto'],['partial','Parcialmente quitadas'],['paid','Quitadas'],['overdue','Vencidas com saldo']])}<label>Vencimento de<input name="from" type="date" value="${esc(f.from)}"></label><label>Vencimento até<input name="to" type="date" value="${esc(f.to)}"></label>${select('order','Ordenar por',[['due-asc','Vencimento: mais próximo primeiro'],['due-desc','Vencimento: mais distante primeiro'],['balance-desc','Saldo: maior primeiro'],['balance-asc','Saldo: menor primeiro'],['amount-desc','Valor: maior primeiro'],['amount-asc','Valor: menor primeiro'],['partner-asc','Contato: A a Z']])}</div><button type="submit" class="primary">Aplicar filtros</button> <button type="button" data-financial-clear>Limpar filtros</button><p class="muted" id="financial-filter-error" role="alert"></p></form>`;
+}
