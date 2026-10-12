@@ -24,3 +24,5 @@ aside footer{padding-top:5px}.product-access{margin-bottom:5px}.product-access>s
 #notification-form input[type="checkbox"] { width:18px; height:18px; margin:0; flex:0 0 18px; accent-color:#dc1238; }
 #notification-form input[type="number"] { max-width:150px; display:block; }
 #notification-form fieldset:disabled { opacity:.72; }
+
+#financial-filters{margin:12px 0 16px}#financial-filters .financial-filter-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px}#financial-filters label{flex:0 1 150px;min-width:0;margin:0;font-size:11px}#financial-filters label:has([name="query"]){flex-basis:180px}#financial-filters label:has([name="order"]){flex-basis:185px}#financial-filters input,#financial-filters select{height:34px;margin-top:4px;padding:6px 8px;font-size:12px}#financial-filters .financial-filter-actions{display:flex;gap:6px;align-items:center}#financial-filters button{height:34px;padding:6px 10px;font-size:12px}#financial-filter-error:empty{display:none}#financial-filter-error{margin:6px 0 0}@media(max-width:650px){#financial-filters label,#financial-filters label:has([name="query"]),#financial-filters label:has([name="order"]){flex:1 1 140px}}
