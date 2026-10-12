@@ -100,6 +100,7 @@ def convert(records, company_id):
             elif customer_id is not None or customer_name is not None:raise ValueError('Cliente sem contrato de identificação')
             tables['transacoes'].append(dict(base, venda_id=str(UUID(s['id'])),
                 criada_em=s['createdAt'], meio=reference(s), total_centavos=integer(s['totalCents']),custo_centavos=s.get('costCents'),
+                cliente_id=station+':'+customer_id if customer_id else None,cliente=customer_name,colaborador=employee_name,motivo_cancelamento=s.get('cancellationReason'),
                 situacao='Cancelada' if s['cancelledAt'] is not None else 'Confirmada'))
         gross = cancelled = net = 0
         for f in finance:

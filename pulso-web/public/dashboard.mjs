@@ -36,6 +36,34 @@ function node(tag,text,className){const el=document.createElement(tag);if(text!=
 function table(headers,rows){const wrap=node('div',undefined,'table-scroll'),t=node('table'),head=node('thead'),tr=node('tr');headers.forEach(h=>tr.append(node('th',h)));head.append(tr);t.append(head);const body=node('tbody');rows.forEach(row=>{const line=node('tr');row.forEach((value,index)=>{const cell=node('td',String(value??'—'));cell.dataset.label=headers[index];line.append(cell);});body.append(line);});t.append(body);wrap.append(t);if(!rows.length)wrap.append(node('p','Nenhum registro disponível para esta seleção.','empty'));return wrap;}
 function card(label,value,note){const c=node('article',undefined,'metric');c.append(node('span',label),node('strong',value),node('small',note||''));return c;}
 function panel(title){const p=node('section',undefined,'dashboard-card');p.append(node('h3',title));return p;}
+const salesStates=new WeakMap();
+export function salesRecords(data,start='',end='',filters={}){
+ const current=withInProgress(data),scope=selected(current,start,end),key=id=>String(id||'').replaceAll('-','').toLowerCase();
+ const customers=new Map(scope.customers.map(r=>[key(r.venda_id),r])),employees=new Map(scope.employees.map(r=>[key(r.venda_id),r]));
+ const details=new Map((data.in_progress?.available?data.in_progress.details||[]:[]).map(r=>[key(r.venda_id),r]));
+ const normalize=text=>String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ return scope.sales.map(r=>{const id=key(r.venda_id),detail=details.get(id),matching=detail?.total_centavos===r.total_centavos?detail:null,items=matching?.itens;
+  return {...r,cliente:r.cliente||customers.get(id)?.cliente||matching?.cliente||'Não identificado',colaborador:r.colaborador||employees.get(id)?.funcionario||matching?.colaborador||'Não informado',motivo_cancelamento:r.motivo_cancelamento||matching?.motivo_cancelamento,itens:Array.isArray(items)&&items.length&&items.every(i=>Number.isFinite(i.quantidade)&&Number.isInteger(i.valor_unitario_centavos)&&Number.isInteger(i.total_centavos))&&sum(items,'total_centavos')===r.total_centavos?items:null};
+ }).filter(r=>(!filters.customer||normalize(r.cliente).includes(normalize(filters.customer)))&&(!filters.status||r.situacao===filters.status)&&(!filters.method||r.meio===filters.method)).sort((a,b)=>(b.data_operacional||'').localeCompare(a.data_operacional||'')||(b.criada_em||'').localeCompare(a.criada_em||''));
+}
+export function salesSummary(rows){const confirmed=rows.filter(r=>r.situacao==='Confirmada'),cancelled=rows.filter(r=>r.situacao==='Cancelada'),net=sum(confirmed,'total_centavos');return {net,count:confirmed.length,ticket:confirmed.length?net/confirmed.length:null,cancelled:sum(cancelled,'total_centavos'),cancelledCount:cancelled.length};}
+function renderSales(root,data,start,end,date){
+ const scope=JSON.stringify([data.empresa_id,data.metadata?.companyId,(data.transacoes||[])[0]?.empresa_id,(data.transacoes||[])[0]?.estacao_id]);let state=salesStates.get(root);if(!state||state.scope!==scope){state={scope,customer:'',status:'',method:'',expanded:new Set()};salesStates.set(root,state);}
+ const filters=node('div',undefined,'sales-filters'),search=node('input');search.type='search';search.placeholder='Nome do cliente';search.value=state.customer;
+ const field=(title,control)=>{const label=node('label',title);label.append(control);filters.append(label);};field('Buscar cliente',search);
+ const status=node('select'),method=node('select');for(const [value,title] of [['','Todas'],['Confirmada','Confirmadas'],['Cancelada','Canceladas']]){const option=node('option',title);option.value=value;status.append(option);}status.value=state.status;field('Situação',status);
+ for(const value of ['',...new Set(salesRecords(data,start,end).map(r=>r.meio).filter(Boolean))]){const option=node('option',value?payment(value):'Todas');option.value=value;method.append(option);}method.value=state.method;field('Referência da venda',method);
+ const clear=node('button','Limpar filtros');clear.type='button';filters.append(clear);root.append(filters);
+ const content=node('div',undefined,'sales-content');root.append(content);
+ const draw=()=>{content.replaceChildren();const rows=salesRecords(data,start,end,state),s=salesSummary(rows),metrics=node('div',undefined,'metrics sales-metrics');metrics.append(card('Vendas líquidas',money(s.net),'Confirmadas na seleção'),card('Vendas confirmadas',String(s.count),'Na seleção'),card('Ticket médio',money(s.ticket),'Valor médio por venda confirmada'),card('Cancelamentos',money(s.cancelled),`${s.cancelledCount} vendas canceladas`));content.append(metrics);
+ const p=panel('Vendas registradas');p.append(node('p','Horários de Brasília. A referência da venda não representa o meio de um recebimento posterior. Cancelamentos não compõem as vendas líquidas.','sales-note'));
+ if(rows.some(r=>r.provisorio))p.append(node('p','Inclui o dia em andamento. Os registros indicados como provisórios serão confirmados no fechamento.','overview-live-status'));
+ const wrap=table(['Dia operacional','Data e hora','Cliente','Colaborador','Referência','Situação','Valor','Detalhes'],rows.map(r=>[date(r.data_operacional),r.criada_em?new Date(r.criada_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Não informado',r.cliente,r.colaborador,payment(r.meio)||'Não informado',r.situacao+(r.provisorio?' · Provisório':''),money(r.total_centavos),'']));
+ [...wrap.querySelectorAll('tbody tr')].forEach((tr,index)=>{const r=rows[index],id=r.venda_id||String(index),button=node('button',state.expanded.has(id)?'Ocultar':'Ver venda');button.type='button';button.className='sale-toggle';const detailRow=node('tr'),detailCell=node('td');detailCell.colSpan=8;detailRow.hidden=!state.expanded.has(id);button.setAttribute('aria-expanded',String(!detailRow.hidden));button.addEventListener('click',()=>{detailRow.hidden=!detailRow.hidden;button.textContent=detailRow.hidden?'Ver venda':'Ocultar';button.setAttribute('aria-expanded',String(!detailRow.hidden));if(detailRow.hidden)state.expanded.delete(id);else state.expanded.add(id);});const body=node('div',undefined,'sale-detail');body.append(node('strong','Venda #'+id.slice(0,8)));
+ if(r.itens)body.append(table(['Produto','Quantidade','Valor unitário','Total'],r.itens.map(i=>[i.nome,new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(i.quantidade),money(i.valor_unitario_centavos),money(i.total_centavos)])));else body.append(node('p','Itens não enviados neste fechamento.','empty'));
+ if(r.situacao==='Cancelada')body.append(node('p','Motivo: '+(r.motivo_cancelamento||'Não informado')));detailCell.append(body);detailRow.append(detailCell);tr.after(detailRow);tr.lastElementChild.append(button);});p.append(wrap);content.append(p);};
+ search.addEventListener('input',()=>{state.customer=search.value;draw();});status.addEventListener('change',()=>{state.status=status.value;draw();});method.addEventListener('change',()=>{state.method=method.value;draw();});clear.addEventListener('click',()=>{state.customer=state.status=state.method='';search.value=status.value=method.value='';draw();});draw();
+}
 function aggregate(rows,id,name){const groups=new Map();for(const row of rows){if(row.situacao!=='Confirmada')continue;const key=row[id];const old=groups.get(key)||{name:row[name],orders:0,net:0};old.orders++;old.net+=row.total_centavos;groups.set(key,old);}return [...groups.values()].sort((a,b)=>b.net-a.net).map(row=>[row.name,row.orders,money(row.net),money(row.net/row.orders)]);}
 export function overviewSummary(data,s,start='',end=''){
  const inside=r=>(!start||r.data_operacional>=start)&&(!end||r.data_operacional<=end);
@@ -132,6 +160,7 @@ function renderOverview(root,data,s,start,end,date){
  grid.append(attention);root.append(grid);
 }
 export function renderDashboard(root,packet,page,start,end){
+ const focusedSearch=page==='vendas'&&root.contains(document.activeElement)&&document.activeElement?.type==='search',selection=focusedSearch?document.activeElement.selectionStart:null;
  root.replaceChildren();document.body?.classList.toggle('pulso-overview',page==='inicio');const data=packet.data,s=selected(data,start,end);
  const date=value=>value?value.split('-').reverse().join('/'):'—';
  if(page==='ajuda'){
@@ -147,7 +176,8 @@ export function renderDashboard(root,packet,page,start,end){
  }else if(page==='inicio'){
   renderOverview(root,data,s,start,end,date);
  }else if(page==='vendas'){
-  const p=panel('Vendas registradas');p.append(node('p','Horários de Brasília. Cancelamentos aparecem separados e não compõem as vendas líquidas.'),table(['Data operacional','Data e hora da venda','Referência da venda','Situação','Valor'],s.sales.map(r=>[date(r.data_operacional),r.criada_em?new Date(r.criada_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Não informado',payment(r.meio),r.situacao,money(r.total_centavos)])));root.append(p);
+  renderSales(root,data,start,end,date);
+  if(focusedSearch){const input=root.querySelector('input[type=search]');input.focus({preventScroll:true});input.setSelectionRange(selection,selection);}
  }else if(page==='estoque'){
   const p=panel('Posição do estoque');p.append(node('p',`Última posição confirmada: ${date(s.latest)}. Independente do período de vendas selecionado.`),table(['Produto','Unidade','Saldo','Mínimo','Situação'],s.stock.map(r=>[r.nome,r.unidade,number(r.saldo_milesimos/1000),number(r.minimo_milesimos/1000),r.saldo_milesimos===0?'Zerado':r.saldo_milesimos<=r.minimo_milesimos?'No mínimo ou abaixo':'Normal'])));root.append(p);
  }else if(page==='financeiro'){
