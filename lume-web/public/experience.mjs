@@ -1,5 +1,5 @@
 export const experiencePages={automations:'Automações',integrations:'Integrações',sources:'Dados acompanhados',executions:'Histórico de execução'};
-export const notificationPages=['automations','channels','integrations','executions'];
+export const notificationPages=['dashboard','automations','channels','integrations','executions'];
 export const defaultSettings={enabled:false,recipients:[],immediate:true,digest:true,digest_hour:8,lead_days:3,kinds:['stock_low','invoice_new','invoice_due','account_due','order_late','task_due']};
 const rules={stock_low:['Estoque no mínimo','Avisar quando o saldo atingir o mínimo ou ficar abaixo dele.'],invoice_new:['Nova nota cadastrada','Avisar quando uma nota for registrada para acompanhamento.'],invoice_due:['Conferência de documentos','Lembrar o prazo de conferência das notas.'],account_due:['Contas a pagar','Lembrar pagamentos da empresa próximos do vencimento.'],receivable_due:['Contas a receber','Lembrar valores de clientes próximos do vencimento.'],order_late:['Compras atrasadas','Avisar sobre compras que ultrapassaram a entrega prevista.'],task_due:['Prazos e tarefas','Lembrar tarefas pendentes próximas do prazo.']};
 export function settingsForm(n,page,canConfigure,esc){
@@ -104,4 +104,28 @@ export function financialFiltersHtml(filters,esc){
  const f={...financialFilterDefaults,...filters};
  const select=(name,label,options)=>`<label>${label}<select name="${name}">${options.map(([v,text])=>`<option value="${v}" ${f[name]===v?'selected':''}>${text}</option>`).join('')}</select></label>`;
  return `<form id="financial-filters"><div class="financial-filter-row"><label>Buscar<input name="query" placeholder="Conta ou contato" type="search" value="${esc(f.query)}"></label>${select('kind','Tipo',[['','Todos'],['A pagar','A pagar'],['A receber','A receber']])}${select('status','Situação',[['','Todas'],['pending','Em aberto'],['partial','Parciais'],['paid','Quitadas'],['overdue','Vencidas com saldo']])}<label>Vencimento de<input name="from" type="date" value="${esc(f.from)}"></label><label>Vencimento até<input name="to" type="date" value="${esc(f.to)}"></label>${select('order','Ordenação',[['due-asc','Vencimento crescente'],['due-desc','Vencimento decrescente'],['balance-desc','Saldo: maior primeiro'],['balance-asc','Saldo: menor primeiro'],['amount-desc','Valor: maior primeiro'],['amount-asc','Valor: menor primeiro'],['partner-asc','Contato: A a Z']])}<div class="financial-filter-actions"><button type="submit" class="primary">Aplicar</button><button type="button" data-financial-clear>Limpar</button></div></div><p class="muted" id="financial-filter-error" role="alert"></p></form>`;
+}
+
+export function dashboardHtml(state,company,esc,today){
+ const money=v=>(Number(v)/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+ const date=v=>v?String(v).split('-').reverse().join('/'):'—';
+ const pending=state.notifications?.pending||[],tasks=(state.tasks||[]).filter(t=>t.status==='Pendente');
+ const finances=(state.financial||[]).filter(t=>Number(t.balanceCents)>0);
+ const pay=finances.filter(t=>t.kind==='A pagar'),receive=finances.filter(t=>t.kind==='A receber');
+ const inventory=state.nexoInventory,low=inventory?.configured?(inventory.available?(inventory.items||[]).filter(p=>p.stockMills!==null&&p.stockMills<=p.minMills):null):(state.products||[]).filter(p=>p.balance!==null&&p.balance<=p.minimum);
+ const card=(title,value,detail,page)=>`<div class="card"><p>${title}</p><strong>${esc(value)}</strong><p>${esc(detail)}</p>${page!=='financial'||state.financial?`<button data-page="${page}" style="margin-top:12px">Consultar</button>`:''}</div>`;
+ let html='<div class="toolbar"><p class="muted">Sua empresa: pendências, prazos e informações acompanhadas.</p><button data-pending-refresh>Atualizar visão geral</button></div><div class="cards">'+card('Pendências das minhas regras',state.notifications?pending.length:'—','Regras e antecedência configuradas','channels')+card('Itens no mínimo ou abaixo',low?low.length:'—',low?'Reposições para avaliar':'Aguardando posição do estoque','products')+card('Saldo a pagar',state.financial?money(pay.reduce((n,t)=>n+Number(t.balanceCents),0)):'—','Todos os vencimentos em aberto','financial')+card('Saldo a receber',state.financial?money(receive.reduce((n,t)=>n+Number(t.balanceCents),0)):'—','Todos os clientes com saldo','financial')+'</div>';
+ html+='<section class="panel"><div class="toolbar"><h2>O que precisa de atenção</h2><button data-page="channels">Abrir pendências</button></div>';
+ html+=pending.length?pending.slice(0,6).map(p=>`<div class="alert"><strong>${esc(labels[p.kind]||'Pendência')}</strong> · ${esc(p.line)}</div>`).join(''):'<p class="muted">Nenhuma pendência nas regras e no período de aviso configurados.</p>';
+ if(pending.length>6)html+=`<p class="muted">Mais ${pending.length-6} pendências em Notificações.</p>`;
+ html+='</section>';
+ const end=new Date(today+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+7);const until=end.toISOString().slice(0,10);
+ const upcoming=[...finances.filter(t=>t.due).map(t=>({title:t.description||t.partner||'Conta',due:t.due,detail:t.kind+' · '+money(t.balanceCents),page:'financial'})),...tasks.filter(t=>t.due).map(t=>({title:t.title,due:t.due,detail:'Lembrete pessoal · '+(t.owner||''),page:'tasks'}))].filter(t=>t.due<=until).sort((a,b)=>a.due.localeCompare(b.due));
+ html+='<section class="panel"><h2>Vencidos e próximos 7 dias</h2><p class="muted">Agenda de consulta. Os avisos seguem a antecedência definida em Automações.</p>'+(upcoming.length?upcoming.slice(0,8).map(t=>`<div class="toolbar alert"><div><strong>${esc(t.title)}</strong><p class="muted">${date(t.due)}${t.due<today?' · Vencido':''} · ${esc(t.detail)}</p></div><button data-page="${t.page}">Consultar</button></div>`).join(''):'<p class="muted">Nenhum prazo pendente neste período.</p>')+'</section>';
+ const position=v=>v?esc(new Date(v).toLocaleString('pt-BR')):'Ainda não recebida';
+ html+='<section class="panel"><div class="toolbar"><h2>Seus acompanhamentos</h2><button data-page="integrations">Ver integrações</button></div><p>E-mail: <strong>'+(state.notifications?.settings?.enabled?'ativo':'pausado')+'</strong> · '+tasks.length+' lembretes pessoais pendentes.</p><p class="muted">'+(state.orders||[]).filter(o=>!['Recebido','Cancelado'].includes(o.status)).length+' compras em andamento · '+(state.invoices||[]).filter(n=>n.status==='A conferir').length+' documentos para conferir.</p>';
+ if(inventory?.configured)html+='<p class="muted">Estoque do Nexo: '+(inventory.available?'posição disponível':'aguardando dados')+' · '+position(inventory.receivedAt)+'.</p>';
+ if(state.financialSource?.source==='nexo')html+='<p class="muted">Financeiro do Nexo: última posição recebida '+position(state.financialSource.receivedAt)+'.</p>';
+ if(!inventory?.configured&&state.financialSource?.source!=='nexo')html+='<p class="muted">Acompanhamento dos dados disponíveis no Lume. Consulte as fontes contratadas em Integrações.</p>';
+ return html+'<button data-page="automations">Configurar regras</button> <button data-page="channels">Configurar notificações</button></section>';
 }

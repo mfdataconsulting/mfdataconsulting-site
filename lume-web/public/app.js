@@ -1,4 +1,4 @@
-import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml,formatQuantity,financialFilterDefaults,financialRows,financialFiltersHtml} from './experience.mjs';
+import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml,formatQuantity,financialFilterDefaults,financialRows,financialFiltersHtml,dashboardHtml} from './experience.mjs';
 import {companyLabel,chooseCompany,rememberCompany,showCompany} from './company-context.mjs';
 import {sessionRecovery} from './session-recovery.mjs';
 import {mountLocalHelp} from './help-local.mjs';
@@ -59,11 +59,7 @@ function render(){
  }else if(page==='faq'){
   html='<div class="faq-content"><div class="faq-intro"><span aria-hidden="true">?</span><div><strong>Seu guia rápido do Lume</strong><p>Escolha uma pergunta para consultar a resposta.</p></div></div>'+faqGroups.map((g,i)=>`<section class="panel faq-group" aria-labelledby="faq-group-${i}"><div class="faq-group-heading"><span aria-hidden="true">0${i+1}</span><div><h2 id="faq-group-${i}">${esc(g.title)}</h2><p>${esc(g.subtitle)}</p></div><small>${g.items.length} perguntas</small></div>${g.items.map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>`).join('')+'</div>';
  }else if(page==='dashboard'){
-  html=`<div class="cards">${[['Itens no mínimo ou abaixo',inventoryUnavailable?'—':low.length,'Reposição para avaliar'],['Compras em andamento',open.length,'Da solicitação à entrega'],['Notas a conferir',notes.length,'Documentos registrados'],['Tarefas pendentes',pending.length,'Responsáveis e prazos']].map(c=>`<div class="card"><p>${c[0]}</p><strong>${c[1]}</strong><p>${c[2]}</p></div>`).join('')}</div><div class="intro"><h2>Clareza para o próximo passo.</h2><p>Configure em Automações o que acompanhar. Escolha os canais em Notificações e confira suas fontes em Integrações.</p></div><div class="panel"><h2>Precisam de atenção</h2>`;
-  const alerts=[...low.map(p=>`${esc(p.name)}: saldo ${formatQuantity(p.balance)} ${esc(p.unit)}, mínimo ${formatQuantity(p.minimum)}.`),...open.filter(o=>o.due<today()).map(o=>`Compra #${o.id} com entrega prevista em ${date(o.due)} está atrasada.`),...pending.filter(t=>t.due<=today()).map(t=>`${esc(t.title)} — ${esc(t.owner)}, prazo ${date(t.due)}.`),...notes.filter(n=>n.due<=today()).map(n=>`Nota ${esc(n.number)}: prazo de conferência ${date(n.due)}.`)];
-  if(inventoryUnavailable)alerts.unshift('Estoque do Nexo indisponível ou aguardando a primeira sincronização. O saldo não foi confirmado.');
-  html+=alerts.length?alerts.map(a=>`<div class="alert">${a}</div>`).join(''):'<p class="muted">Nenhum alerta no momento. Os alertas são recalculados ao abrir ou atualizar o painel.</p>';
-  html+='</div><div class="panel"><h2>Atividade recente</h2>'+table(['Data (UTC)','Registro'],state.events.map(e=>[esc(e.created),esc(e.description)]))+'</div>';
+  html=dashboardHtml(state,context.companies.find(c=>c.id===companyId),esc,today());
  }else if(page==='financial'){
   const filters=pendingRecord?financialFilterDefaults:(financialFiltersByCompany.get(companyId)||financialFilterDefaults);
   const visibleFinancial=financialRows(state.financial.filter(matchesPending),filters,today());
