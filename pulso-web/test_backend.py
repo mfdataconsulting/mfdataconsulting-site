@@ -10,8 +10,8 @@ class AccessTests(unittest.TestCase):
    if 'module_access' in path:return {'companyId':b.COMPANY,'module':'pulso','status':'allowed'}
    if 'closings' in path:return {'companyId':b.COMPANY,'installationId':station,'configured':True,'available':True,'rows':[]}
    raise b.ApiError('Not configured',502)
-  with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}}):
-   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}})
+  with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'in_progress':{'available':False,'web':True,'payments':[],'receipt_payments':[]}}):
+   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[],'receipt_payments':[]}})
  def test_row_from_different_station_is_rejected(self):
   with patch.object(b,'remote',side_effect=[{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'installationId':'c5c27476-9cb4-4e3f-9739-5a7d53ab8e03','configured':True,'available':True,'rows':[{'company_id':b.COMPANY,'installation_id':'0b076f52-e464-478d-a9b3-b05d588b80af'}]}]):
    with self.assertRaises(b.ApiError):b.panel('jwt')
@@ -71,5 +71,5 @@ class AccessTests(unittest.TestCase):
    if 'closings' in path:return {'companyId':b.COMPANY,'installationId':'c5c27476-9cb4-4e3f-9739-5a7d53ab8e03','configured':True,'available':True,'rows':[],'queriedAt':'2026-10-07T12:00:00Z'}
    raise b.ApiError('Not configured',502)
   with patch.object(b,'remote',side_effect=remote),patch.object(b,'convert',return_value={'dias':[],'password':'NEVER','contacts':[]}):
-   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[]}})
+   self.assertEqual(b.panel('jwt')['data'],{'dias':[],'in_progress':{'available':False,'web':True,'payments':[],'receipt_payments':[]}})
 if __name__=='__main__':unittest.main()

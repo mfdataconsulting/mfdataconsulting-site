@@ -64,7 +64,7 @@ def panel(token,company=COMPANY):
  data={k:tables[k] for k in allowed if k in tables}
  if any(not isinstance(rows,list) or any(r.get('empresa_id')!=company or r.get('estacao_id',station)!=station for r in rows) for rows in data.values()):raise ApiError('Dados não correspondem à empresa autorizada.',502)
  if 'financeiro' in data:data['financeiro_metadata']=financial_metadata
- data['in_progress']={'available':False,'web':True,'payments':[p for row in data.get('financeiro',[]) if row['tipo']=='A pagar' for p in row.get('pagamentos',[])]}
+ data['in_progress']={'available':False,'web':True,'payments':[p for row in data.get('financeiro',[]) if row['tipo']=='A pagar' for p in row.get('pagamentos',[])],'receipt_payments':[p for row in data.get('financeiro',[]) if row['tipo']=='A receber' for p in row.get('pagamentos',[])]}
  return {'ok':True,'data':data,'company':company,'metadata':{'queriedAt':queried,'exportedAt':datetime.now(timezone.utc).isoformat(),'source':'nexo'}}
 
 from web_session import session_bridge,official

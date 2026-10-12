@@ -40,7 +40,7 @@ def convert(rows, company_id, source="lume",station=None):
             vencimento=row['due'],valor_centavos=amount,liquidado_centavos=paid,
             saldo_centavos=balance,situacao=row['status'],modalidade_prevista=row.get('remainingMethod'),
             meio_ultimo_pagamento=next((p.get('method') for p in sorted(payments,key=lambda p:p['paidOn'],reverse=True) if p['reversedAt'] is None),None),
-            pagamentos=[dict(conta=row.get('description',''),data=p['paidOn'],valor_centavos=p['amountCents'],meio=p.get('method','Não informado'),situacao='Estornado' if p['reversedAt'] else 'Confirmado') for p in payments]))
+            pagamentos=[dict(conta=row.get('description',''),titulo_id=f'{prefix}:{identity}',parceiro=row['partner'],estornado_em=p['reversedAt'],data=p['paidOn'],valor_centavos=p['amountCents'],meio=p.get('method','Não informado'),situacao='Estornado' if p['reversedAt'] else 'Confirmado') for p in payments]))
     return result
 
 
