@@ -9,6 +9,7 @@ class handler(BaseHTTPRequestHandler):
  def do_GET(self):self.execute('GET')
  def do_POST(self):self.execute('POST')
  def execute(self,method):
+  clear_session=cookies
   try:
    data={}
    if method=='POST':
@@ -17,8 +18,13 @@ class handler(BaseHTTPRequestHandler):
     data=json.loads(self.rfile.read(length))
     if not isinstance(data,dict):raise ApiError('Requisição inválida.')
    action=parse_qs(urlparse(self.path).query).get('action',[''])[0]
-   result,session=handle(action,data,self.headers,method);self.respond(result,200,session)
-  except ApiError as e:self.respond({'error':str(e)},e.status,cookies() if e.status==401 else None)
+   if action.startswith('mobile-'):
+    from mobile_backend import handle as mobile_handle
+    from mobile_backend import cookies as clear_session
+    result,session=mobile_handle(action[7:],data,self.headers,method)
+   else:result,session=handle(action,data,self.headers,method)
+   self.respond(result,200,session)
+  except ApiError as e:self.respond({'error':str(e)},e.status,clear_session() if e.status==401 else None)
   except (ValueError,KeyError,TypeError):self.respond({'error':'Requisição inválida.'},400)
   except Exception:self.respond({'error':'Serviço temporariamente indisponível.'},503)
  def respond(self,result,status,session=None):
