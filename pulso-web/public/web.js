@@ -1,3 +1,4 @@
+import {nexoDestination,nexoProduct} from './module-route.mjs';
 import {renderDashboard} from '/dashboard.mjs';
 import {displayModuleAccess} from '/module-status.mjs';
 import {setupCollapsedMenu} from '/layout.mjs';
@@ -14,7 +15,7 @@ function disconnect(){packet=null;$('company-label').textContent='Empresa não c
 function render(){if(document.body.classList.contains('connected'))$('access-title').textContent=page==='estoque'?'Estoque':page==='colaboradores'?'Colaboradores':page==='financeiro'?'Financeiro':page==='vendas'?'Vendas':page==='clientes'?'Clientes':page==='metas'?'Metas':page==='inicio'?'Visão geral do negócio':'A saúde do seu negócio começa aqui.';const start=$('date-start').value,end=$('date-end').value;const invalid=start&&end&&start>end;$('date-end').setCustomValidity(invalid?'A data final deve ser igual ou posterior à inicial.':'');if(invalid){$('dashboard').replaceChildren();$('message').textContent='A data final deve ser igual ou posterior à inicial.';$('date-end').reportValidity();return;}if($('message').textContent==='A data final deve ser igual ou posterior à inicial.')$('message').textContent='';if(packet)renderDashboard($('dashboard'),packet,page,start,end);}
 async function load(){
  document.body.classList.add('connected');$('connected').hidden=false;$('login').hidden=true;
- try{const access=await request('module-access');displayModuleAccess(document,access.modules);}catch{displayModuleAccess(document,{nexo:'unknown',lume:'unknown'});}
+ try{const access=await request('module-access');displayModuleAccess(document,{...access.modules,nexo:access.modules[nexoProduct()]});}catch{displayModuleAccess(document,{nexo:'unknown',lume:'unknown'});}
  packet=null;$('dashboard').replaceChildren();
  try{packet=await request('panel');render();$('message').textContent='Consulta confirmada: '+new Date(packet.metadata.queriedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})+' · Brasília';}
  catch(e){$('dashboard').textContent='Dados da empresa ainda não disponíveis para consulta.';throw e;}
@@ -24,7 +25,7 @@ async function action(work){if(busy)return;busy=true;['sync','panel'].forEach(id
 $('login').onsubmit=e=>{e.preventDefault();const password=$('password').value;$('password').value='';action(async()=>{adopt(await request('login',{email:$('email').value.trim(),password}));await load();});};
 $('sync').onclick=$('panel').onclick=()=>action(load);
 $('logout').onclick=()=>action(async()=>{await request('logout');disconnect();$('message').textContent='Sessão web encerrada.';});
-for(const [module,url] of Object.entries({nexo:'https://nexo.tectria.com.br/?company=f74efcfa-c48b-4f4c-a8d7-686d77369edb',lume:'https://lume.tectria.com.br/'}))$('open-'+module).onclick=()=>{if(!$('open-'+module).disabled)window.open(url.split('?')[0]+'?company='+encodeURIComponent(companyId),'_blank','noopener');};
+for(const [module,url] of Object.entries({nexo:'https://nexo.tectria.com.br/',lume:'https://lume.tectria.com.br/'}))$('open-'+module).onclick=()=>{if(!$('open-'+module).disabled)window.open(module==='nexo'?nexoDestination(companyId):url.split('?')[0]+'?company='+encodeURIComponent(companyId),'_blank','noopener');};
 document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{page=button.dataset.page;document.querySelectorAll('[data-page]').forEach(b=>b.removeAttribute('aria-current'));button.setAttribute('aria-current','page');render();});
 $('date-start').onchange=$('date-end').onchange=render;
 $('clear-filters').onclick=()=>{$('date-start').value=$('date-end').value='';render();};

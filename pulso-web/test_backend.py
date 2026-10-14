@@ -27,14 +27,14 @@ class AccessTests(unittest.TestCase):
    with self.assertRaises(b.ApiError):b.handle('module-access',{},H)
    remote.assert_not_called()
  def test_module_availability_is_bound_to_company_and_user(self):
-  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'nexo','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'not_contracted'}]) as remote:
+  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':b.COMPANY,'module':'nexo','status':'allowed'},{'companyId':b.COMPANY,'module':'lume','status':'not_contracted'},{'companyId':b.COMPANY,'module':'nexo_mobile','status':'allowed'}]) as remote:
    result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
-   self.assertEqual(result,{'modules':{'nexo':'allowed','lume':'not_contracted'}})
+   self.assertEqual(result,{'modules':{'nexo':'allowed','lume':'not_contracted','nexo_mobile':'allowed'}})
    for call in remote.call_args_list[1:]:self.assertEqual(call.args[1]['company_id'],b.COMPANY);self.assertEqual(call.args[2],'jwt')
  def test_module_availability_rejects_mismatched_company(self):
-  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':'other','module':'nexo','status':'allowed'},b.ApiError('Unavailable',502)]):
+  with patch.object(b,'remote',side_effect=[CONTEXT,{'companyId':b.COMPANY,'module':'pulso','status':'allowed'},{'companyId':'other','module':'nexo','status':'allowed'},b.ApiError('Unavailable',502),b.ApiError('Unavailable',502)]):
    result,_=b.handle('module-access',{},dict(H,Cookie=b.COOKIE+'=jwt'))
-   self.assertEqual(result['modules'],{'nexo':'unknown','lume':'unknown'})
+   self.assertEqual(result['modules'],{'nexo':'unknown','lume':'unknown','nexo_mobile':'unknown'})
  def test_expired_session_cannot_read(self):
   with patch.object(b,'remote',side_effect=b.ApiError('Expired',401)) as remote:
    with self.assertRaises(b.ApiError) as failure:b.handle('panel',{},dict(H,Cookie=b.COOKIE+'=expired.jwt'))
@@ -43,7 +43,7 @@ class AccessTests(unittest.TestCase):
   with patch.object(b,'remote',return_value={}) as remote:
    result,c=b.handle('logout',{},dict(H,Cookie=b.COOKIE+'=jwt'))
    remote.assert_not_called()
-   self.assertTrue(result['ok']);self.assertTrue(any('Max-Age=0' in x for x in c));self.assertTrue(any('signed-out=1' in x for x in c))
+   self.assertTrue(result['ok']);self.assertTrue(any('Max-Age=0' in x for x in c));self.assertTrue(any('signed-out=v2.' in x for x in c))
  def test_cross_origin_rejected_before_remote(self):
   with patch.object(b,'remote') as remote:
    with self.assertRaises(b.ApiError):b.handle('login',{},dict(H,Origin='https://other.example'))

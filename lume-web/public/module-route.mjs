@@ -1,0 +1,3 @@
+export function isMobileAccess(env=globalThis){return env.navigator?.userAgentData?.mobile===true||/Android|iPhone|iPad|iPod/i.test(env.navigator?.userAgent||'')||((env.navigator?.maxTouchPoints||0)>1&&/Macintosh/i.test(env.navigator?.userAgent||''))||env.matchMedia?.('(max-width: 900px) and (pointer: coarse)').matches===true;}
+export function nexoDestination(company,mobile=isMobileAccess()){return 'https://nexo.tectria.com.br/'+(mobile?'mobile/':'')+'?company='+encodeURIComponent(company||'');}
+export function nexoProduct(mobile=isMobileAccess()){return mobile?'nexo_mobile':'nexo';}

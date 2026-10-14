@@ -108,7 +108,7 @@ def handle(action,data,headers):
   company,_=company_context(token);result=panel(token,company['id']);result['company']=company.get('company_code','')+' - '+company.get('name','');return result,None
  if action=='module-access':
   company,_=company_context(token);states={}
-  for module in ('nexo','lume'):
+  for module in ('nexo','lume','nexo_mobile'):
    try:
     p=remote('/rest/v1/rpc/tectria_module_access',{'company_id':company['id'],'module_code':module},token)
     states[module]=p.get('status','unknown') if p.get('companyId')==company['id'] and p.get('module')==module else 'unknown'
