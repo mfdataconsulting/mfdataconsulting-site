@@ -1,29 +1,44 @@
 import {experiencePages,notificationPages,settingsForm,settingsPayload,sourcesHtml,integrationsHtml,financialPlanHtml,pendingDestination,pendingNotificationsHtml,formatQuantity,financialFilterDefaults,financialRows,financialFiltersHtml,dashboardHtml} from './experience.mjs';
+import {companyLabel,chooseCompany,rememberCompany,showCompany} from './company-context.mjs';
+import {sessionRecovery} from './session-recovery.mjs';
 import {mountLocalHelp} from './help-local.mjs';
-import { setupModuleNavigation } from '/module-client.mjs';
+import {setupPush} from './push.mjs';
 import {faqGroups} from './faq.js';
-let moduleNavigation;
 let pendingReturn=false,pendingRecord=null;
 const financialFiltersByCompany=new Map();
 let state, page='dashboard', entity, context, companyId, csrf, refreshVersion=0;
+let pushControls,pushProfile;
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const companyLabel=c=>c.company_code?`${c.company_code} - ${c.name}`:c.name;
 const money=v=>(v/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const today=()=>new Date().toLocaleDateString('sv-SE');
 const date=v=>v?v.split('-').reverse().join('/'):'—';
 const names={dashboard:'Visão geral',contacts:'Contatos',products:'Estoque',orders:'Compras',invoices:'Notas',tasks:'Prazos e tarefas',channels:'Notificações'};
 const icons={dashboard:'◈',contacts:'◎',products:'▤',orders:'↗',invoices:'▧',tasks:'◷',channels:'◇'};
 const statuses={orders:{Solicitado:['Aprovado','Cancelado'],Aprovado:['Enviado','Cancelado'],Enviado:['Recebido','Cancelado']},invoices:{'A conferir':['Conferida']},tasks:{Pendente:['Concluída']}};
-function updateModuleButtons(){const company=context?.companies.find(c=>c.id===companyId);$('company-name').textContent=company?companyLabel(company):'Nenhuma empresa selecionada';$('company-select').closest('label').hidden=(context?.companies.length||0)<2;for(const module of ['nexo','pulso']){const button=$('open-'+module),allowed=company?.products?.includes(module)===true;button.classList.toggle('module-available',allowed);const lock=button.querySelector('svg:not(.product-icon)');if(lock)lock.toggleAttribute("hidden",allowed);const note=$(module+'-access-note');note.hidden=allowed;note.textContent=company?'Módulo não liberado':'Verificando acesso…';if(allowed)button.removeAttribute('aria-describedby');else button.setAttribute('aria-describedby',module+'-access-note');}}
-function signedOut(){page='dashboard';entity=null;financialFiltersByCompany.clear();pendingRecord=null;pendingReturn=false;refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
-async function request(path,data){const options={headers:{'X-Company-Id':companyId||''}};if(data!==undefined){options.method='POST';Object.assign(options.headers,{'Content-Type':'application/json','X-Lume-Request':'1','X-Lume-Token':csrf||''});options.body=JSON.stringify(data)}const r=await fetch(path,options);const body=await r.json();if(!r.ok){if(r.status===401)signedOut();throw Error(body.error||'Não foi possível concluir.')}return body;}
+function updateModuleButtons(){const company=context?.companies.find(c=>c.id===companyId);for(const module of ['nexo','pulso']){const button=$('open-'+module),allowed=company?.products?.includes(module)===true;button.classList.toggle('module-available',allowed);const lock=button.querySelector('svg:not(.product-icon)');if(lock)lock.toggleAttribute("hidden",allowed);const note=$(module+'-access-note');note.hidden=allowed;note.textContent=company?'Módulo não liberado':'Verificando acesso…';if(allowed)button.removeAttribute('aria-describedby');else button.setAttribute('aria-describedby',module+'-access-note');}}
+function signedOut(){page='dashboard';entity=null;financialFiltersByCompany.clear();pendingRecord=null;pendingReturn=false;pushControls=null;pushProfile=null;showCompany(null,null,document);refreshVersion++;state=null;context=null;companyId=null;csrf=null;$('content').innerHTML='';$('nav').innerHTML='';$('company-select').innerHTML='';$('dialog').close();document.body.classList.add('signed-out');}
+const recoverSession=sessionRecovery(async()=>{const previous=context?.sessionUser;const renewed=await request('/api/context');if(context&&(!previous||previous!==renewed.sessionUser)){signedOut();throw Error('A conta mudou. Entre novamente antes de continuar.');}context=renewed;csrf=renewed.token;showCompany(context,companyId,document);if(companyId&&!renewed.companies.some(c=>c.id===companyId&&c.products.includes('lume')))throw Error('A empresa selecionada não está disponível na sessão atual.');});
+async function request(path,data,retried=false){const options={headers:{'X-Company-Id':companyId||'','X-Lume-Request':'1'}};if(data!==undefined){options.method='POST';Object.assign(options.headers,{'Content-Type':'application/json','X-Lume-Request':'1','X-Lume-Token':csrf||''});options.body=JSON.stringify(data)}const r=await fetch(path,options);const body=await r.json();if(!r.ok){if(r.status===401)signedOut();const error=Error(body.error||'Não foi possível concluir.');error.status=r.status;if(path==='/api/context')throw error;return recoverSession({data,error,retried,retry:()=>request(path,data,true)});}return body;}
 async function refresh(){updateModuleButtons();const version=++refreshVersion;const company=context.companies.find(c=>c.id===companyId);if(!company||!company.products.includes('lume')){state=null;$('nav').innerHTML='';$('content').innerHTML='<div class="panel"><h2>Lume não habilitado</h2><p class="muted">Entre em contato com a Tectria para incluir o Lume no pacote desta empresa.</p></div>';return}const [result,notifications]=await Promise.all([request('/api/state'),notificationPages.includes(page)?request('/api/notifications'):Promise.resolve(null)]);if(notifications)result.notifications=notifications;if(version!==refreshVersion)return;if(result.financialSource?.source==='nexo'&&result.financialSource.receivedAt===null)result.financialSource.available=false;state=result;csrf=state.token;render();}
 async function post(path,data){await request(path,data);await refresh();}
-async function start(){context=await request('/api/context');page='dashboard';pendingRecord=null;pendingReturn=false;financialFiltersByCompany.clear();csrf=context.token;$('notice').textContent='';$('login-error').textContent='';document.body.classList.remove('signed-out');$('company-select').innerHTML=context.companies.map(c=>`<option value="${esc(c.id)}">${esc(companyLabel(c))}</option>`).join('');companyId=context.companies.some(c=>c.id===context.preferredCompany)?context.preferredCompany:context.companies[0]?.id;if(!companyId){$('content').innerHTML='<div class="panel"><h2>Nenhuma empresa vinculada</h2><p class="muted">Solicite à Tectria o vínculo da sua conta ao negócio.</p></div>';return}await refresh();}
+function ensurePush(root){
+ const activeCompany=companyId,activeUser=context.sessionUser,profile=activeCompany+':'+activeUser;
+ if(pushControls&&pushProfile===profile){root.append(pushControls.section);return pushControls;}
+ pushProfile=profile;
+ pushControls=setupPush(root,(action,data={})=>{if(companyId!==activeCompany||context?.sessionUser!==activeUser)throw Error('A conta ou empresa mudou. Abra as notificações da empresa atual.');return request('/api/'+action,data);},async work=>{try{await work()}catch(error){$('notice').textContent=error.message}},'tectria-lume-device:'+profile,{legacyStore:'tectria-lume-device:'+activeCompany});
+ return pushControls;
+}
+async function resumeRememberedPush(){
+ if(page==='channels'||!companyId||!context?.sessionUser)return;
+ const store='tectria-lume-device:'+companyId+':'+context.sessionUser;
+ if(!localStorage.getItem(store+':enabled')&&!localStorage.getItem(store)&&!localStorage.getItem('tectria-lume-device:'+companyId))return;
+ await ensurePush(document.createElement('div')).refresh();
+}
+async function start(){context=await request('/api/context');page='dashboard';pendingRecord=null;pendingReturn=false;financialFiltersByCompany.clear();csrf=context.token;$('notice').textContent='';$('login-error').textContent='';document.body.classList.remove('signed-out');$('company-select').innerHTML=context.companies.map(c=>`<option value="${esc(c.id)}">${esc(companyLabel(c))}</option>`).join('');const destination=new URLSearchParams(location.search);const selected=chooseCompany({module:'lume',context,url:new URL(location.href),storage:sessionStorage});companyId=selected.id;if(companyId)history.replaceState(null,'',selected.cleanUrl);const requestedSection=destination.get('section');if(['invoices','orders','products','tasks','channels','automations','integrations','sources','executions'].includes(requestedSection))page=requestedSection;$('company-select').value=companyId;showCompany(context,companyId,document);if(!companyId){$('content').innerHTML='<div class="panel"><h2>Nenhuma empresa vinculada</h2><p class="muted">Solicite à Tectria o vínculo da sua conta ao negócio.</p></div>';return}await refresh();resumeRememberedPush().catch(()=>{});}
 function contact(id){return state.contacts.find(c=>c.id===id)?.name??'—'}
 function actions(row){if(page!=='tasks')return '';const role=context.companies.find(c=>c.id===companyId)?.role;if(role==='viewer')return '';return (statuses[page]?.[row.status]??[]).filter(s=>s!=='Aprovado'||['owner','admin'].includes(role)).map(s=>`<button data-status="${esc(s)}" data-id="${row.id}">${esc(s)}</button>`).join('')}
-function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum registro disponível para acompanhamento.</p>'}
+function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td data-label="${esc(headers[i])}">${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum registro disponível para acompanhamento.</p>'}
 function render(){
  if(page==='financial'&&!Array.isArray(state.financial))page='dashboard';
  const matchesPending=row=>!pendingRecord||String(row.id)===pendingRecord;
@@ -63,7 +78,7 @@ function render(){
   const canConfigure=['owner','admin'].includes(context.companies.find(c=>c.id===companyId)?.role)&&!n.demo;
   html=(page==='channels'?pendingNotificationsHtml(n,esc,canConfigure):'')+settingsForm(n,page,canConfigure,esc);
  }else if(page==='integrations'){
-  html=integrationsHtml(state,context.companies.find(c=>c.id===companyId),esc,{webPush:false});
+  html=integrationsHtml(state,context.companies.find(c=>c.id===companyId),esc,{webPush:true});
  }else if(page==='sources'){
   html=sourcesHtml(state,esc);
  }else if(page==='executions'){
@@ -82,7 +97,9 @@ function render(){
  if(['contacts','products','orders','invoices','financial'].includes(page))html=`<div class="toolbar"><button data-page="${pendingReturn?'channels':'sources'}">${pendingReturn?'Voltar às notificações':'Voltar aos dados acompanhados'}</button></div>`+html;
  $('content').dataset.lumePage=page;
  $('content').innerHTML=html;
- if(page==='channels')$('content').insertAdjacentHTML('beforeend','<div class="panel"><h2>Notificações no aparelho · Firebase</h2><p>Ative e teste o push no Lume web usando sua conta e a empresa selecionada.</p><a href="https://lume.tectria.com.br/" target="_blank" rel="noopener">Configurar notificações no aparelho</a></div>');
+ if(page==='channels'){
+  ensurePush($('content')).refresh();
+ }
  if(page==='faq')mountLocalHelp($('content'),'Lume',faqGroups.flatMap(g=>g.items));
  if(fromNexo)document.querySelectorAll('[data-new="products"],[data-new="movements"]').forEach(b=>b.remove());
  if(context.companies.find(c=>c.id===companyId)?.role==='viewer')document.querySelectorAll('[data-new]').forEach(b=>b.remove());
@@ -101,60 +118,27 @@ function openForm(kind){if(kind!=='tasks')throw Error('Registre esta operação 
  if(['financial','payments'].includes(kind))f+=`<input type="hidden" name="request_id" value="${crypto.randomUUID()}">`;
  $('form').reset();$('fields').innerHTML=f;$('form-title').textContent=kind==='movements'?'Movimentar estoque':'Novo registro';$('form-error').textContent='';$('dialog').showModal();
 }
-document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.hasAttribute('data-premium-notes')){if(!state.notifications?.premium?.allowed)throw Error('Este extra do Lume Premium não está liberado para a empresa.');if(!moduleNavigation)throw Error('Aguarde a conexão com os módulos.');await moduleNavigation.open('nexo',{section:'payables'});return;}if(b.hasAttribute('data-pending-refresh')){b.disabled=true;await refresh();return;}if(b.hasAttribute('data-pending-resolve')){const selected=document.querySelector('input[name="notification-pending"]:checked');const item=state.notifications?.pending?.find(p=>p.entity_key+'|'+p.kind===selected?.value);const destination=pendingDestination(item);if(!destination){$('notice').textContent='Selecione uma pendência para continuar.';return;}if(destination.taskId){const role=context.companies.find(c=>c.id===companyId)?.role;if(!['owner','admin'].includes(role))throw Error('Seu acesso permite somente consulta.');if(!confirm('Concluir este lembrete pessoal? '+item.line))return;b.disabled=true;await post('/api/status',{entity:'tasks',id:destination.taskId,status:'Concluída'});$('notice').textContent='Lembrete concluído. Ele saiu das pendências.';}else if(destination.nexo){if(!moduleNavigation)throw Error('Aguarde a conexão com os módulos e tente novamente.');const section={stock_low:'stock',account_due:'payables',receivable_due:'receivables'}[item.kind];if(!section)throw Error('Área de destino indisponível.');$('notice').textContent='';b.disabled=true;try{await moduleNavigation.open('nexo',{section,itemId:item.entity_key.split(':')[1]});}finally{b.disabled=false;}}else{pendingReturn=true;pendingRecord=item.entity_key.split(':')[1];page=destination.page;if(state){refreshVersion++;render()}else await refresh();$('notice').textContent=destination.nexo?'Confira o item e abra o Nexo pelo botão do menu para resolver. Depois sincronize e atualize as pendências.':'Pendência selecionada. Sem acesso operacional conectado para este registro: resolva no sistema de gestão de origem e atualize os dados acompanhados.';}return;}if(b.dataset.page){pendingReturn=false;pendingRecord=null;$('notice').textContent='';page=b.dataset.page;if(state){refreshVersion++;render()}else await refresh()}if(b.dataset.new)openForm(b.dataset.new);if(b.dataset.payment){openForm('payments');$('form').elements.title_id.value=b.dataset.payment;}if(b.dataset.reverse&&confirm('Estornar esta baixa? O valor voltará ao saldo da conta e o histórico será preservado.')){b.disabled=true;await post('/api/financial-reverse',{id:Number(b.dataset.reverse)})}if(b.dataset.status){b.disabled=true;await post('/api/status',{entity:page,id:Number(b.dataset.id),status:b.dataset.status})}}catch(error){$('notice').textContent=error.message;b.disabled=false}});
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.hasAttribute('data-premium-notes')){if(!state.notifications?.premium?.allowed)throw Error('Este extra do Lume Premium não está liberado para a empresa.');window.open('http://127.0.0.1:5250/?section=payables','_blank','noopener');return;}if(b.hasAttribute('data-pending-refresh')){b.disabled=true;await refresh();return;}if(b.hasAttribute('data-pending-resolve')){const selected=document.querySelector('input[name="notification-pending"]:checked');const item=state.notifications?.pending?.find(p=>p.entity_key+'|'+p.kind===selected?.value);const destination=pendingDestination(item);if(!destination){$('notice').textContent='Selecione uma pendência para continuar.';return;}if(destination.taskId){const role=context.companies.find(c=>c.id===companyId)?.role;if(!['owner','admin'].includes(role))throw Error('Seu acesso permite somente consulta.');if(!confirm('Concluir este lembrete pessoal? '+item.line))return;b.disabled=true;await post('/api/status',{entity:'tasks',id:destination.taskId,status:'Concluída'});$('notice').textContent='Lembrete concluído. Ele saiu das pendências.';}else if(destination.nexo){const section={stock_low:'stock',account_due:'payables',receivable_due:'receivables'}[item.kind];if(!section)throw Error('Área de destino indisponível.');window.open('http://127.0.0.1:5250/?section='+encodeURIComponent(section)+'&item='+encodeURIComponent(item.entity_key.split(':')[1]),'_blank','noopener');$('notice').textContent='Pendência aberta no Nexo instalado neste computador. Após resolver e sincronizar, atualize as pendências.';}else{pendingReturn=true;pendingRecord=item.entity_key.split(':')[1];page=destination.page;if(state){refreshVersion++;render()}else await refresh();$('notice').textContent=destination.nexo?'Confira o item e abra o Nexo pelo botão do menu para resolver. Depois sincronize e atualize as pendências.':'Pendência selecionada. Sem acesso operacional conectado para este registro: resolva no sistema de gestão de origem e atualize os dados acompanhados.';}return;}if(b.dataset.page){pendingReturn=false;pendingRecord=null;$('notice').textContent='';page=b.dataset.page;if(state){refreshVersion++;render()}else await refresh()}if(b.dataset.new)openForm(b.dataset.new);if(b.dataset.payment){openForm('payments');$('form').elements.title_id.value=b.dataset.payment;}if(b.dataset.reverse&&confirm('Estornar esta baixa? O valor voltará ao saldo da conta e o histórico será preservado.')){b.disabled=true;await post('/api/financial-reverse',{id:Number(b.dataset.reverse)})}if(b.dataset.status){b.disabled=true;await post('/api/status',{entity:page,id:Number(b.dataset.id),status:b.dataset.status})}}catch(error){$('notice').textContent=error.message;b.disabled=false}});
 $('close').onclick=()=>$('dialog').close();
 $('help').onclick=()=>{if(!state)return;page='faq';$('notice').textContent='';render();};
 $('form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{await post('/api/create/'+entity,Object.fromEntries(new FormData(e.target)));$('dialog').close();$('notice').textContent=''}catch(error){$('form-error').textContent=error.message}finally{button.disabled=false}};
 document.addEventListener('submit',async e=>{if(e.target.id!=='notification-form')return;e.preventDefault();const b=e.submitter;b.disabled=true;const data=new FormData(e.target);try{const preferences=settingsPayload(data,state.notifications?.settings,e.target.dataset.mode);if(!preferences.recipients.length)throw Error('Configure primeiro os destinatários em Notificações.');await post('/api/notifications',preferences);$('notice').textContent='Preferências salvas.'}catch(error){$('notice').textContent=error.message;b.disabled=false}});
 $('login-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('login-error').textContent='';try{await request('/api/login',Object.fromEntries(new FormData(e.target)));e.target.reset();await start();}catch(error){if(document.body.classList.contains('signed-out'))$('login-error').textContent=error.message;else $('notice').textContent=error.message;}finally{b.disabled=false}};
 $('login-form').dataset.ready='true';$('login-form').querySelector('button[type="submit"]').disabled=false;
-$('logout').onclick=async()=>{try{await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
-$('company-select').onchange=async e=>{companyId=e.target.value;page='dashboard';state=null;$('content').innerHTML='';$('nav').innerHTML='';$('notice').textContent='';try{await refresh()}catch(error){$('notice').textContent=error.message}};
+$('logout').onclick=async()=>{try{if(pushControls)try{await pushControls.pause();}catch{}await request('/api/logout',{})}catch(error){$('login-error').textContent=error.message}finally{signedOut()}};
+$('company-select').onchange=async e=>{companyId=e.target.value;rememberCompany('lume',context.sessionUser,companyId,sessionStorage);showCompany(context,companyId,document);page='dashboard';state=null;$('content').innerHTML='';$('nav').innerHTML='';$('notice').textContent='';try{await refresh();resumeRememberedPush().catch(()=>{})}catch(error){$('notice').textContent=error.message}};
 $('demo-enter').onclick=async()=>{const b=$('demo-enter');b.disabled=true;$('login-error').textContent='';try{await request('/api/demo-login',{role:$('demo-role').value});await start()}catch(error){$('login-error').textContent=error.message}finally{b.disabled=false}};
 async function boot(){const info=await request('/api/info');if(info.demo){$('login-form').hidden=true;$('demo-access').hidden=false;$('access-title').textContent='Bem-vindo de volta';$('access-description').textContent='Tectria';$('mode-badge').textContent='Local';$('service-status').textContent='● Serviço local conectado';$('footer-status').textContent='Sua rotina no automático.';}try{await start()}catch(e){if(!document.body.classList.contains('signed-out'))$('notice').textContent=e.message;else if(!e.message.includes('Entre com'))$('login-error').textContent=e.message}}
 boot().catch(e=>$('login-error').textContent=e.message);
 
 
 
-setupModuleNavigation({module:'lume',request,company:()=>companyId,onSession:async()=>{await start();},onLogout:signedOut,notice:message=>{if(document.body.classList.contains('signed-out'))$('login-error').textContent=message;else $('notice').textContent=message;},infoPath:'/api/info'}).then(nav=>{
- moduleNavigation=nav;
- $('open-nexo').onclick=()=>nav.open('nexo');$('open-pulso').onclick=()=>nav.open('pulso');
- $('logout-all').hidden=!nav.enabled;
- $('logout-all').onclick=async()=>{try{const result=await nav.logoutAll();signedOut();if(!result.ok)$('login-error').textContent='Saída dos outros módulos não confirmada. Encerre-os manualmente.';}catch(e){$('notice').textContent=e.message;}};
-}).catch(e=>$('notice').textContent=e.message);
 
-// Local navigation menu SVG icons.
-// Decorative icons for navigation areas only. Product logos and shortcuts are untouched.
-export const paths={
- recipes:'<path d="M5 3h14v18H5zM8 7h8M8 11h8M8 15h5"/>',
- settings:'<path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3z"/><circle cx="12" cy="12" r="3"/>',
- dashboard:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
- sales:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 7h6M9 11h6M9 15h3"/>',
- financial:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M7 5V3h10v2"/><path d="M21 12h-6v5h6"/><circle cx="17" cy="14.5" r=".6"/>',
- closings:'<path d="M9 4H5v17h14V4h-4"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 11 2 2 5-5M8 17h7"/>',
- stock:'<path d="m12 3 9 5-9 5-9-5 9-5zM3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5"/>',
- invoices:'<path d="M6 3h8l4 4v14H6V3zM14 3v5h4M9 12h6M9 16h6"/>',
- orders:'<path d="M3 4h2l2 12h11l3-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>',
- tasks:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18m-13 6 2 2 5-5"/>',
- channels:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
- contacts:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
- employees:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 4v3"/>',
- goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
- help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.1-1.5 2.5M12 17h.01"/>'
-};
-export const aliases={overview:'dashboard',sale:'sales',history:'sales',closing:'closings',payables:'financial',users:'employees',recipes:'recipes',settings:'settings',inicio:'dashboard',vendas:'sales',financeiro:'financial',colaboradores:'employees',estoque:'stock',clientes:'contacts',metas:'goals',ajuda:'help',products:'stock',financial:'financial',contacts:'contacts'};
-function decorate(nav){
- for(const button of nav.querySelectorAll('button[data-page]')){
-  const page=button.dataset.page,name=aliases[page]||page;
-  if(!Object.hasOwn(paths,name))continue;
-  let icon=button.querySelector(':scope > .nav-icon');
-  if(icon?.dataset.menuIcon===name)continue;
-  if(!icon){icon=document.createElement('span');icon.className='nav-icon';button.prepend(icon);}
-  icon.classList.add('menu-option-icon');icon.dataset.menuIcon=name;icon.setAttribute('aria-hidden','true');
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.8');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('focusable','false');svg.innerHTML=paths[name];icon.replaceChildren(svg);
- }
-}
-for(const nav of document.querySelectorAll('aside nav')){decorate(nav);new MutationObserver(()=>decorate(nav)).observe(nav,{childList:true,subtree:true});}
+$('open-pulso').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('pulso'))window.open('https://pulso.tectria.com.br/','_blank','noopener');};
+$('open-nexo').onclick=()=>{if(context?.companies.find(c=>c.id===companyId)?.products.includes('nexo'))window.open('https://nexo.tectria.com.br/?company='+encodeURIComponent(companyId),'_blank','noopener');};
+$('logout-all').hidden=true;
+$('service-status').textContent='● Lume Web';
+$('footer-status').textContent='Sua rotina no automático.';
 let notificationRefreshPending=false;
 async function refreshNotificationHistory(){
  if(notificationRefreshPending||page!=='executions'||!state||!context||document.hidden)return;
