@@ -6,6 +6,7 @@ from email.message import Message
 
 HOSTS={'nexo.tectria.com.br','lume.tectria.com.br','pulso.tectria.com.br'}
 SHARED='__Secure-tectria-session'
+LOGIN='__Secure-tectria-login'
 def official(headers):return headers.get('Host','') in HOSTS
 def lifetime(token):
  try:
@@ -32,9 +33,17 @@ def session_bridge(module,error):
    local=jar[own].value if own in jar else ''
    shared=jar[SHARED].value if SHARED in jar and lifetime(jar[SHARED].value)>0 else ''
    token=shared or local
-   if blocked in jar and action!='login':token=''
+   generation=jar[LOGIN].value if LOGIN in jar else '-'
+   marker=jar[blocked].value if blocked in jar else ''
+   is_blocked=False
+   if marker and action!='login':
+    if marker.startswith('v2.'):
+     parts=marker.split('.',2)
+     is_blocked=len(parts)==3 and parts[1]==(subject(token) or '-') and parts[2]==generation
+    else:is_blocked=generation=='-' # Legacy marker expires on an explicit new shared login.
+    if is_blocked:token=''
    bootstrap=action==('status' if module=='pulso' else 'context')
-   if module!='pulso' and shared and shared!=local and not bootstrap and action!='login':raise error('Atualize a página para aproveitar sua sessão Tectria.',403)
+   if shared and shared!=local and not bootstrap and action!='login':raise error('Atualize a página para aproveitar sua sessão Tectria.',403)
    if token:jar[own]=token
    else:jar.pop(own,None)
    if module!='pulso' and bootstrap and token and (csrf not in jar or shared!=local):jar[csrf]=secrets.token_urlsafe(32)
@@ -48,20 +57,23 @@ def session_bridge(module,error):
    # UI draft isolation only; backend access remains checked by the RPC above.
    if bootstrap and token and isinstance(result,dict):result={**result,'sessionUser':subject(token)}
    cookies=[] if not returned else [returned] if isinstance(returned,str) else list(returned)
-   if action=='logout':cookies.append(scoped(blocked,'1',3600))
+   if action=='logout':cookies.append(scoped(blocked,'v2.'+(subject(token) or '-')+'.'+generation,3600))
    elif action=='login':
     cookies.append(scoped(blocked,'',0))
     parsed=SimpleCookie()
     for value in cookies:parsed.load(value)
     token=parsed[own].value if own in parsed else ''
    elif bootstrap and token:
+    if marker and not is_blocked:cookies.append(scoped(blocked,'',0))
     age=lifetime(token)
     if age:
      cookies.append(scoped(own,token,age))
      if module!='pulso':cookies.append(scoped(csrf,jar[csrf].value,age))
    if action=='login' or bootstrap:
     age=lifetime(token)
-    if age:cookies.append(scoped(SHARED,token,age)+'; Domain=tectria.com.br')
+    if age:
+     cookies.append(scoped(SHARED,token,age)+'; Domain=tectria.com.br')
+     if action=='login':cookies.append(scoped(LOGIN,secrets.token_urlsafe(24),age)+'; Domain=tectria.com.br')
    return result,cookies or None
   return wrapped
  return decorate
