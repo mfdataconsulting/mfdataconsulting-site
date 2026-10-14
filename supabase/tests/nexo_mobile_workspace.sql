@@ -56,6 +56,9 @@ BEGIN
  BEGIN PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'day_close','{}');RAISE EXCEPTION 'Missing day accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
  PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'day_close',jsonb_build_object('dayId',day));
  BEGIN PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'sale',args);RAISE EXCEPTION 'Closed day accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'branding_save','{"logoData":"data:image/jpeg;base64,/9j/AA=="}');
+ ASSERT public.nexo_mobile_workspace_state(cid)->'document'->>'logoData'='data:image/jpeg;base64,/9j/AA==';
+ BEGIN PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'branding_save','{"logoData":"data:image/svg+xml;base64,PHN2Zz4="}');RAISE EXCEPTION 'SVG accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
  UPDATE public.tectria_user_product_access SET role='viewer' WHERE company_id=cid AND product_code='nexo_mobile';
  ASSERT public.nexo_mobile_workspace_state(cid)->>'canWrite'='false';
  BEGIN PERFORM public.nexo_mobile_workspace_command(cid,gen_random_uuid(),'day_open','{}');RAISE EXCEPTION 'Viewer write accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;

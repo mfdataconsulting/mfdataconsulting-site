@@ -7,7 +7,7 @@ from backend import ApiError,remote,rpc
 from web_session import session_bridge,official
 
 PRODUCT='nexo_mobile';COOKIE='__Host-'+PRODUCT;CSRF=COOKIE+'-csrf'
-OPERATIONS={'configure','product_save','contact_save','day_open','day_close','stock_move','sale','receive','payable_create','pay','receipt_reverse','payment_reverse','sale_cancel','table_save','table_close'}
+OPERATIONS={'branding_save','configure','product_save','contact_save','day_open','day_close','stock_move','sale','receive','payable_create','pay','receipt_reverse','payment_reverse','sale_cancel','table_save','table_close'}
 
 def cookies(token='',csrf='',age=0):
  for value in (token,csrf):
