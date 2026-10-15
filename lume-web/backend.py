@@ -73,6 +73,20 @@ def handle(path,data,headers,method='POST'):
  token=jar[COOKIE].value if COOKIE in jar else ''
  csrf=jar[CSRF].value if CSRF in jar else ''
  if path=='info' and method=='GET':return {'demo':False,'modules':{'enabled':False,'urls':{}}},None
+ if path=='desktop-session' and method=='POST':
+  if host!='lume.tectria.com.br':raise ApiError('Destino de sessão inválido.',403)
+  try:company=str(UUID(data.get('companyId','')))
+  except (ValueError,TypeError):raise ApiError('Empresa inválida.') from None
+  ticket=data.get('ticket','')
+  if not isinstance(ticket,str) or len(ticket)!=64 or any(c not in '0123456789abcdef' for c in ticket):raise ApiError('Transferência inválida.')
+  auth=remote('/rest/v1/rpc/lume_web_ticket_claim',{'ticket':ticket,'company_id':company})
+  if auth.get('companyId')!=company:raise ApiError('Empresa divergente.',403)
+  permit(company,auth['access_token'])
+  from web_session import lifetime,subject
+  age=lifetime(auth['access_token'])
+  if not age:raise ApiError('Sessão expirada. Abra novamente pelo Lume local.',401)
+  csrf=secrets.token_urlsafe(32)
+  return {'ok':True,'companyId':company,'sessionUser':subject(auth['access_token'])},cookies(auth['access_token'],csrf,age)
  if path=='login' and method=='POST':
   email,password=data.get('email'),data.get('password')
   if not isinstance(email,str) or not 1<=len(email)<=254 or not isinstance(password,str) or not 1<=len(password)<=1000:raise ApiError('Preencha e-mail e senha.')

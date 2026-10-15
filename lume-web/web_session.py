@@ -36,14 +36,15 @@ def session_bridge(module,error):
    generation=jar[LOGIN].value if LOGIN in jar else '-'
    marker=jar[blocked].value if blocked in jar else ''
    is_blocked=False
-   if marker and action!='login':
+   explicit_login=action in ('login','desktop-session')
+   if marker and not explicit_login:
     if marker.startswith('v2.'):
      parts=marker.split('.',2)
      is_blocked=len(parts)==3 and parts[1]==(subject(token) or '-') and parts[2]==generation
     else:is_blocked=generation=='-' # Legacy marker expires on an explicit new shared login.
     if is_blocked:token=''
    bootstrap=action==('status' if module=='pulso' else 'context')
-   if shared and shared!=local and not bootstrap and action!='login':raise error('Atualize a página para aproveitar sua sessão Tectria.',403)
+   if shared and shared!=local and not bootstrap and not explicit_login:raise error('Atualize a página para aproveitar sua sessão Tectria.',403)
    if token:jar[own]=token
    else:jar.pop(own,None)
    if module!='pulso' and bootstrap and token and (csrf not in jar or shared!=local):jar[csrf]=secrets.token_urlsafe(32)
@@ -58,7 +59,7 @@ def session_bridge(module,error):
    if bootstrap and token and isinstance(result,dict):result={**result,'sessionUser':subject(token)}
    cookies=[] if not returned else [returned] if isinstance(returned,str) else list(returned)
    if action=='logout':cookies.append(scoped(blocked,'v2.'+(subject(token) or '-')+'.'+generation,3600))
-   elif action=='login':
+   elif explicit_login:
     cookies.append(scoped(blocked,'',0))
     parsed=SimpleCookie()
     for value in cookies:parsed.load(value)
@@ -69,11 +70,11 @@ def session_bridge(module,error):
     if age:
      cookies.append(scoped(own,token,age))
      if module!='pulso':cookies.append(scoped(csrf,jar[csrf].value,age))
-   if action=='login' or bootstrap:
+   if explicit_login or bootstrap:
     age=lifetime(token)
     if age:
      cookies.append(scoped(SHARED,token,age)+'; Domain=tectria.com.br')
-     if action=='login':cookies.append(scoped(LOGIN,secrets.token_urlsafe(24),age)+'; Domain=tectria.com.br')
+     if explicit_login:cookies.append(scoped(LOGIN,secrets.token_urlsafe(24),age)+'; Domain=tectria.com.br')
    return result,cookies or None
   return wrapped
  return decorate

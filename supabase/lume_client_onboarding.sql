@@ -5,7 +5,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE root_token text; derived_hash text;
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.tectria_companies c
-  JOIN public.tectria_contracts k ON k.company_id=c.id
+  LEFT JOIN public.tectria_contracts k ON k.company_id=c.id
   JOIN public.tectria_entitlements e ON e.company_id=c.id AND e.product_code='lume'
   WHERE c.id=cid AND c.active AND NOT c.suspended AND k.state='active'
    AND e.enabled AND NOT e.suspended AND e.starts_at<=now() AND (e.ends_at IS NULL OR e.ends_at>now())) THEN RETURN; END IF;
@@ -86,9 +86,9 @@ BEGIN
  SELECT coalesce(jsonb_agg(q.company_id ORDER BY q.last_run_at NULLS FIRST,q.company_id),'[]'::jsonb) INTO result
  FROM (SELECT w.company_id,w.last_run_at FROM tectria_private.lume_notification_worker w
   JOIN public.tectria_companies c ON c.id=w.company_id
-  JOIN public.tectria_contracts k ON k.company_id=c.id
+  LEFT JOIN public.tectria_contracts k ON k.company_id=c.id
   JOIN public.tectria_entitlements e ON e.company_id=c.id AND e.product_code='lume'
-  WHERE w.enabled AND c.active AND NOT c.suspended AND k.state='active'
+  WHERE w.enabled AND c.active AND NOT c.suspended AND (k.company_id IS NULL OR k.state='active')
    AND e.enabled AND NOT e.suspended AND e.starts_at<=now() AND (e.ends_at IS NULL OR e.ends_at>now())
   ORDER BY w.last_run_at NULLS FIRST,w.company_id LIMIT 10) q;
  RETURN result;
