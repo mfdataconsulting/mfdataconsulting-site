@@ -1,0 +1,37 @@
+/* Atlas compartilha as superfícies do Nexo: pérola, prata acetinada e vermelho. */
+:root{--line:#dfe2e8;--muted:#6b7382;--paper:#f4f3f2}
+body{background:#f4f3f2}
+.main-shell{position:relative;isolation:isolate;min-height:100vh;background:radial-gradient(ellipse at 96% 4%,#efdfe3aa 0,transparent 46%),radial-gradient(ellipse at 4% 32%,#dce4ef90 0,transparent 50%),radial-gradient(ellipse at 70% 100%,#eee5d770 0,transparent 50%),linear-gradient(130deg,#faf9f7,#f0f2f6 60%,#f8f3f2)}
+.main-shell:before{content:"";position:absolute;inset:0;background-image:url('/assets/nexo-texture.svg');opacity:.23;pointer-events:none;z-index:-1}
+.main-shell:after{content:"";position:absolute;width:min(600px,60%);height:520px;right:0;top:150px;background:repeating-radial-gradient(ellipse at 100% 0,transparent 0 74px,#ffffff70 75px 76px,transparent 77px 96px);opacity:.34;pointer-events:none;z-index:-1}
+.sidebar{isolation:isolate;overflow-x:hidden;overflow-y:auto;background:linear-gradient(128deg,#e0e2e6 0,#cbd0d7 43%,#b5bdc9 100%);color:#29313d;border-right:1px solid #aab2bf66;box-shadow:7px 0 26px #45516a09;padding-top:26px}
+.sidebar:before{content:"";position:absolute;inset:0;background:url('/assets/nexo-texture.svg');opacity:.3;z-index:-1;pointer-events:none}
+.sidebar:after{content:"";position:absolute;inset:auto 0 0;height:320px;background:url('/assets/sidebar-curves.svg') left bottom/320px 320px no-repeat;z-index:-1;pointer-events:none}
+.brand{padding:0 0 0 4px;gap:13px;font-size:36px;font-weight:700;letter-spacing:-1.1px;color:#252a34}
+.brand-symbol{width:57px;height:57px;flex-shrink:0;filter:drop-shadow(0 3px 5px #ad193022)}
+.brand small{color:#303b4a;font-size:8px;letter-spacing:2.7px;margin-top:-4px;padding-left:2px;font-weight:500}
+.workspace{background:#ffffff22;border:1px dashed #8b96a57a;margin-top:27px;color:#425064;padding:13px 10px}
+.workspace small{color:#647084}.workspace-icon{background:#ffffff66;border:1px solid #8d97a622;color:#b9233b}
+.nav-caption{color:#566172;font-size:8px;letter-spacing:1px;margin-top:3px}
+nav{gap:7px}.nav-item{min-height:40px;padding:9px 10px;color:#333d4c;background:linear-gradient(180deg,#f0f2f48c,#d8dde49c 48%,#c0c7d2c2 52%,#b5bfcca6);border:1px solid #949eac60;box-shadow:inset 0 1px 0 #ffffffa8,0 3px 7px #4b5c7210;font-weight:600;border-radius:8px}
+.nav-item.active{color:#fff;background:linear-gradient(155deg,#e03149,#c81d35 57%,#b11830);border-color:#a81830;box-shadow:inset 0 1px 0 #ffffff40,0 5px 13px #a3162b25}
+.nav-item:hover:not(.active){color:#202936;background:linear-gradient(180deg,#f9fafbe6,#d8dee6);border-color:#929dac99}.nav-icon{color:#435066}.active .nav-icon{color:white}
+.sidebar-bottom{color:#4c586a}.sidebar-bottom small{color:#566172}.sidebar-bottom:before{content:"";display:block;width:28px;height:3px;border-radius:2px;background:var(--red);margin-bottom:15px}
+.topbar{height:96px;background:linear-gradient(180deg,#373b43,#171b23 50%,#11151d 52%,#1b202a);color:#d5dae4;border-bottom:0;box-shadow:0 5px 18px #27324614;padding:0 38px}
+.breadcrumb,.breadcrumb strong{color:#d5dae4}.breadcrumb span{color:#727985}.breadcrumb strong{font-weight:600}
+.tectria-logo{width:176px;height:70px;object-fit:cover;mix-blend-mode:screen;flex-shrink:0;margin-left:10px}
+.top-actions{gap:17px}.topbar .secondary{background:#ffffff09;border-color:#ffffff24;color:#e1e5ed}.topbar .secondary:hover{background:#ffffff19}.topbar .status{background:#ffffff06;border-color:#ffffff1f;color:#d3d8e2}.topbar .status span{background:#c3a172}.topbar .status.connected span{background:#31bb89}.avatar{background:linear-gradient(145deg,#363b43,#20242b);color:#edf0f4;border-color:#ffffff24}
+main{padding-top:39px}.eyebrow{color:#e71b3c;font-weight:700;letter-spacing:1.9px}h1{color:#252d3a}.card,.metric,.product-card{background:linear-gradient(145deg,#ffffffed,#f9fafbe0);border-color:#d9dee6;box-shadow:inset 0 1px 0 #fff,0 7px 22px #35415808;border-radius:15px}.card-head{border-bottom-color:#e7ebf1}.metric strong{color:#252d3a}.metric-top{color:#68778d}.metric small{color:#758195}.product-row,.pending-row{border-bottom-color:#e7ebf1}.notice{background:linear-gradient(110deg,#f8edefcc,#ffffff80);border-color:#e6d6dc}.notice p{color:#697182}.primary{background:linear-gradient(145deg,#dc2e47,#bd1a33);border-color:#b51d34;box-shadow:inset 0 1px 0 #ffffff30,0 4px 10px #bc1e351a}.secondary{background:#ffffffad;border-color:#d2d9e3;color:#47576d}.secondary:hover{background:#fff}.toolbar input{background:#ffffffb0}th{background:linear-gradient(180deg,#f6f8fa,#edf0f5);color:#626e80}.empty-icon{background:#ffffff80}.context-bar select{border-color:#bdc6d3}.scope{color:#67758a}footer{border-top:1px solid #cbd3df88;padding-top:18px;color:#697587}footer span{color:#7d899a}
+@media(max-width:1120px){.topbar{padding:0 26px}.tectria-logo{width:145px;margin-left:0}.top-actions{gap:10px}.brand{font-size:32px}.brand-symbol{width:49px;height:49px}}
+@media(max-width:760px){.sidebar{padding:17px 16px;overflow:visible}.sidebar:after{height:120px;background-size:240px}.brand{font-size:30px}.brand-symbol{width:47px;height:47px}.brand small{margin-top:-3px}.nav-item{min-height:34px;padding:8px 11px}.topbar{height:70px;padding:0 18px;flex-wrap:nowrap}.breadcrumb{display:none}.top-actions{justify-content:space-between;width:100%;gap:9px}.tectria-logo{width:112px;height:50px;margin-left:auto}.status{max-width:160px}.topbar .small{font-size:10px;padding:6px 9px}.main-shell:after{top:70px;width:85%;height:440px}main{padding-top:27px}}
+
+/* Ícones consistentes na navegação administrativa. */
+.nav-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px}.nav-icon svg{width:21px;height:21px}.sidebar nav .nav-caption{margin:18px 0 8px;padding-left:12px}.sidebar nav .nav-caption:first-child{margin-top:12px}
+
+.contract-modules{border:1px solid #d5dbe4;border-radius:10px;padding:16px}.contract-modules label{display:flex;align-items:center;gap:10px;margin:12px 0}.contract-modules input[type=checkbox]{width:18px;height:18px;min-height:18px;accent-color:#ce173b}
+
+.contract-section{border:1px solid #d5dbe4;border-radius:10px;padding:18px;margin:14px 0}.contract-section>legend{font-weight:700;padding:0 8px}.environment-module{border-bottom:1px solid #d5dbe4;padding:8px 0}.environment-module:last-child{border-bottom:0}.environment-module-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #e1e5ec}.environment-module-row small{flex-basis:100%;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.customer-section{border:1px solid #d5dbe4;border-radius:10px;padding:20px;margin:20px 0}.customer-section legend{font-weight:700;padding:0 8px}.customer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px}.customer-grid label{display:block;margin:0}.customer-grid input{width:100%;box-sizing:border-box}.customer-error{color:#c81d35}@media(max-width:760px){.customer-grid{grid-template-columns:1fr}.customer-section{padding:16px}}
+
+#customer-form label{font-size:12px;font-weight:500;color:var(--ink)}#customer-form input{display:block;margin-top:6px;border:1px solid #dadde4;border-radius:7px;padding:10px 12px;color:var(--ink);background:#fff;font-size:12px;min-height:40px}.cep-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.cep-status{color:var(--muted)}
