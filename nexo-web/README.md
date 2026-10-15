@@ -4,7 +4,7 @@
 
 Por orientação do usuário, somente o produto independente **Nexo Mobile**, em `/mobile/`, permanece disponível na web, inclusive quando aberto por um computador. A raiz e `/index.html` redirecionam para Mobile. A API publicada aceita apenas ações com prefixo `mobile-`; as rotas da antiga consulta Nexo Web respondem HTTP 410. Os auxiliares do backend antigo permanecem no código porque o Mobile usa o transporte compartilhado, sem expor a operação antiga.
 
-Lume e Pulso web sempre direcionam para `/mobile/`, preservam a empresa e exigem `nexo_mobile`. Contratar apenas `nexo` não libera o Mobile. O Nexo desktop e suas integrações não são alterados.
+Lume e Pulso web direcionam para `/mobile/` quando a empresa possui `nexo_mobile`; sem Mobile, o atalho usa o Nexo local em `http://127.0.0.1:5250/`, exigindo acesso a `nexo`. Contratar apenas `nexo` não libera o Mobile. O Nexo desktop e suas integrações não são alterados.
 
 As informações abaixo documentam a versão anterior, preservada no histórico Git e nos pacotes finais de Perfumaria.
 
