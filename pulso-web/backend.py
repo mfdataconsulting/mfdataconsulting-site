@@ -71,11 +71,13 @@ from web_session import session_bridge,official
 @session_bridge('pulso',ApiError)
 def handle(action,data,headers):
  if action=='lume-notifications-worker':
-  from lume_worker import run,WorkerError
+  from lume_worker import run,WorkerError,authorize,companies
   try:
-   result=run(headers)
+   authorize(headers)
+   tenants=companies()
+   result=run(headers,tenant_credentials=tenants)
    from lume_push import run as push_run
-   result['push']=push_run(headers)
+   result['push']=push_run(headers,tenant_credentials=tenants)
    return result,None
   except WorkerError as error:raise ApiError(str(error),403 if str(error)=='worker_unauthorized' else 503) from None
  origin=headers.get('Origin','');host=headers.get('Host','')

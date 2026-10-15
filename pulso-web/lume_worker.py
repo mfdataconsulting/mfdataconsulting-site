@@ -23,7 +23,7 @@ def rpc(payload, opener=urllib.request.urlopen, function='lume_notifications_wor
     key = os.environ.get('SUPABASE_PUBLISHABLE_KEY', '')
     if os.environ.get('SUPABASE_URL', '').rstrip('/') != BASE or not key.startswith('sb_publishable_'):
         raise WorkerError('database_not_configured')
-    if function not in ('lume_notifications_worker', 'lume_push_worker'):
+    if function not in ('lume_notifications_worker', 'lume_push_worker', 'lume_notifications_companies'):
         raise WorkerError('invalid_worker_function')
     request = urllib.request.Request(BASE + '/rest/v1/rpc/' + function,
         data=json.dumps(payload).encode(), method='POST', headers={'apikey':key, 'Content-Type':'application/json'})
@@ -36,7 +36,15 @@ def rpc(payload, opener=urllib.request.urlopen, function='lume_notifications_wor
 def companies():
     """Server-only tenant credentials; never accept company selection from a request."""
     try:
-        entries = json.loads(os.environ.get('LUME_WORKER_COMPANIES', '{}'))
+        setting = os.environ.get('LUME_WORKER_COMPANIES', '{}')
+        if setting == 'database':
+            entries = rpc({'worker_token': os.environ.get('LUME_WORKER_TOKEN', '')}, function='lume_notifications_companies')
+            if entries == []:
+                return {}
+            if not isinstance(entries, list):
+                raise ValueError()
+        else:
+            entries = json.loads(setting)
         if isinstance(entries, list):
             if not 1 <= len(entries) <= 10 or len(set(entries)) != len(entries):
                 raise ValueError()
@@ -60,10 +68,10 @@ def companies():
         raise WorkerError('companies_not_configured') from None
 
 
-def run(headers, database=rpc, provider=send):
+def run(headers, database=rpc, provider=send, tenant_credentials=None):
     authorize(headers)
     results = []
-    for company, token in companies().items():
+    for company, token in (companies() if tenant_credentials is None else tenant_credentials).items():
         try:
             result = run_company(company, token, database, provider)
         except WorkerError as error:

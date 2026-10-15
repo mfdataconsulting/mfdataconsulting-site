@@ -102,13 +102,13 @@ def send(device_token, title, headers, *, validate_only=False, opener=urllib.req
     return name
 
 
-def run(headers, database=None, provider=send):
+def run(headers, database=None, provider=send, tenant_credentials=None):
     from lume_worker import authorize, WorkerError, companies, rpc
     authorize(headers)
     if database is None:
         database = lambda payload: rpc(payload, function='lume_push_worker')
     results = []
-    for company, token in companies().items():
+    for company, token in (companies() if tenant_credentials is None else tenant_credentials).items():
         try:
             result = run_company(headers, company, token, database, provider)
             result['ok'] = True
