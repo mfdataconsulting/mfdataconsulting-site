@@ -22,7 +22,7 @@ class handler(BaseHTTPRequestHandler):
     from mobile_backend import handle as mobile_handle
     from mobile_backend import cookies as clear_session
     result,session=mobile_handle(action[7:],data,self.headers,method)
-   else:result,session=handle(action,data,self.headers,method)
+   else:raise ApiError('Nexo web encerrado. Acesse o Nexo Mobile em /mobile/.',410)
    self.respond(result,200,session)
   except ApiError as e:self.respond({'error':str(e)},e.status,clear_session() if e.status==401 else None)
   except (ValueError,KeyError,TypeError):self.respond({'error':'Requisição inválida.'},400)

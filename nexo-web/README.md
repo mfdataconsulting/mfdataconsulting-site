@@ -1,5 +1,13 @@
 # Nexo Web
 
+## Situação atual — 14/10/2026
+
+Por orientação do usuário, somente o produto independente **Nexo Mobile**, em `/mobile/`, permanece disponível na web, inclusive quando aberto por um computador. A raiz e `/index.html` redirecionam para Mobile. A API publicada aceita apenas ações com prefixo `mobile-`; as rotas da antiga consulta Nexo Web respondem HTTP 410. Os auxiliares do backend antigo permanecem no código porque o Mobile usa o transporte compartilhado, sem expor a operação antiga.
+
+Lume e Pulso web sempre direcionam para `/mobile/`, preservam a empresa e exigem `nexo_mobile`. Contratar apenas `nexo` não libera o Mobile. O Nexo desktop e suas integrações não são alterados.
+
+As informações abaixo documentam a versão anterior, preservada no histórico Git e nos pacotes finais de Perfumaria.
+
 Consulta complementar ao Nexo instalado, com login Tectria, seleção de empresa e permissões próprias do Nexo. Não exige acesso a Pulso ou Lume.
 
 Áreas: estoque, vendas de dias fechados, fechamentos e financeiro. Os dados vêm das fontes selecionadas e sincronizadas no Supabase. Cada área informa quando sua posição foi recebida; ausência de fonte não vira saldo zero. Vendas do dia em aberto, impressão, caixa e alterações continuam na estação instalada.

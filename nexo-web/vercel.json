@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "redirects": [
+    {"source": "/", "destination": "/mobile/", "permanent": false},
+    {"source": "/index.html", "destination": "/mobile/", "permanent": false}
+  ],
   "rewrites": [
     {
       "source": "/api/:action*",
