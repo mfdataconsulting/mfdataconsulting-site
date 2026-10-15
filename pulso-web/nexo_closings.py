@@ -54,7 +54,7 @@ def convert(records, company_id):
         sales = doc['sales']
         finance = doc['finance']
         methods=sorted(f['payment'] for f in finance)
-        if methods not in (['card','cash','pix'],['card','cash','credit','pix','table']):
+        if methods not in (['card','cash','pix'],['card','cash','credit','pix','table'],['card','card_credit','card_debit','cash','pix'],['card','card_credit','card_debit','cash','credit','pix','table']):
             raise ValueError('Resumo de modalidades incompleto ou duplicado')
         extended='credit' in methods
         account_kinds={}
@@ -70,7 +70,7 @@ def convert(records, company_id):
         if doc.get('customerSchemaVersion') not in (None,1):raise ValueError('Versão de clientes não suportada')
         if len({str(UUID(s['id'])) for s in sales}) != len(sales):
             raise ValueError('Venda duplicada')
-        if any(s['payment'] not in ('cash', 'card', 'pix') for s in sales):
+        if any(s['payment'] not in ('cash', 'card', 'pix', 'card_debit', 'card_credit') for s in sales):
             raise ValueError('Recebimento desconhecido')
         for s in sales:
             if cost_version==1 and 'costCents' not in s:raise ValueError('Custo da venda ausente')
@@ -118,7 +118,7 @@ def convert(records, company_id):
             raise ValueError('Resumo de produtos não confere com receita')
         settlement = doc.get('settlements')
         if settlement is not None:
-            if settlement.get('schemaVersion') != 1 or sorted(r['method'] for r in settlement['methods']) != ['card','cash','pix']:
+            if settlement.get('schemaVersion') != 1 or sorted(r['method'] for r in settlement['methods']) not in (['card','cash','pix'],['card','card_credit','card_debit','cash','pix']):
                 raise ValueError('Contrato de recebimentos inválido')
             paid = 0
             for r in settlement['methods']:
