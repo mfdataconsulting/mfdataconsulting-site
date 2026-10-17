@@ -74,7 +74,7 @@ def access_token(headers, opener=urllib.request.urlopen):
     return token
 
 
-def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen, credential=None, tag='lume-notification', section='channels', company_id=None):
+def send(device_token, title, headers, *, validate_only=False, opener=urllib.request.urlopen, credential=None, tag='lume-notification', section='channels', company_id=None, notification_job=None):
     if not isinstance(device_token, str) or not re.fullmatch(r'[A-Za-z0-9_:.-]{20,4096}', device_token):
         raise MailError('push_device_invalid')
     if not isinstance(title, str) or not 1 <= len(title) <= 150 or '\n' in title or '\r' in title:
@@ -87,11 +87,20 @@ def send(device_token, title, headers, *, validate_only=False, opener=urllib.req
         from uuid import UUID
         params['company'] = str(UUID(company_id))
     link = 'https://lume.tectria.com.br/?' + urlencode(params)
+    body = 'Há um novo aviso no Lume. Entre para consultar.'
+    if notification_job is not None:
+        from lume_mail import presentation, nexo_link
+        kind, company, model = presentation(notification_job)
+        title = (company + ' · ' + model[0])[:150]
+        body = {'account_due':'Há uma conta para conferir. Abra o Nexo para conferir.',
+                'stock_low':'Há um item no limite de estoque. Abra o Nexo para conferir.',
+                'digest':'Seu resumo está disponível. Confira as pendências no Nexo.'}.get(kind, 'Há um aviso para acompanhar. Abra o Nexo para conferir.')
+        link = nexo_link(notification_job, push=True)
     token = credential or access_token(headers, opener)
     result = post('https://fcm.googleapis.com/v1/projects/' + PROJECT + '/messages:send', {
         'validate_only': validate_only,
         'message': {'token': device_token,
-                    'notification': {'title': title, 'body': 'Há um novo aviso no Lume. Entre para consultar.'},
+                    'notification': {'title': title, 'body': body},
                     'data': {'url': link},
                     'webpush': {'notification': {'tag': tag, 'icon': 'https://lume.tectria.com.br/assets/tectria-logo.png'},
                                 'fcm_options': {'link': link}}},
@@ -154,7 +163,7 @@ def run_company(headers, company, worker_token, database, provider):
                                        section={'invoice_new':'invoices','invoice_due':'invoices',
                                                 'order_late':'orders','stock_low':'products',
                                                 'task_due':'tasks'}.get(job.get('kind'), 'channels'),
-                                       company_id=company)
+                                       company_id=company, notification_job=job)
             status = 'accepted'
         except MailError as error:
             ack.update(error_code=error.code, retryable=error.retryable)
