@@ -182,6 +182,8 @@ body.connected.pulso-detail{font-family:"Aptos","Segoe UI Variable","Segoe UI",s
 
 .notebook-sections,.notebook-pagination{display:none}
 .notebook-sections label{margin:0}
+.notebook-sections .notebook-view{border-radius:999px!important;margin:0!important;font-weight:600;line-height:1.25;box-shadow:none!important}
+#connected .notebook-sections .notebook-view[aria-pressed=true]{background:#bd3155!important;border-color:#a42343!important;color:#fff!important}
 @media(max-width:899px){
  body.connected.pulso-detail .card{padding-top:104px}
  .pulso-detail #dashboard td{font-size:13px;line-height:1.4}
@@ -191,7 +193,7 @@ body.connected.pulso-detail{font-family:"Aptos","Segoe UI Variable","Segoe UI",s
  .pulso-detail #dashboard .payment-pie-entry strong{font-size:14px}
  .pulso-detail #dashboard .payment-pie-entry small,.pulso-detail #dashboard .payment-pie-total{font-size:12px}
  .pulso-detail #dashboard .notebook-panel:not(.notebook-active),.pulso-detail #dashboard .notebook-row-hidden{display:none!important}
- .pulso-detail .notebook-sections{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+ .pulso-detail .notebook-sections{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
  .pulso-detail .notebook-sections label{grid-column:1/-1;margin:0;font-size:13px}
  .pulso-detail .notebook-sections select{width:100%;min-height:44px;padding:10px;font-size:14px;margin-top:5px}
  .pulso-detail .notebook-sections small{grid-column:1/-1;font-size:12px}
@@ -231,7 +233,7 @@ body.connected.pulso-detail{font-family:"Aptos","Segoe UI Variable","Segoe UI",s
  .pulso-detail .sales-filters label{font-size:11px;flex:1;min-width:100px}
  .pulso-detail .sales-filters input,.pulso-detail .sales-filters select{font-size:12px;min-height:30px;height:30px;padding:4px 7px;width:100%}
  .pulso-detail .sales-filters button{min-height:30px;font-size:11px;padding:5px 9px}
- .pulso-detail .notebook-sections{display:flex;align-items:end;gap:8px;flex-shrink:0}
+ .pulso-detail .notebook-sections{display:flex;align-items:center;flex-wrap:wrap;gap:7px;flex-shrink:0}
  .notebook-sections label{font-size:11px;flex:1;min-width:0}
  .notebook-sections select{display:block;width:100%;margin-top:2px;min-height:32px;font-size:13px;padding:5px 8px}
  .notebook-sections small{font-size:11px;padding-bottom:6px;white-space:nowrap}

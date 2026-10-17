@@ -325,12 +325,14 @@ function notebookDetails(root,page){
    const selected=entries.find(e=>e.id===views[page])||entries[0];
    toolbar.replaceChildren();
    if(selected){
-    const label=node('label','Visualização'),select=node('select');select.setAttribute('aria-label','Visualização do painel');
-    for(const entry of entries){entry.element.classList.add('notebook-panel');entry.element.classList.toggle('notebook-active',entry===selected);const option=node('option',entry.label);option.value=entry.id;select.append(option);}
-    select.value=selected.id;views[page]=selected.id;label.append(select);toolbar.append(label);
-    select.addEventListener('change',()=>{views[page]=select.value;decorate();root.querySelector('.notebook-sections select')?.focus({preventScroll:true});});
-    const details=node('small',`${entries.indexOf(selected)+1} de ${entries.length} visualizações`);toolbar.append(details);
-    for(const [title,step] of [['Anterior',-1],['Próxima',1]]){const button=node('button',title,'sale-toggle');button.type='button';button.disabled=entries.indexOf(selected)+step<0||entries.indexOf(selected)+step>=entries.length;button.addEventListener('click',()=>{views[page]=entries[entries.indexOf(selected)+step].id;decorate();root.querySelector('.notebook-sections select')?.focus({preventScroll:true});});toolbar.append(button);}
+    const names={financeiro:['Fluxo','Recebimentos','A pagar','A receber'],vendas:['Evolução','Desempenho','Produtos','Clientes','Modalidades'],estoque:['Atenção','Situação','Mais vendidos','Posição'],clientes:['Ranking','Participação','Frequência'],colaboradores:['Desempenho','Vendas','Identificação','Acompanhamento'],metas:['Meta selecionada','Evolução','Ranking','Ritmo']};
+    toolbar.setAttribute('role','group');toolbar.setAttribute('aria-label','Visualizações do painel');views[page]=selected.id;
+    for(const entry of entries){
+     entry.element.classList.add('notebook-panel');entry.element.classList.toggle('notebook-active',entry===selected);
+     const label=entry.id==='metrics'?'Indicadores':names[page]?.[Number(entry.id.split('-')[1])]||entry.label;
+     const button=node('button',label,'notebook-view');button.type='button';button.dataset.view=entry.id;button.title=entry.label;button.setAttribute('aria-pressed',String(entry===selected));
+     button.addEventListener('click',()=>{views[page]=entry.id;decorate();root.querySelector(`.notebook-view[data-view="${entry.id}"]`)?.focus({preventScroll:true});});toolbar.append(button);
+    }
    }
    for(const wrap of content.querySelectorAll('.table-scroll')){
     if(wrap.querySelector('.notebook-pagination'))continue;
