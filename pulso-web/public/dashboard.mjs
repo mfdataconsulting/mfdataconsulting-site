@@ -310,7 +310,43 @@ function renderGoals(root,data,start,end,date){
  const pace=panel('Ritmo para concluir'),paceValues=node('div',undefined,'goal-pace-values');for(const [title,value,note] of [['Esperado até hoje',money(v.expected),'Objetivo proporcional aos dias'],['Restam no período',String(v.daysLeft)+' dias',v.status==='Programada'?'A meta ainda não iniciou':`Prazo: ${date(focused.fim)}`],['Necessário por dia',['Encerrada','Prazo encerrado'].includes(v.status)?'—':money(v.requiredDaily),v.status==='Encerrada'?'Meta encerrada':v.status==='Prazo encerrado'?'Prazo esgotado':v.remaining?'Mínimo diário para concluir':'Objetivo já alcançado'],['Acima do objetivo',money(v.surplus),'Excedente realizado']]){const item=node('div',undefined,'sales-highlight');item.append(node('span',title),node('strong',value),node('small',note));paceValues.append(item);}pace.append(paceValues);grid.append(pace);content.append(grid);
  const actions=node('div',undefined,'financial-detail-actions'),details=node('button','Detalhar metas','sale-toggle'),sales=node('button','Vendas que compõem a meta','sale-toggle');details.type=sales.type='button';details.addEventListener('click',()=>detailDialog('Metas — período integral',table(['Meta','Início','Fim','Objetivo','Realizado','Atingido','Falta','Situação'],tracking.map(g=>[g.nome,date(g.inicio),date(g.fim),money(g.valor_centavos),money(g.realized),percentLabel(g.percent),money(g.remaining),g.status]))));sales.addEventListener('click',()=>{const box=node('div');box.append(node('p','Somente vendas confirmadas compõem o realizado. Cancelamentos permanecem identificados.'),table(['Data','Cliente','Situação','Valor'],salesRecords(current,focused.inicio,focused.fim).sort((a,b)=>b.total_centavos-a.total_centavos).map(r=>[date(r.data_operacional),r.cliente,r.situacao+(r.provisorio?' · Provisório':''),money(r.total_centavos)])));detailDialog('Vendas da meta — '+focused.nome,box);});actions.append(details,sales,node('small','Metas e alterações operacionais são registradas no Nexo.'));content.append(actions);select.addEventListener('change',()=>{state.id=select.value;root.replaceChildren();renderGoals(root,data,start,end,date);});
 }
+const notebookViews=new WeakMap(),notebookObservers=new WeakMap();
+function notebookDetails(root,page){
+ if(!['vendas','financeiro','estoque','clientes','colaboradores','metas'].includes(page))return;
+ let views=notebookViews.get(root);if(!views){views={};notebookViews.set(root,views);}
+ const decorate=()=>{
+  observer.disconnect();
+  const content=root.querySelector('.sales-content,.financial-content,.stock-content,.portfolio-content,.collaborator-content');
+  if(content){
+   let toolbar=root.querySelector('.notebook-sections');
+   if(!toolbar){toolbar=node('div',undefined,'notebook-sections');root.insertBefore(toolbar,content);}
+   const metrics=content.querySelector(':scope > .metrics'),panels=[...content.querySelectorAll('.dashboard-card')].filter(p=>!p.parentElement.closest('.dashboard-card'));
+   const entries=[...(metrics?[{id:'metrics',label:'Indicadores',element:metrics}]:[]),...panels.map((element,index)=>({id:'panel-'+index,label:element.querySelector('h3')?.firstChild?.textContent?.trim()||'Consulta '+(index+1),element}))];
+   const selected=entries.find(e=>e.id===views[page])||entries[0];
+   toolbar.replaceChildren();
+   if(selected){
+    const label=node('label','Visualização'),select=node('select');select.setAttribute('aria-label','Visualização do painel');
+    for(const entry of entries){entry.element.classList.add('notebook-panel');entry.element.classList.toggle('notebook-active',entry===selected);const option=node('option',entry.label);option.value=entry.id;select.append(option);}
+    select.value=selected.id;views[page]=selected.id;label.append(select);toolbar.append(label);
+    select.addEventListener('change',()=>{views[page]=select.value;decorate();root.querySelector('.notebook-sections select')?.focus({preventScroll:true});});
+    const details=node('small',`${entries.indexOf(selected)+1} de ${entries.length} visualizações`);toolbar.append(details);
+    for(const [title,step] of [['Anterior',-1],['Próxima',1]]){const button=node('button',title,'sale-toggle');button.type='button';button.disabled=entries.indexOf(selected)+step<0||entries.indexOf(selected)+step>=entries.length;button.addEventListener('click',()=>{views[page]=entries[entries.indexOf(selected)+step].id;decorate();root.querySelector('.notebook-sections select')?.focus({preventScroll:true});});toolbar.append(button);}
+   }
+   for(const wrap of content.querySelectorAll('.table-scroll')){
+    if(wrap.querySelector('.notebook-pagination'))continue;
+    const rows=[...wrap.querySelectorAll('tbody > tr')];if(rows.length<=4)continue;
+    let index=0;const pager=node('div',undefined,'notebook-pagination'),previous=node('button','Anterior','sale-toggle'),next=node('button','Próxima','sale-toggle'),count=node('span');previous.type=next.type='button';count.setAttribute('aria-live','polite');
+    const draw=()=>{for(const [i,row] of rows.entries())row.classList.toggle('notebook-row-hidden',i<index||i>=index+4);count.textContent=`${index+1}–${Math.min(index+4,rows.length)} de ${rows.length}`;previous.disabled=index===0;next.disabled=index+4>=rows.length;};
+    previous.addEventListener('click',()=>{index=Math.max(0,index-4);draw();});next.addEventListener('click',()=>{index+=4;draw();});pager.append(previous,count,next);wrap.append(pager);draw();
+   }
+  }
+  observer.observe(root,{childList:true,subtree:true});
+ };
+ const observer=new MutationObserver(records=>{if(records.every(r=>r.target.closest?.('.notebook-pagination,.notebook-sections')))return;decorate();});
+ notebookObservers.set(root,observer);decorate();
+}
 export function renderDashboard(root,packet,page,start,end){
+ notebookObservers.get(root)?.disconnect();
  const focusedSearch=['vendas','estoque','clientes'].includes(page)&&root.contains(document.activeElement)&&document.activeElement?.type==='search',selection=focusedSearch?document.activeElement.selectionStart:null;
  root.replaceChildren();document.body?.classList.toggle('pulso-overview',page==='inicio');document.body?.classList.toggle('pulso-sales',page==='vendas');document.body?.classList.toggle('pulso-detail',['vendas','financeiro','colaboradores','estoque','clientes','metas'].includes(page));const data=packet.data,s=selected(data,start,end);
  const date=value=>value?value.split('-').reverse().join('/'):'—';
@@ -340,4 +376,5 @@ export function renderDashboard(root,packet,page,start,end){
  }else if(page==='metas'){
   renderGoals(root,data,start,end,date);
  }
+ notebookDetails(root,page);
 }
