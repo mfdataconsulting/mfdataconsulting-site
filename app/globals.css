@@ -89,3 +89,7 @@
 @media(max-width:620px){.legacy-brand strong{font-size:27px}.transition-tectria-logo{height:120px!important;margin:-10px 0 10px!important}}
 
 .ecosystem-relation,.mobile-offer,.product-contract{scroll-margin-top:110px}
+
+.method-intro{color:#aaa;font-size:17px;line-height:1.75;max-width:760px;margin:26px auto 36px}.flow h2{margin-bottom:0}.anchor-target{display:block;scroll-margin-top:110px}.text-link{display:inline-flex;gap:12px;color:#ad1830;font-size:14px;font-weight:700;line-height:1.7}.ecosystem-relation>p.ecosystem-summary{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;color:#252a34;font-size:clamp(19px,2.2vw,28px);margin:28px 0}.ecosystem-summary>span{color:#ad1830}.services-track .section{padding-block:90px}.fronts .section-head{margin-bottom:42px}.track-end{padding-block:28px}@media(max-width:620px){.services-track .section{padding-block:65px}.header nav{max-height:calc(100dvh - 84px);overflow-y:auto}.text-link{font-size:13px}.ecosystem-summary>span{display:none}.ecosystem-relation>p.ecosystem-summary{flex-direction:column;align-items:flex-start;gap:10px}.flow-line strong{font-size:15px}}
+
+.motion-card,.flow-line div{animation:none}.header nav a{line-height:1.5}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
