@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Header from "./components/Header";
+import ProductPreview from "./components/ProductPreview";
 
 const solutions = [
   ["01", "⇄", "Migrações & Incorporações", "Migração e consolidação de bases em mudanças de sistema e incorporações, com preservação de histórico, validação e rastreabilidade."],
@@ -35,7 +37,6 @@ const formats = [
 function Arrow() { return <span aria-hidden="true">↗</span>; }
 
 export default function Tectria() {
-  const [menu, setMenu] = useState(false);
   const [status, setStatus] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -49,14 +50,7 @@ export default function Tectria() {
   }
 
   return <main>
-    <header className="header">
-      <a href="#inicio" aria-label="TECTRIA — início"><img src="/tectria-logo.png" alt="TECTRIA" /></a>
-      <nav className={menu ? "open" : ""} aria-label="Navegação principal">
-        <a href="#frentes" onClick={()=>setMenu(false)}>A Tectria</a><a href="#solucoes" onClick={()=>setMenu(false)}>Serviços</a><a href="#ecossistema" onClick={()=>setMenu(false)}>Produtos</a><a href="/cases" onClick={()=>setMenu(false)}>Cases</a><a href="#investimento" onClick={()=>setMenu(false)}>Contratação</a><a href="#contato" onClick={()=>setMenu(false)}>Contato</a>
-      </nav>
-      <a className="top-cta" href="https://wa.me/553120940682?text=Olá,%20gostaria%20de%20conhecer%20as%20soluções%20da%20TECTRIA." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
-      <button className="menu" onClick={()=>setMenu(!menu)} aria-label="Abrir menu" aria-expanded={menu}><i/><i/></button>
-    </header>
+    <Header home />
 
     <section id="inicio" className="hero">
       <div className="hero-lines"/><div className="glow"/>
@@ -65,7 +59,7 @@ export default function Tectria() {
         <h1>Tecnologia que conecta dados, operação e <em>resultados.</em></h1>
         <p className="lead">Serviços especializados em dados e tecnologia para empresas. Produtos de gestão, automação e análise para o comércio.</p>
         <p className="disciplines">Duas frentes de atuação. <b>Um compromisso:</b> fazer seu negócio evoluir.</p>
-        <div className="actions"><a className="primary" href="#solucoes">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Produtos para seu comércio <Arrow /></a></div>
+        <div className="actions"><a className="primary" href="#servicos">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Produtos para seu comércio <Arrow /></a></div>
       </div>
       <div className="hero-visual" aria-hidden="true"><img src="/tectria-icon.png" alt=""/><span className="node n1"/><span className="node n2"/><span className="node n3"/></div>
       <div className="scroll">Role para explorar <span>↓</span></div>
@@ -74,46 +68,71 @@ export default function Tectria() {
     <section id="frentes" className="section light fronts">
       <div className="section-head"><p className="kicker">Nossa atuação</p><h2>Da estrutura dos dados<br/>ao dia a dia do negócio.</h2><p className="fronts-intro">A Tectria reúne duas frentes complementares. Projetos especializados para os desafios de cada empresa e produtos próprios para a operação do comércio.</p></div>
       <div className="front-grid">
-        <article><span className="front-number">01 / SERVIÇOS</span><h3>Dados & tecnologia<br/>para empresas.</h3><p>Migrações, incorporações de bases, integrações, BI e automações. Atuação sob medida em ambientes que precisam de continuidade, segurança e informação confiável.</p><a href="#solucoes">Conhecer nossos serviços <Arrow /></a></article>
+        <article><span className="front-number">01 / SERVIÇOS</span><h3>Dados & tecnologia<br/>para empresas.</h3><p>Migrações, incorporações de bases, integrações, BI e automações. Atuação sob medida em ambientes que precisam de continuidade, segurança e informação confiável.</p><a href="#servicos">Conhecer nossos serviços <Arrow /></a></article>
         <article><span className="front-number">02 / PRODUTOS</span><h3>Soluções próprias<br/>para o comércio.</h3><p>Nexo, Lume e Pulso: um ecossistema para controlar a operação, acompanhar rotinas e transformar os dados do estabelecimento em decisões.</p><a href="#ecossistema">Conhecer o ecossistema <Arrow /></a></article>
       </div>
     </section>
 
-    <section id="problemas" className="section light">
-      <div className="section-head"><p className="kicker">Complexidade transformada em clareza</p><h2>Quando dados e processos não conversam, o negócio perde velocidade.</h2></div>
-      <div className="problem-grid">{problems.map((p,i)=><article key={p}><span>0{i+1}</span><p>{p}</p></article>)}</div>
-    </section>
+    <div className="services-track" aria-label="Frente de serviços de dados e tecnologia">
+
+    <div className="track-start section" id="servicos">
+      <span className="track-index">01</span><div><p className="kicker">Frente 01 / Serviços para empresas</p><h2>Dados & tecnologia<br/>sob medida.</h2><p>Da migração de uma base à automação de uma rotina: projetos especializados para estruturar informações, conectar sistemas e apoiar a evolução da empresa.</p><nav aria-label="Nesta frente: serviços"><a href="#solucoes">Especialidades</a><a href="#metodologia">Como trabalhamos</a><a href="/cases">Cases demonstrativos</a><a href="#contratar-servicos">Como contratar</a></nav></div>
+    </div>
 
     <section id="solucoes" className="section dark">
-      <div className="section-head split"><div><p className="kicker">01 / Serviços de dados & tecnologia</p><h2>Especialização para<br/>desafios complexos.</h2></div><p>Atuamos da origem do dado ao resultado do negócio, combinando engenharia, integração e visão estratégica em projetos sob medida.</p></div>
+      <div className="section-head split"><div><p className="kicker">Serviços / Especialidades</p><h2>Especialização para<br/>desafios complexos.</h2></div><p>Atuamos da origem do dado ao resultado do negócio, combinando engenharia, integração e visão estratégica em projetos sob medida.</p></div>
       <div className="solutions">{solutions.map(([n,icon,t,d])=><article className="motion-card" key={t}><span>{n}</span><i className="service-icon" aria-hidden="true">{icon}</i><h3>{t}</h3><p>{d}</p><Arrow /></article>)}</div>
     </section>
 
-    <section id="ecossistema" className="section light ecosystem">
-      <div className="section-head split"><div><p className="kicker">02 / Produtos para o comércio</p><h2>Operar. Acompanhar.<br/>Decidir.</h2></div><p>Três produtos com papéis claros para o dia a dia do seu comércio. Comece pela necessidade do estabelecimento e amplie a solução conforme o negócio evolui.</p></div>
-      <div className="product-grid">{products.map(product=><article className="product-card" key={product.name}><img className="product-logo" src={product.logo} alt={`${product.name} — Tectria`} width="260" height="84"/><h3>{product.role}</h3><p>{product.description}</p><ul>{product.features.map(feature=><li key={feature}>{feature}</li>)}</ul><a href={`https://wa.me/553120940682?text=${encodeURIComponent(product.message)}`} target="_blank" rel="noreferrer">Conhecer o {product.name} <Arrow /></a></article>)}</div>
-      <div className="ecosystem-relation"><p className="kicker">Como se complementam</p><p><strong>O Nexo registra a operação.</strong> O Lume ajuda a acompanhar o que precisa ser feito. O Pulso mostra os indicadores para orientar as decisões.</p><span>A composição da solução e as integrações são definidas na implantação, conforme os produtos contratados e a realidade do estabelecimento.</span></div>
-      <aside className="mobile-offer"><div><span className="front-number">FAMÍLIA NEXO</span><h3>Nexo Mobile</h3><p>Uma opção para quem precisa operar pelo celular. Consulte as funcionalidades e a contratação para seu estabelecimento.</p></div><a href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de conhecer o Nexo Mobile.")}`} target="_blank" rel="noreferrer">Conhecer a opção mobile <Arrow /></a></aside>
+    <section id="problemas" className="section light">
+      <div className="section-head"><p className="kicker">Serviços / Desafios que resolvemos</p><h2>Quando dados e processos não conversam, o negócio perde velocidade.</h2></div>
+      <div className="problem-grid">{problems.map((p,i)=><article key={p}><span>0{i+1}</span><p>{p}</p></article>)}</div>
     </section>
 
     <section id="escala" className="section scale">
-      <div className="scale-copy"><p className="kicker">Tecnologia na medida certa</p><h2>Do pequeno negócio à grande empresa.</h2><p>O desafio muda de escala. Nossa engenharia se adapta à realidade de cada operação.</p></div>
+      <div className="scale-copy"><p className="kicker">Serviços / Para cada porte de empresa</p><h2>Do pequeno negócio à grande empresa.</h2><p>O desafio muda de escala. Nossa engenharia se adapta à realidade de cada operação.</p></div>
       <div className="scale-cards"><article className="motion-card"><i className="card-symbol">↗</i><span>NEGÓCIOS EM CRESCIMENTO</span><h3>Menos planilhas.<br/>Mais controle.</h3><p>Automação de rotinas, organização de dados, indicadores de vendas, custos e estoque para decisões mais seguras.</p></article><article className="accent motion-card"><i className="card-symbol">⌬</i><span>OPERAÇÕES COMPLEXAS</span><h3>Arquitetura robusta.<br/>Evolução contínua.</h3><p>Pipelines, APIs, migrações, BI, legado e governança para ambientes corporativos de alta exigência.</p></article></div>
     </section>
 
-    <section className="flow section">
-      <p className="kicker">Como transformamos dados</p><h2>Da dispersão ao resultado.</h2>
+    <section id="metodologia" className="flow section">
+      <p className="kicker">Serviços / Como trabalhamos</p><h2>Da dispersão ao resultado.</h2>
       <div className="flow-line">{["Dados dispersos","Integração","Estruturação","Inteligência","Resultado"].map((x,i)=><div key={x}><span>{String(i+1).padStart(2,"0")}</span><strong>{x}</strong>{i<4&&<b>→</b>}</div>)}</div>
     </section>
 
-    <section id="investimento" className="section light investment">
-      <div className="section-head split"><div><p className="kicker">Contratação</p><h2>Comece pelo que faz sentido agora.</h2></div><p>Para os produtos, avaliamos a operação e os módulos necessários para apresentar uma proposta de implantação e uso. Para os serviços, definimos escopo, complexidade e formato de atendimento.</p></div>
-      <div className="product-contract"><div><p className="kicker">Nexo · Lume · Pulso</p><h3>Produtos para sua operação.</h3><p>Converse com a Tectria para identificar a composição adequada ao seu comércio, conhecer as funcionalidades e planejar a implantação.</p></div><a className="primary" href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de uma proposta dos produtos Tectria para meu comércio.")}`} target="_blank" rel="noreferrer">Solicitar uma proposta <Arrow /></a></div>
+    <section className="section expertise"><div><p className="kicker">Serviços / Experiência e continuidade</p><h2>Preparados para ambientes complexos e regulados.</h2></div><div><p>Experiência prática com grandes bases, sistemas legados, migrações críticas e operações que exigem segurança, rastreabilidade e continuidade.</p><ul><li>Bases legadas e alto volume</li><li>Migrações e integrações críticas</li><li>Ambientes regulados</li><li>Documentação e governança</li></ul></div></section>
+
+    <section id="contratar-servicos" className="section light investment">
+      <div className="section-head split"><div><p className="kicker">Serviços / Contratação</p><h2>Um formato para cada projeto.</h2></div><p>Definimos escopo, entregas e formato de atendimento conforme a complexidade do desafio. Você pode contratar um projeto específico, acompanhamento recorrente ou demandas pontuais.</p></div>
       <p className="kicker services-formats">Formatos de contratação dos serviços</p>
-      <div className="format-grid">{formats.map(([icon,t,d],i)=><article className="motion-card" key={t}><div><span>0{i+1}</span><i className="format-icon">{icon}</i></div><h3>{t}</h3><p>{d}</p><a href="#contato">Conversar sobre este formato <Arrow /></a></article>)}</div>
+      <div className="format-grid">{formats.map(([icon,t,d],i)=><article className="motion-card" key={t}><div><span>0{i+1}</span><i className="format-icon">{icon}</i></div><h3>{t}</h3><p>{d}</p><a href="#contato">Conversar sobre serviços <Arrow /></a></article>)}</div>
     </section>
 
-    <section className="section expertise"><div><p className="kicker">Experiência que reduz riscos</p><h2>Preparados para ambientes complexos e regulados.</h2></div><div><p>Experiência prática com grandes bases, sistemas legados, migrações críticas e operações que exigem segurança, rastreabilidade e continuidade.</p><ul><li>Bases legadas e alto volume</li><li>Migrações e integrações críticas</li><li>Ambientes regulados</li><li>Documentação e governança</li></ul></div></section>
+    <div className="track-end"><p>Seu desafio é de dados ou tecnologia?</p><a href="#contato">Conte o que sua empresa precisa <Arrow /></a><a href="#ecossistema">Ou conheça os produtos para o comércio ↓</a></div>
+
+    </div>
+
+    <section id="ecossistema" className="section light ecosystem">
+      <div className="section-head split"><div><p className="kicker">Frente 02 / Produtos para o comércio</p><h2>Operar. Acompanhar.<br/>Decidir.</h2></div><p>Três produtos com papéis claros para o dia a dia do seu comércio. Comece pela necessidade do estabelecimento e amplie a solução conforme o negócio evolui.</p></div>
+      <div className="product-grid">{products.map(product=><article className="product-card" key={product.name}><img className="product-logo" src={product.logo} alt={`${product.name} — Tectria`} width="260" height="84"/><h3>{product.role}</h3><p>{product.description}</p><ul>{product.features.map(feature=><li key={feature}>{feature}</li>)}</ul><a href={`https://wa.me/553120940682?text=${encodeURIComponent(product.message)}`} target="_blank" rel="noreferrer">Conhecer o {product.name} <Arrow /></a></article>)}</div>
+      <ProductPreview />
+      <div className="ecosystem-relation" id="como-se-complementam">
+        <p className="kicker">Produtos / Como se complementam</p>
+        <h3>Da venda à próxima decisão.</h3>
+        <p>Cada produto tem uma responsabilidade. Juntos, ajudam a conectar o que acontece no comércio, o que precisa de atenção e os resultados do negócio.</p>
+        <ol className="relationship-steps">
+          <li><span>01 / NEXO</span><h4>Registra e controla a operação.</h4><p>É onde a equipe cadastra produtos, clientes e fornecedores, registra vendas e recebimentos e acompanha caixa, estoque e financeiro. Esses registros formam a base para entender o movimento do estabelecimento.</p></li>
+          <li><span>02 / LUME</span><h4>Transforma pendências em acompanhamento.</h4><p>Ajuda a identificar estoque que exige atenção, contas próximas do vencimento e tarefas a executar. Organiza regras, prazos e responsáveis para que a equipe saiba o que acompanhar e quais ações priorizar.</p></li>
+          <li><span>03 / PULSO</span><h4>Transforma os registros em visão de negócio.</h4><p>Reúne indicadores de vendas, recebimentos, financeiro e operação, com gráficos, metas e relatórios. Ajuda o gestor a comparar períodos, acompanhar a evolução dos resultados e identificar pontos que merecem análise.</p></li>
+        </ol>
+        <div className="ecosystem-example"><strong>No dia a dia do comércio</strong><p>Uma venda registrada no Nexo movimenta a operação e o estoque. O Lume ajuda a acompanhar a necessidade de reposição conforme as regras configuradas. O Pulso permite analisar o desempenho das vendas e seus reflexos nos indicadores disponíveis.</p></div>
+        <p className="integration-note">Na implantação, definimos os produtos contratados, a origem dos dados e as integrações disponíveis para cada estabelecimento. A atualização dos indicadores e dos alertas depende dessas fontes e da sincronização configurada.</p>
+      </div>
+      <aside className="mobile-offer" aria-labelledby="mobile-title">
+        <div><span className="front-number">PRODUTOS / FAMÍLIA NEXO</span><h3 id="mobile-title">Nexo Mobile</h3><p className="mobile-lead">Gestão do comércio pelo navegador do celular, com acesso por usuário e empresa.</p><p>Cadastre produtos, clientes e fornecedores, registre vendas e recebimentos e acompanhe estoque e contas a pagar. Para restaurantes, organize comandas e retome o atendimento até o fechamento da venda.</p><ul className="mobile-features"><li>Vendas integrais ou parceladas e recebimentos por diferentes formas de pagamento.</li><li>Entradas e ajustes de estoque e leitura de códigos pela câmera.</li><li>Abertura e fechamento do dia, com acesso conforme o perfil do usuário.</li></ul><p className="mobile-note">Contratação própria e operação online. O Mobile possui base própria; a conexão com o Nexo instalado, o Lume e o Pulso é avaliada separadamente na implantação.</p></div>
+        <a href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de conhecer o Nexo Mobile para meu comércio.")}`} target="_blank" rel="noreferrer">Conversar sobre o Nexo Mobile <Arrow /></a>
+      </aside>
+      <div id="contratar-produtos" className="product-contract"><div><p className="kicker">Nexo · Lume · Pulso</p><h3>Produtos para sua operação.</h3><p>Converse com a Tectria para identificar a composição adequada ao seu comércio, conhecer as funcionalidades e planejar a implantação.</p></div><a className="primary" href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de uma proposta dos produtos Tectria para meu comércio.")}`} target="_blank" rel="noreferrer">Solicitar uma proposta <Arrow /></a></div>
+    </section>
 
     <section id="contato" className="contact section">
       <div className="contact-copy"><p className="kicker">Vamos transformar?</p><h2>Seu próximo resultado começa com uma boa conversa.</h2><p>Precisa de um projeto de dados e tecnologia ou de uma solução para seu comércio? Conte seu desafio e encontre, com a Tectria, o caminho adequado para sua empresa.</p><div className="direct"><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><a href="https://wa.me/553120940682" target="_blank" rel="noreferrer">(31) 2094-0682</a></div></div>

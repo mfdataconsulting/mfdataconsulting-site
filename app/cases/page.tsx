@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./cases.module.css";
+import Header from "../components/Header";
 
 const cases = [
   ["migration", "01", "⇄", "Migração de Dados Legados", "Oracle • SQL • Python", "Transformação de bases legadas preservando histórico, vínculos e qualidade."],
@@ -68,21 +69,15 @@ export default function CasesPage() {
   }
 
   return <main className={styles.page}>
-    <header className="header">
-      <a href="/" aria-label="TECTRIA — início"><img src="/tectria-logo.png" alt="TECTRIA" /></a>
-      <nav aria-label="Navegação principal">
-        <a href="/#problemas">O que resolvemos</a><a href="/#solucoes">Soluções</a><a href="/cases">Cases</a><a href="/#escala">Para sua empresa</a><a href="/#investimento">Investimento</a><a href="/#contato">Contato</a>
-      </nav>
-      <a className="top-cta" href="https://wa.me/553120940682?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale conosco <Arrow /></a>
-    </header>
+    <Header />
 
     <section className={styles.hero}>
       <div className={styles.heroLines}/><div className={styles.glow}/>
-      <div className={styles.heroCopy}><p className="kicker">Cases TECTRIA</p><h1>Dados em ação.<em>Resultado em evidência.</em></h1><p>Demonstrações práticas de Engenharia de Dados, Integrações, Business Intelligence e Automações aplicadas a desafios reais.</p><div className={styles.badges}><span>Dados demonstrativos</span><span>Cenários inspirados em problemas reais</span><span>Sem exposição de dados de clientes</span></div></div>
+      <div className={styles.heroCopy}><p className="kicker">Serviços / Cases demonstrativos</p><h1>Dados em ação.<em>Resultado em evidência.</em></h1><p>Demonstrações práticas de Engenharia de Dados, Integrações, Business Intelligence e Automações aplicadas a desafios reais.</p><div className={styles.badges}><span>Dados demonstrativos</span><span>Cenários inspirados em problemas reais</span><span>Sem exposição de dados de clientes</span></div></div>
     </section>
 
     <section className={styles.casesSection}>
-      <div className={styles.intro}><div><p className="kicker">Conheça os projetos</p><h2>Quatro formas de transformar complexidade em resultado.</h2></div><p>Explore cada solução e veja dados, indicadores e transformações simuladas.</p></div>
+      <div className={styles.intro}><div><p className="kicker">Serviços / Aplicações práticas</p><h2>Quatro formas de transformar complexidade em resultado.</h2></div><p>Explore cada solução e veja dados, indicadores e transformações simuladas.</p></div>
       <div className={styles.caseGrid}>{cases.map(([id,n,icon,title,tech,description]) => <article className={`${styles.caseCard} ${selected===id?styles.active:""}`} key={id}><div className={styles.caseTop}><span>{n}</span><i>{icon}</i></div><h3>{title}</h3><p>{description}</p><small>{tech}</small><button onClick={()=>choose(id)}>Explorar case <Arrow /></button></article>)}</div>
     </section>
 
@@ -104,7 +99,7 @@ export default function CasesPage() {
 
     <section className={styles.result}><div><p className="kicker">O que estes cases demonstram</p><h2>Engenharia aplicada ao problema, não à ferramenta.</h2></div><ul><li>Estruturação e transformação de dados</li><li>Automação de regras e processos</li><li>Integração entre fontes e sistemas</li><li>Indicadores acionáveis para o negócio</li></ul></section>
     <section className={styles.cta}><div><p className="kicker">Seu desafio pode ser o próximo case</p><h2>Sua empresa enfrenta algo semelhante?</h2><p>Soluções sob medida em Engenharia de Dados, Integrações, BI e Automações.</p></div><a className="primary" href="https://wa.me/553120940682?text=Olá,%20vi%20os%20cases%20da%20TECTRIA%20e%20gostaria%20de%20conversar." target="_blank" rel="noreferrer">Fale com a TECTRIA <Arrow /></a></section>
-    <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Engenharia de Dados • Integrações • BI • Automações</p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
+    <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Serviços de dados & tecnologia<br/><a href="/#ecossistema">Conheça também Nexo, Lume e Pulso</a></p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
   </main>;
 }
 
