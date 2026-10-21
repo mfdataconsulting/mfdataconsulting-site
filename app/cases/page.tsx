@@ -84,7 +84,7 @@ export default function CasesPage() {
 
     <section className={styles.hero}>
       <div className={styles.heroLines}/><div className={styles.glow}/>
-      <div className={styles.heroCopy}><p className="kicker">Tectria / Aplicações práticas</p><h1>Soluções<br/><em>na prática.</em></h1><p>Explore projetos de dados e tecnologia e cenários de uso dos produtos para o comércio. Entenda o desafio, a abordagem e como cada solução apoia a rotina da empresa.</p><div className={styles.badges}><span>Demonstrações com dados fictícios</span></div><div className="actions"><a className="primary" href="#cases-servicos">Serviços: explorar projetos <Arrow /></a><a className="secondary" href="#cases-produtos">Produtos: explorar cenários <Arrow /></a></div></div>
+      <div className={styles.heroCopy}><p className="kicker">Tectria / Aplicações práticas</p><h1>Soluções<br/><em>na prática.</em></h1><p>Explore projetos de dados e tecnologia e cenários de uso das soluções para o comércio. Entenda o desafio, a abordagem e como cada solução apoia a rotina da empresa.</p><div className={styles.badges}><span>Demonstrações com dados fictícios</span></div><div className="actions"><a className="primary" href="#cases-servicos">Serviços: explorar projetos <Arrow /></a><a className="secondary" href="#cases-produtos">Soluções: explorar cenários <Arrow /></a></div></div>
     </section>
 
 

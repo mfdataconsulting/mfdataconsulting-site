@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cases | TECTRIA",
     description:
-      "Projetos de dados e tecnologia e cenários demonstrativos dos produtos Tectria para o comércio.",
+      "Projetos de dados e tecnologia e cenários demonstrativos das soluções Tectria para o comércio.",
     url: "/cases",
   },
 };

@@ -10,7 +10,7 @@ export default function Header({ home = false }: { home?: boolean }) {
     <nav id="main-navigation" className={menu ? "open" : ""} aria-label="Navegação principal">
       <a href={`${prefix}#frentes`} onClick={() => setMenu(false)}>A Tectria</a>
       <a href={`${prefix}#servicos`} onClick={() => setMenu(false)}>Serviços para empresas</a>
-      <a href={`${prefix}#ecossistema`} onClick={() => setMenu(false)}>Produtos para o comércio</a>
+      <a href={`${prefix}#ecossistema`} onClick={() => setMenu(false)}>Soluções para o comércio</a>
       <a href="/cases" onClick={() => setMenu(false)}>Cases</a>
       <a href={`${prefix}#contato`} onClick={() => setMenu(false)}>Contato</a>
     </nav>

@@ -48,19 +48,19 @@ export default function Tectria() {
       <div className="hero-copy">
         <p className="kicker">Tectria · Tecnologia e Dados</p>
         <h1>Tecnologia que conecta dados, operação e <em>resultados.</em></h1>
-        <p className="lead">Serviços especializados em dados e tecnologia para empresas. Produtos de gestão, automação e análise para o comércio.</p>
+        <p className="lead">Serviços especializados em dados e tecnologia para empresas. Soluções de gestão, automação e análise para o comércio.</p>
 
-        <div className="actions"><a className="primary" href="#servicos">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Produtos para seu comércio <Arrow /></a></div>
+        <div className="actions"><a className="primary" href="#servicos">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Soluções para seu comércio <Arrow /></a></div>
       </div>
       <div className="hero-visual" aria-hidden="true"><img src="/tectria-icon.png" alt=""/><span className="node n1"/><span className="node n2"/><span className="node n3"/></div>
       <div className="scroll">Role para explorar <span>↓</span></div>
     </section>
 
     <section id="frentes" className="section light fronts">
-      <div className="section-head"><p className="kicker">Nossa atuação</p><h2>Da estrutura dos dados<br/>ao dia a dia do negócio.</h2><p className="fronts-intro">A Tectria reúne duas frentes complementares. Projetos especializados para os desafios de cada empresa e produtos próprios para a operação do comércio.</p></div>
+      <div className="section-head"><p className="kicker">Nossa atuação</p><h2>Da estrutura dos dados<br/>ao dia a dia do negócio.</h2><p className="fronts-intro">A Tectria reúne duas frentes complementares. Projetos especializados para os desafios de cada empresa e soluções próprias para a operação do comércio.</p></div>
       <div className="front-grid">
         <article><span className="front-number">01 / SERVIÇOS</span><h3>Dados & tecnologia<br/>para empresas.</h3><p>Migrações, incorporações de bases, integrações, BI e automações. Atuação sob medida em ambientes que precisam de continuidade, segurança e informação confiável.</p><a href="#servicos">Conhecer nossos serviços <Arrow /></a></article>
-        <article><span className="front-number">02 / PRODUTOS</span><h3>Soluções próprias<br/>para o comércio.</h3><p>Nexo, Lume e Pulso: um ecossistema para controlar a operação, acompanhar rotinas e transformar os dados do estabelecimento em decisões.</p><a href="#ecossistema">Conhecer o ecossistema <Arrow /></a></article>
+        <article><span className="front-number">02 / SOLUÇÕES PARA O COMÉRCIO</span><h3>Soluções próprias<br/>para o comércio.</h3><p>Nexo, Lume e Pulso: um ecossistema para controlar a operação, acompanhar rotinas e transformar os dados do estabelecimento em decisões.</p><a href="#ecossistema">Conhecer o ecossistema <Arrow /></a></article>
       </div>
     </section>
 
@@ -84,26 +84,26 @@ export default function Tectria() {
       <div className="format-grid">{formats.map(([icon,t,d],i)=><article className="motion-card" key={t}><div><span>0{i+1}</span><i className="format-icon">{icon}</i></div><h3>{t}</h3><p>{d}</p><a href="#contato">Conversar sobre serviços <Arrow /></a></article>)}</div>
     </section>
 
-    <div className="track-end"><a href="/cases#cases-servicos">Explorar cases de serviços <Arrow /></a><a href="#ecossistema">A seguir: produtos para o comércio ↓</a></div>
+    <div className="track-end"><a href="/cases#cases-servicos">Explorar cases de serviços <Arrow /></a><a href="#ecossistema">A seguir: soluções para o comércio ↓</a></div>
 
     </div>
 
     <section id="ecossistema" className="section light ecosystem">
-      <div className="section-head split"><div><p className="kicker">Frente 02 / Produtos para o comércio</p><h2>Operar. Acompanhar.<br/>Decidir.</h2></div><p>Três produtos com papéis claros para o dia a dia do seu comércio. Comece pela necessidade do estabelecimento e amplie a solução conforme o negócio evolui.</p></div>
+      <div className="section-head split"><div><p className="kicker">Frente 02 / Soluções para o comércio</p><h2>Operar. Acompanhar.<br/>Decidir.</h2></div><p>Três soluções com papéis claros para o dia a dia do seu comércio. Comece pela necessidade do estabelecimento e amplie a solução conforme o negócio evolui.</p></div>
       <div className="product-grid">{products.map(product=><article className="product-card" key={product.name}><img className="product-logo" src={product.logo} alt={`${product.name} — Tectria`} width="260" height="84"/><h3>{product.role}</h3><p>{product.description}</p><ul>{product.features.map(feature=><li key={feature}>{feature}</li>)}</ul><a href={`https://wa.me/553120940682?text=${encodeURIComponent(product.message)}`} target="_blank" rel="noreferrer">Conhecer o {product.name} <Arrow /></a></article>)}</div>
       <ProductPreview />
       <div className="ecosystem-relation" id="como-se-complementam">
-        <p className="kicker">Produtos / Como se complementam</p>
+        <p className="kicker">Soluções / Como se complementam</p>
         <h3>Da venda à próxima decisão.</h3>
-        <p>Os registros da operação apoiam o acompanhamento das pendências e a leitura dos resultados. Cada produto atua em uma etapa desse fluxo, de acordo com as fontes disponíveis.</p>
+        <p>Os registros da operação apoiam o acompanhamento das pendências e a leitura dos resultados. Cada solução atua em uma etapa desse fluxo, de acordo com as fontes disponíveis.</p>
         <p className="ecosystem-summary"><strong>Nexo registra.</strong> <span aria-hidden="true">→</span> <strong>Lume acompanha.</strong> <span aria-hidden="true">→</span> <strong>Pulso analisa.</strong></p><a className="text-link" href="/cases#cases-produtos">Veja exemplos de comércio e restaurante nos Cases <Arrow /></a>
-        <p className="integration-note">Na implantação, definimos os produtos contratados, a origem dos dados e as integrações disponíveis para cada estabelecimento. A atualização dos indicadores e dos alertas depende dessas fontes e da sincronização configurada.</p>
+        <p className="integration-note">Na implantação, definimos as soluções contratadas, a origem dos dados e as integrações disponíveis para cada estabelecimento. A atualização dos indicadores e dos alertas depende dessas fontes e da sincronização configurada.</p>
       </div>
       <aside className="mobile-offer" aria-labelledby="mobile-title">
-        <div><span className="front-number">PRODUTOS / FAMÍLIA NEXO</span><h3 id="mobile-title">Nexo Mobile</h3><p className="mobile-lead">Gestão do comércio pelo navegador do celular, com acesso por usuário e empresa.</p><p>Uma alternativa para registrar a operação sem depender do computador. Inclui cadastros, estoque e contas a pagar; em restaurantes, permite organizar e retomar comandas até o fechamento da venda.</p><ul className="mobile-features"><li>Vendas integrais ou parceladas e recebimentos por diferentes formas de pagamento.</li><li>Entradas e ajustes de estoque e leitura de códigos pela câmera.</li><li>Abertura e fechamento do dia, com acesso conforme o perfil do usuário.</li></ul><p className="mobile-note">Contratação própria e operação online. O Mobile possui base própria; a conexão com o Nexo instalado, o Lume e o Pulso é avaliada separadamente na implantação.</p></div>
+        <div><span className="front-number">SOLUÇÕES / FAMÍLIA NEXO</span><h3 id="mobile-title">Nexo Mobile</h3><p className="mobile-lead">Gestão do comércio pelo navegador do celular, com acesso por usuário e empresa.</p><p>Uma alternativa para registrar a operação sem depender do computador. Inclui cadastros, estoque e contas a pagar; em restaurantes, permite organizar e retomar comandas até o fechamento da venda.</p><ul className="mobile-features"><li>Vendas integrais ou parceladas e recebimentos por diferentes formas de pagamento.</li><li>Entradas e ajustes de estoque e leitura de códigos pela câmera.</li><li>Abertura e fechamento do dia, com acesso conforme o perfil do usuário.</li></ul><p className="mobile-note">Contratação própria e operação online. O Mobile possui base própria; a conexão com o Nexo instalado, o Lume e o Pulso é avaliada separadamente na implantação.</p></div>
         <a href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de conhecer o Nexo Mobile para meu comércio.")}`} target="_blank" rel="noreferrer">Conversar sobre o Nexo Mobile <Arrow /></a>
       </aside>
-      <div id="contratar-produtos" className="product-contract"><div><p className="kicker">Nexo · Lume · Pulso</p><h3>Produtos para sua operação.</h3><p>Converse com a Tectria para identificar a composição adequada ao seu comércio, conhecer as funcionalidades e planejar a implantação.</p></div><a className="primary" href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de uma proposta dos produtos Tectria para meu comércio.")}`} target="_blank" rel="noreferrer">Solicitar uma proposta <Arrow /></a></div>
+      <div id="contratar-produtos" className="product-contract"><div><p className="kicker">Nexo · Lume · Pulso</p><h3>Soluções para sua operação.</h3><p>Converse com a Tectria para identificar a composição adequada ao seu comércio, conhecer as funcionalidades e planejar a implantação.</p></div><a className="primary" href={`https://wa.me/553120940682?text=${encodeURIComponent("Olá, gostaria de uma proposta das soluções Tectria para meu comércio.")}`} target="_blank" rel="noreferrer">Solicitar uma proposta <Arrow /></a></div>
     </section>
 
     <section id="contato" className="contact section">
@@ -111,6 +111,6 @@ export default function Tectria() {
       <form onSubmit={submit}><label>Nome<input name="nome" required/></label><label>Empresa<input name="empresa"/></label><label>E-mail<input type="email" name="email" required/></label><label>Como podemos ajudar?<textarea name="mensagem" rows={4} required/></label><button className="primary" type="submit">Enviar mensagem <Arrow /></button><p aria-live="polite">{status}</p></form>
     </section>
 
-    <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Serviços de dados & tecnologia<br/>Nexo · Lume · Pulso — Produtos para o comércio</p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
+    <footer><img src="/tectria-logo.png" alt="TECTRIA"/><p>Serviços de dados & tecnologia<br/>Nexo · Lume · Pulso — Soluções para o comércio</p><div><a href="mailto:contato@tectria.com.br">contato@tectria.com.br</a><span>© {new Date().getFullYear()} TECTRIA</span></div></footer>
   </main>;
 }

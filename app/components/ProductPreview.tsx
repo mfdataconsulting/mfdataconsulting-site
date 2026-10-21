@@ -23,7 +23,7 @@ export default function ProductPreview() {
   function choose(name: ModuleName) { setSelected(name); setView(modules[name].views[0]); }
 
   return <div className={styles.preview} id="telas-produtos">
-    <div className={styles.intro}><p className="kicker">Produtos / Conheça as interfaces</p><h3>Veja a solução em uso.</h3><p>Explore prévias das telas e das rotinas de cada produto. Selecione um módulo e navegue pelas áreas disponíveis na demonstração.</p></div>
+    <div className={styles.intro}><p className="kicker">Soluções / Conheça as interfaces</p><h3>Veja a solução em uso.</h3><p>Explore prévias das telas e das rotinas de cada solução. Selecione um módulo e navegue pelas áreas disponíveis na demonstração.</p></div>
     <div className={styles.switcher} role="group" aria-label="Escolher módulo da demonstração">{(Object.keys(modules) as ModuleName[]).map(name => <button key={name} type="button" aria-pressed={selected === name} onClick={() => choose(name)}>{name}</button>)}</div>
     <p className={styles.caption}>{moduleInfo.description}</p>
     <div className={`${styles.window} ${mobile ? styles.mobileWindow : ""}`}>
