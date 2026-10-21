@@ -3,3 +3,5 @@
 @media(max-width:620px){.workspace{grid-template-columns:1fr}.sidebar{padding:18px}.sidebar>img{width:115px;margin-bottom:12px}.company,.area,.sidebarNote{display:none}.views{flex-direction:row;flex-wrap:wrap}.views button{flex:1;white-space:nowrap}.windowbar{padding:0 12px;gap:8px}.windowbar>span:first-child{display:none}.windowbar strong{font-size:10px}.windowbar>span:last-child{font-size:8px}.body{padding:16px}.topbar{padding:0 16px}.day{align-items:flex-start;flex-direction:column}.metrics>div{padding:14px 11px}.metrics strong{font-size:20px}.panel{padding:14px}.chart{gap:5px}.chart span{font-size:8px}.paymentList>div{grid-template-columns:55px 1fr 95px;gap:8px;font-size:10px}.caption{min-height:0}.switcher button{padding:11px 15px;font-size:13px}.mobileWindow .company{display:flex}.mobileWindow .sidebar>b{margin:0}}
 
 .preview{scroll-margin-top:110px}
+
+.sidebar>img{width:145px;height:auto;max-width:100%}@media(max-width:1100px) and (min-width:621px){.sidebar>img{width:115px}}@media(max-width:620px){.sidebar>img{width:160px;margin-bottom:18px}}
