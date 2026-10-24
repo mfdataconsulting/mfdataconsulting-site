@@ -5,7 +5,7 @@ const tokenType=fragment.get('type')||'invite';
 history.replaceState(null,'',location.pathname);
 const $=id=>document.getElementById(id),form=$('activation'),login=$('sign-in'),result=$('result');
 async function request(action,data){const response=await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Tectria-Activation':'1'},body:JSON.stringify(data),cache:'no-store'});const value=await response.json();if(!response.ok){if(response.status===401){token=null;$('installation').hidden=true;login.hidden=false;}throw Error(value.error||'Operação não confirmada.');}return value;}
-function showLogin(){form.hidden=true;login.hidden=false;$('use-account').hidden=true;hash=null;}
+function showLogin(){form.hidden=true;login.hidden=false;$('use-account').hidden=true;hash=null;token=null;}
 form.hidden=!hash;login.hidden=!!hash;$('use-account').hidden=!hash;
 $('use-account').addEventListener('click',showLogin);
 async function catalog(){
@@ -43,7 +43,7 @@ form.addEventListener('submit',async event=>{
  const button=form.querySelector('button');button.disabled=true;
  try{if(!token){const exchanged=await request('activation-exchange',{token_hash:hash,token_type:tokenType});token=exchanged.access_token;hash=null;}
  await request('activation-password',{access_token:token,password});form.reset();result.textContent='Seu acesso foi ativado. Preparando a instalação…';await start();
- }catch(error){result.textContent=error.message;if(form.hidden&&!token)showLogin();}finally{button.disabled=false;}
+ }catch(error){result.textContent=error.message;if(form.hidden)showLogin();}finally{button.disabled=false;}
 });
 login.addEventListener('submit',async event=>{event.preventDefault();const button=login.querySelector('button');button.disabled=true;
  try{const auth=await request('installation-login',{email:login.elements.email.value,password:login.elements.password.value});token=auth.access_token;login.reset();await start();}
