@@ -14,6 +14,7 @@ document.addEventListener('input',event=>{if(event.target.name==='segment'){cons
 const roles = {owner:'Proprietário',admin:'Administrador',operator:'Operador',viewer:'Consulta'};
 const products = {nexo:{name:'Nexo',text:'ERP e operação do estabelecimento',letter:'N'},lume:{name:'Lume',text:'Tarefas, comunicações e integrações',letter:'L'},pulso:{name:'Pulso',text:'Indicadores e saúde do negócio',letter:'P'},nexo_mobile:{name:'Nexo Mobile',text:'Operação simplificada online pelo celular',letter:'M'}};
 const pages = {
+ updates:['Instaladores e atualizações','Mantenha o catálogo de instaladores e acompanhe as versões dos computadores.'],
  overview:['Visão geral','Acompanhe as empresas e organize os acessos aos seus produtos.'],
  companies:['Empresas','Cadastros, responsáveis e situação de cada estabelecimento.'],
  products:['Produtos e módulos','Gerencie as habilitações comerciais de Nexo, Lume e Pulso.'],
@@ -193,7 +194,7 @@ function renderRecords(){
  if(state.page==='onboarding')body=note('Checklist de conferência: contrato e ramo → conta ativada e login → módulos e permissões → ambiente de operação → operação inicial → módulos contratados → backup e recuperação → treinamento e aceite. Registre responsável, prazo e evidência de cada etapa; concluir uma tarefa não libera acessos automaticamente.')+body;
  if(state.page==='billing')body=note('Controle manual das cobranças da Tectria. O valor pago é acumulado e auditado; não representa um extrato de recebimentos por data. Não emite nota fiscal, não cobra e não suspende acesso automaticamente.')+body;
  if(state.page==='installation')body=note('Informe módulo, identificador da estação, versão e evidência nas observações. Registros manuais não confirmam disponibilidade, sincronização ou backup.')+body;
- if(state.page==='onboarding'){const i=customerRegistration.invitation;body=card('Ativação do acesso',i?.activated?'Acesso ativado pelo cliente':i?.sent_at?'Ativação enviada — aguardando o cliente':'Ativação ainda não enviada',note(i?.email||customerRegistration.profile?.email||'Cadastre o cliente em Usuários e acessos.'),!i?.sent_at&&customerRegistration.profile?button('Enviar ativação','invite',{},'primary'):'')+body;}
+ if(state.page==='onboarding'){const i=customerRegistration.invitation;body=card('Ativação do acesso',i?.activated?'Acesso ativado pelo cliente':i?.sent_at?'Ativação enviada — aguardando o cliente':'Ativação ainda não enviada',note(i?.email||customerRegistration.profile?.email||'Cadastre o cliente em Usuários e acessos.')+note('Conta ativada não significa implantação concluída. O convite orienta os downloads; registre instalação, integrações, backup e aceite nas etapas abaixo.')+`<p><a href="https://lume.tectria.com.br/ativar.html#company=${encodeURIComponent(state.company)}" target="_blank" rel="noopener noreferrer">Abrir página de implantação do cliente</a></p>`,!i?.sent_at&&customerRegistration.profile?button('Enviar convite de implantação','invite',{},'primary'):'')+body;}
  return card(pages[state.page][0],companyLabel(selected()),body,(state.page==='onboarding'&&!records.total?button('Criar roteiro de implantação','start-onboarding'): '')+button(state.page==='billing'?'+ Nova cobrança':'+ Novo registro','record',{},'primary'));
 }
 function renderReports(){
@@ -242,6 +243,7 @@ document.addEventListener('input',event=>{if(['setup_payment','signed_date','mon
 async function loadManagement(){
  records={records:[],total:0};report=null;contractReport=null;
  if(!globalAdmin())return;
+ if(state.page==='updates'){updateCatalog=await api('/api/updates');return;}
  const version=state.version,page=state.page,company=state.company,offset=recordOffset,from=reportFrom,until=reportUntil;
  if(company&&['users','onboarding'].includes(page)){customerRegistration={profile:null,invitation:null};const customer=await api(`/api/customer?company=${encodeURIComponent(company)}`);if(version===state.version&&company===state.company&&page===state.page)customerRegistration=customer;}
  if(recordKinds.includes(page)&&company){
@@ -289,7 +291,8 @@ function entityLabel(value) {return ({atlas_records:'Movimentação de gestão i
 function render() {
  const [title,description]=pages[state.page];$('page-title').textContent=title;$('breadcrumb').textContent=title;$('page-description').textContent=description;
  document.querySelectorAll('[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);if(b.dataset.page===state.page)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
- $('content').innerHTML=({overview:renderOverview,companies:renderCompanies,products:renderProducts,contracts:renderContracts,users:renderUsers,recovery:renderRecovery,history:renderHistory,onboarding:renderRecords,billing:renderRecords,support:renderRecords,installation:renderEnvironments,reports:renderReports})[state.page]();
+ document.querySelectorAll('.nav-group').forEach(group=>{group.open=!!group.querySelector(`[data-page="${state.page}"]`);});
+ $('content').innerHTML=({overview:renderOverview,companies:renderCompanies,products:renderProducts,contracts:renderContracts,users:renderUsers,recovery:renderRecovery,history:renderHistory,onboarding:renderRecords,billing:renderRecords,support:renderRecords,installation:renderEnvironments,updates:renderUpdates,reports:renderReports})[state.page]();
  updateChrome();
 }
 async function loadData() {
@@ -443,9 +446,9 @@ async function openEdit(action,params={}) {
   fields=note(c.suspended?'Reativar a empresa mantém as suspensões individuais. Mensagens acumuladas continuam exigindo revisão antes de envio.':'Suspender todos os produtos contratados preserva os dados. O efeito no Nexo offline e no acesso Microsoft ainda exige confirmação das integrações.');
   fields+=area('Motivo / justificativa','reason','',1000);
  } else if(action==='invite') {
-  if(!globalAdmin())return;title='Enviar ativação do acesso';
-  fields=input('E-mail do responsável pelo cliente','email',customerRegistration.profile?.email||'','email',true,250)+note('Ao confirmar, a Tectria cria o responsável desta empresa, concede os módulos habilitados no contrato e envia o link de ativação. O cliente define a própria senha. Não há senha temporária. O contrato deve estar ativo e a empresa ainda não deve ter outro proprietário. Se o e-mail já possui conta ativada, ela será vinculada a esta empresa e receberá um aviso, mantendo a senha atual.');
-  fields+=select('Envio para conta já existente','reset_password',{false:'Avisar novo acesso — manter a senha',true:'Enviar link para definir uma nova senha'},'true')+note('O link de senha permite trocar a senha da conta em todas as empresas vinculadas. A troca só ocorre quando o destinatário abre o link e salva a nova senha.');
+  if(!globalAdmin())return;title='Enviar convite único de implantação';
+  fields=input('E-mail do responsável pelo cliente','email',customerRegistration.profile?.email||'','email',true,250)+note('Ao confirmar, a Tectria cria o responsável desta empresa, concede os módulos habilitados no contrato e envia o link de ativação. O mesmo e-mail orienta a ativação e, em seguida, abre os downloads dos módulos contratados disponíveis no catálogo. A instalação e a validação permanecem etapas separadas. Não há senha temporária. O contrato deve estar ativo e a empresa ainda não deve ter outro proprietário. Se o e-mail já possui conta ativada, ela será vinculada a esta empresa e receberá um aviso, mantendo a senha atual.');
+  fields+=select('Envio para conta já existente','reset_password',{false:'Avisar novo acesso — manter a senha',true:'Enviar link para definir uma nova senha'},'false')+note('O link de senha permite trocar a senha da conta em todas as empresas vinculadas. A troca só ocorre quando o destinatário abre o link e salva a nova senha.');
  } else if(action==='member') {
   if(!manage())return;const m=state.detail.members.find(v=>v.user_id===params.user);if(m&&!canEditMember(m))return;
   base.user_id=m?.user_id;title=m?'Editar vínculo':'Vincular conta existente';
@@ -524,3 +527,37 @@ async function initialize() {
  catch(e){render();error(e.message);}
 }
 render();initialize();
+
+var updateCatalog={releases:[],installations:[]};
+var updateShowAll=false;
+function renderUpdates(){
+ if(!globalAdmin())return card('Atualizações','Área interna',empty('Acesso restrito','Somente administradores da Tectria gerenciam as versões.'));
+ const all=updateCatalog.releases||[],allInstallations=updateCatalog.installations||[];
+ const eligible=(r,company)=>!r.companies.length||r.companies.includes(company);
+ const releases=all.filter(r=>updateShowAll||state.company&&eligible(r,state.company));
+ const installations=allInstallations.filter(i=>updateShowAll||i.company_id===state.company);
+ const offered=i=>all.filter(r=>r.module===i.module&&r.published&&eligible(r,i.company_id)).sort((a,b)=>b.build-a.build)[0];
+ const pending=installations.filter(i=>offered(i)?.build>i.build).length;
+ const rows=releases.map(r=>{const scope=r.companies.length?r.companies.map(id=>state.companies.find(c=>c.id===id)?.name||id).join(', '):'Todas as empresas com o módulo contratado';return `<article class="update-admin-card"><div class="update-admin-heading"><div><span class="section-label">${esc(products[r.module]?.name)}</span><h3>${esc(r.title)}</h3></div>${badge(r.published?'Disponível para atualizar':r.published_at?'Distribuição pausada':'Ainda não liberada',r.published?'green':'amber')}</div><p class="update-admin-scope"><strong>Quem recebe:</strong> ${esc(scope)}</p><ul>${(r.notes||[]).map(n=>`<li>${esc(n)}</li>`).join('')}</ul><p class="muted">Versão ${esc(r.version)}</p><div class="actions"><button class="button small secondary" data-update-release="${esc(r.id)}" data-operation="${r.published?'pause':'publish'}">${r.published?'Pausar distribuição':'Liberar atualização'}</button><details class="update-admin-more"><summary>Alterar quem recebe</summary><div class="actions"><button class="button small secondary" data-update-release="${esc(r.id)}" data-operation="audience-selected">Incluir empresa selecionada</button><button class="button small secondary" data-update-release="${esc(r.id)}" data-operation="audience-all">Liberar para todas as empresas</button></div></details></div><details class="update-admin-tech"><summary>Dados técnicos do pacote</summary><p>Build ${esc(r.build)} · ${esc(r.bytes)} bytes</p><p>SHA256: ${esc(r.sha256)}</p></details></article>`;}).join('');
+ const computers=installations.map(i=>{const latest=offered(i),waiting=latest?.build>i.build;return `<article class="update-computer"><div class="update-admin-heading"><h3>${esc(i.company_name)} · ${esc(products[i.module]?.name)}</h3>${badge(waiting?'Aguardando atualização':latest?'Na versão disponível':'Sem atualização ofertada',waiting?'amber':'green')}</div><p>Versão informada: <strong>${esc(i.version)}</strong>${waiting?` → disponível: <strong>${esc(latest.version)}</strong>`:''}</p><small>Última comunicação: ${esc(dateTime(i.last_seen_at))}</small><details class="update-admin-tech"><summary>Identificar computador</summary><p>${esc(i.installation_id)} · Build ${esc(i.build)}</p></details></article>`;}).join('');
+ return `<div class="update-admin-context"><div><strong>${updateShowAll?'Todas as empresas':esc(selected()?.name||state.companies.find(c=>c.id===state.company)?.name||'Selecione uma empresa')}</strong><p>${updateShowAll?'Visão completa da distribuição.':'Exibindo apenas atualizações e computadores desta empresa.'}</p></div><button class="button secondary" data-update-scope>${updateShowAll?'Ver somente a empresa selecionada':'Ver todas as empresas'}</button></div><div class="metrics update-admin-metrics"><div class="metric"><span>Computadores que se comunicaram</span><strong>${installations.length}</strong></div><div class="metric"><span>Aguardando atualização</span><strong>${pending}</strong></div></div>`+card('1. Repositório de instaladores','O convite sempre consulta a versão publicada mais recente destinada à empresa. Salve o instalador validado como rascunho e confira endereço, SHA256 e público antes de liberar. Baixar não confirma instalação.',`${rows||empty('Nenhuma versão para esta empresa','Cadastre uma versão ou consulte todas as empresas.')}<details class="update-admin-new"><summary class="button secondary">Cadastrar instalador / nova versão</summary><form id="update-release-form" class="form-columns"><label>Módulo<select name="module"><option value="nexo">Nexo</option><option value="lume">Lume</option><option value="pulso">Pulso</option></select></label><label>Versão<input name="version" required maxlength="80" placeholder="20261018.1"></label><label>Build crescente<input name="build" required type="number" min="1" step="1"></label><label>Título para o cliente<input name="title" required maxlength="160"></label><label>Novidades — uma por linha<textarea name="notes" required maxlength="15000"></textarea></label><label>Endereço do instalador<input name="downloadUrl" type="url" required placeholder="https://github.com/mfdataconsulting/mfdataconsulting-site/releases/download/..."></label><label>SHA256<input name="sha256" required minlength="64" maxlength="64"></label><label>Tamanho em bytes<input name="bytes" required type="number" min="1" max="209715200" step="1"></label><label>Build mínimo compatível<input name="minBuild" type="number" min="0" step="1" value="0"></label><label><input name="selectedOnly" type="checkbox" checked> Destinar somente à empresa selecionada (${esc(selected()?.name||'selecione uma empresa')})</label><button class="button primary">Salvar rascunho</button><p id="update-release-error" role="alert"></p></form></details>`)+card('2. Situação dos computadores','A posição muda quando o módulo volta a consultar o Atlas.',`${computers||empty('Nenhum computador se comunicou ainda','Abra o módulo atualizado no computador do cliente e procure atualizações.')}`);
+}
+document.addEventListener('click',event=>{if(event.target.closest('[data-update-scope]')){updateShowAll=!updateShowAll;render();}});
+
+document.addEventListener('submit',async event=>{
+ if(event.target.id!=='update-release-form')return;event.preventDefault();const form=event.target,button=form.querySelector('button'),status=form.querySelector('[role=alert]');button.disabled=true;status.textContent='';
+ try{const data=Object.fromEntries(new FormData(form));if(data.selectedOnly&&!state.company)throw Error('Selecione a empresa de homologação.');data.companies=data.selectedOnly?[state.company]:[];delete data.selectedOnly;data.notes=data.notes.split('\n').map(s=>s.trim()).filter(Boolean);for(const key of ['build','bytes','minBuild']){data[key]=Number(data[key]);if(!Number.isSafeInteger(data[key]))throw Error('Informe números inteiros válidos.');}await api('/api/save/update-release',{action:'save',data});updateCatalog=await api('/api/updates');render();toast('Rascunho salvo. A distribuição ainda não foi iniciada.');}catch(e){status.textContent=e.message;button.disabled=false;}
+});
+document.addEventListener('click',async event=>{
+ const button=event.target.closest('[data-update-release]');if(!button)return;const r=updateCatalog.releases.find(r=>r.id===button.dataset.updateRelease);if(!r)return;
+ const operation=button.dataset.operation;
+ if(operation.startsWith('audience-')){
+  if(operation==='audience-selected'&&!r.companies.length){toast('Esta versão já está destinada a todas as empresas contratantes.');return;}
+  if(operation==='audience-selected'&&!state.company){error('Selecione uma empresa.');return;}
+  const companies=operation==='audience-all'?[]:[...new Set([...r.companies,state.company])];
+  if(!confirm(operation==='audience-all'?'Disponibilizar esta versão para TODAS as empresas com o módulo contratado?':'Incluir a empresa selecionada no público desta versão?'))return;
+  button.disabled=true;try{await api('/api/save/update-release',{action:'audience',data:{id:r.id,revision:r.revision,companies}});updateCatalog=await api('/api/updates');render();toast('Público atualizado. A situação publicada/pausada foi preservada.');}catch(e){error(e.message);button.disabled=false;}return;
+ }
+ const action=operation;if(!confirm(action==='publish'?`Publicar ${r.version} para ${r.companies.length?r.companies.length+' empresa(s) selecionada(s)':'TODAS as empresas com o módulo contratado'}?`:'Pausar novas preparações desta atualização?'))return;button.disabled=true;
+ try{await api('/api/save/update-release',{action,data:{id:r.id,revision:r.revision}});updateCatalog=await api('/api/updates');render();toast(action==='publish'?'Versão publicada.':'Distribuição pausada.');}catch(e){error(e.message);button.disabled=false;}
+});

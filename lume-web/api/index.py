@@ -17,7 +17,11 @@ class handler(BaseHTTPRequestHandler):
     data=json.loads(self.rfile.read(length))
     if not isinstance(data,dict):raise ApiError('Requisição inválida.')
    action=parse_qs(urlparse(self.path).query).get('action',[''])[0]
-   if action in ('activation-mail','activation-exchange','activation-password'):
+   if action in ('installation-login','installation-companies','installation-catalog'):
+    if method!='POST':raise ApiError('Operação inválida.',405)
+    from installation import handle as install
+    self.respond(install(action,data,self.headers),200)
+   elif action in ('activation-mail','activation-exchange','activation-password'):
     if method!='POST':raise ApiError('Operação inválida.',405)
     from activation import handle as activate
     self.respond(activate(action,data,self.headers),200)

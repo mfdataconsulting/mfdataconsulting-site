@@ -272,7 +272,7 @@ class Handler(BaseHTTPRequestHandler):
         route = urlparse(self.path)
         query = parse_qs(route.query)
         try:
-            if route.path == '/api/info': return self.send({'configured': configured(), 'environment': 'internal', 'version':'20261010.24'})
+            if route.path == '/api/info': return self.send({'configured': configured(), 'environment': 'internal', 'version':'20261024.29'})
             if route.path.startswith('/api/'):
                 _, session = self.session()
                 token = session['access_token']
@@ -280,6 +280,7 @@ class Handler(BaseHTTPRequestHandler):
                     result = self.context(session); result['csrf'] = session['csrf']
                 elif route.path == '/api/companies':
                     result = rpc('tectria_admin_companies', {'p_offset': int(query.get('offset',['0'])[0]), 'p_limit':50}, token)
+                elif route.path == '/api/updates': result=rpc('tectria_atlas_updates',{},token)
                 elif route.path == '/api/cep':
                     rpc('tectria_atlas_guard',{},token)
                     result=lookup_cep(query.get('cep',[''])[0])
@@ -364,6 +365,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send({'ok':True},cookie='tectria_panel=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
             if not self.path.startswith('/api/save/'): return self.send({'error':'Operação desconhecida.'},404)
             action = self.path.removeprefix('/api/save/')
+            if action == 'update-release':
+                return self.send(rpc('tectria_atlas_updates',{'p_action':data.get('action'),'p_data':data.get('data',{})},session['access_token']))
             if action == 'customer':
                 rpc('tectria_atlas_guard',{},session['access_token'])
                 keys=('name','cpf','email','phone','legal_name','cnpj','cep','street','number','complement','district','city','uf')
