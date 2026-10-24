@@ -1,0 +1,30 @@
+BEGIN;
+DO $test$
+DECLARE cid uuid:=gen_random_uuid();actor uuid;limits jsonb;
+BEGIN
+ SELECT user_id INTO actor FROM tectria_private.platform_admin LIMIT 1;
+ IF actor IS NULL THEN RAISE EXCEPTION 'Platform administrator required for fixture';END IF;
+ PERFORM set_config('request.jwt.claim.sub',actor::text,true);
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
+ ASSERT tectria_private.atlas_pricing('{"products":["nexo","lume","pulso"],"discount_type":"none","discount_value":0}')->>'monthly_cents'='22970';
+ ASSERT tectria_private.atlas_pricing('{"products":["nexo","nexo_mobile"],"prices_cents":{"nexo":1,"nexo_mobile":4990},"discount_type":"none","discount_value":0}')->>'monthly_cents'='13980';
+ BEGIN PERFORM tectria_private.atlas_pricing('{"products":["nexo_mobile"]}');RAISE EXCEPTION 'Missing price accepted';EXCEPTION WHEN raise_exception THEN IF SQLERRM='Missing price accepted' THEN RAISE;END IF;END;
+ INSERT INTO public.tectria_companies(id,name) VALUES(cid,'Fixture contrato Mobile rollback');
+ INSERT INTO public.tectria_memberships(company_id,user_id,role) VALUES(cid,actor,'owner');
+ limits:='{"description":"Teste descartável","business_profile":"commerce","pricing":{"products":["nexo_mobile"],"prices_cents":{"nexo_mobile":4990},"discount_type":"none","discount_value":0},"billing":{}}';
+ PERFORM public.tectria_atlas_contract(cid,'Fixture Mobile',0,4990,limits,'Fixture','draft','Teste descartável de contrato');
+ ASSERT NOT EXISTS(SELECT 1 FROM public.tectria_entitlements WHERE company_id=cid AND product_code='nexo_mobile' AND enabled);
+ PERFORM public.tectria_atlas_contract(cid,'Fixture Mobile',0,4990,limits,'Fixture','active','Teste descartável de ativação');
+ ASSERT EXISTS(SELECT 1 FROM public.tectria_entitlements WHERE company_id=cid AND product_code='nexo_mobile' AND enabled);
+ ASSERT NOT tectria_private.product_readable(cid,'nexo_mobile');
+ PERFORM public.tectria_manage_product_access(cid,actor,'nexo_mobile','owner',true);
+ ASSERT tectria_private.product_readable(cid,'nexo_mobile');
+ SELECT c.limits INTO limits FROM public.tectria_contracts c WHERE c.company_id=cid;
+ PERFORM public.tectria_atlas_amendment(cid,'nexo_mobile','suspend',NULL,limits,'Teste descartável de suspensão');
+ ASSERT NOT tectria_private.product_readable(cid,'nexo_mobile');
+ SELECT c.limits INTO limits FROM public.tectria_contracts c WHERE c.company_id=cid;
+ PERFORM public.tectria_atlas_amendment(cid,'nexo_mobile','resume',NULL,limits,'Teste descartável de reativação');
+ ASSERT tectria_private.product_readable(cid,'nexo_mobile');
+END $test$;
+ROLLBACK;
+SELECT 'Atlas Mobile pricing, activation, separate grants and suspension verified; fixtures rolled back.' AS result;
