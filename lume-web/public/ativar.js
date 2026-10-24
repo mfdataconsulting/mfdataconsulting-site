@@ -19,7 +19,8 @@ async function catalog(){
   const description=document.createElement('p'),release=item.release;
   if(release){
    description.textContent='Windows · Versão '+release.version+' · '+(release.bytes/1048576).toFixed(1)+' MB';article.append(description);
-   const link=document.createElement('a');link.className='download';link.href=release.downloadUrl;link.referrerPolicy='no-referrer';link.textContent='Baixar '+heading.textContent;article.append(link);
+   const link=document.createElement('button');link.type='button';link.className='download';link.textContent='Baixar '+heading.textContent;
+   link.addEventListener('click',()=>{const download=document.createElement('a');download.href=release.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();});article.append(link);
    const details=document.createElement('details'),summary=document.createElement('summary'),checksum=document.createElement('code');summary.textContent='Conferir integridade do arquivo';checksum.textContent='SHA256: '+release.sha256;details.append(summary,checksum);article.append(details);
   }else{description.textContent='Instalador em preparação. Solicite a liberação à equipe Tectria.';article.append(description);}
   $('packages').append(article);
