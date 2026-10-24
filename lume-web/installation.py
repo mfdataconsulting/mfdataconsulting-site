@@ -12,7 +12,10 @@ def handle(action,data,headers):
   email,password=data.get('email'),data.get('password')
   if not isinstance(email,str) or not 3<=len(email)<=254 or not isinstance(password,str) or not 1<=len(password)<=128:
    raise ApiError('Informe e-mail e senha.')
-  auth=remote('/auth/v1/token?grant_type=password',{'email':email,'password':password})
+  try:auth=remote('/auth/v1/token?grant_type=password',{'email':email,'password':password})
+  except ApiError as error:
+   if error.status==401:raise ApiError('Não foi possível entrar. Confira e-mail e senha.',401) from None
+   raise
   return {'access_token':auth['access_token']}
  token=data.get('access_token')
  if not isinstance(token,str) or not token or len(token)>12000:raise ApiError('Entre com sua conta Tectria.',401)
