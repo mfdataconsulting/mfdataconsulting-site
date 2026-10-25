@@ -5,7 +5,7 @@ const tokenType=fragment.get('type')||'invite';
 history.replaceState(null,'',location.pathname);
 const $=id=>document.getElementById(id),form=$('activation'),login=$('sign-in'),result=$('result');
 function updateJourney(installed){
- document.body.classList.toggle('is-installing',installed);if(!installed)$('close-page').hidden=true;
+ document.body.classList.toggle('is-installing',installed);
  $('access-status').hidden=!installed;
  $('page-title').textContent=installed?'Seus módulos. Seu próximo passo.':'Bem-vindo(a) ao Ecossistema Tectria!';
  $('page-intro').textContent=installed?'Seu acesso está confirmado. Agora, prepare os módulos da sua empresa.':'Prepare seu acesso para começar a implantação com a nossa equipe.';
@@ -74,7 +74,7 @@ login.addEventListener('submit',async event=>{event.preventDefault();const butto
 });
 async function refresh(){try{await catalog();}catch(error){result.textContent=error.message;}}
 $('company').addEventListener('change',refresh);$('refresh-catalog').addEventListener('click',refresh);
-$('sign-out').addEventListener('click',()=>{token=null;$('packages').replaceChildren();$('company').replaceChildren();$('installation').hidden=true;showLogin();result.textContent='Acesso encerrado nesta página.';});
+$('sign-out').addEventListener('click',()=>{token=null;$('packages').replaceChildren();$('company').replaceChildren();$('installation').hidden=true;showLogin();window.close();result.textContent='Acesso encerrado. Se a aba continuar aberta, você pode fechá-la pelo navegador.';});
 
 function installerHandoff(modules){
  const preferred=['nexo','lume','pulso'].find(code=>modules.includes(code));
@@ -82,6 +82,5 @@ function installerHandoff(modules){
  $('page-title').textContent='Continue pelo instalador';
  $('page-intro').textContent='Ao concluir, escolha abrir o '+label+'. Você poderá entrar com sua conta Tectria.';
  result.textContent='Download solicitado. Instalação e abertura serão confirmadas na janela do instalador.';
- $('close-page').hidden=false;
+
 }
-$('close-page').addEventListener('click',()=>{window.close();result.textContent='Se esta aba continuar aberta, você pode fechá-la pelo navegador. Continue pelo instalador ou pelo atalho do módulo.';});
