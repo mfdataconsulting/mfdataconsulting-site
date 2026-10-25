@@ -4,16 +4,38 @@ let hash=fragment.get('token_hash'),token=null,wantedCompany=fragment.get('compa
 const tokenType=fragment.get('type')||'invite';
 history.replaceState(null,'',location.pathname);
 const $=id=>document.getElementById(id),form=$('activation'),login=$('sign-in'),result=$('result');
-async function request(action,data){const response=await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Tectria-Activation':'1'},body:JSON.stringify(data),cache:'no-store'});const value=await response.json();if(!response.ok){if(response.status===401){token=null;$('installation').hidden=true;login.hidden=false;}throw Error(value.error||'Operação não confirmada.');}return value;}
-function showLogin(){form.hidden=true;login.hidden=false;$('use-account').hidden=true;hash=null;token=null;}
+function updateJourney(installed){
+ document.body.classList.toggle('is-installing',installed);
+ $('access-status').hidden=!installed;
+ $('page-title').textContent=installed?'Seus módulos. Seu próximo passo.':'Bem-vindo(a) ao Ecossistema Tectria!';
+ $('page-intro').textContent=installed?'Seu acesso está confirmado. Agora, prepare os módulos da sua empresa.':'Prepare seu acesso para começar a implantação com a nossa equipe.';
+ const steps=installed?['Baixar e instalar','Entrar nos módulos','Validar com a Tectria']:['Ativar acesso','Instalar módulos','Validar com a Tectria'];
+ $('journey').replaceChildren(...steps.map((label,index)=>{const item=document.createElement('li'),number=document.createElement('span');number.textContent=index+1;item.append(number,document.createTextNode(label));return item;}));
+}
+async function request(action,data){const response=await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Tectria-Activation':'1'},body:JSON.stringify(data),cache:'no-store'});const value=await response.json();if(!response.ok){if(response.status===401){token=null;$('installation').hidden=true;login.hidden=false;updateJourney(false);}throw Error(value.error||'Operação não confirmada.');}return value;}
+function showLogin(){updateJourney(false);form.hidden=true;login.hidden=false;$('use-account').hidden=true;hash=null;token=null;}
 form.hidden=!hash;login.hidden=!!hash;$('use-account').hidden=!hash;
 $('use-account').addEventListener('click',showLogin);
 async function catalog(){
- $('packages').replaceChildren();
+ $('packages').replaceChildren();$('main-installer').replaceChildren();$('main-installer').hidden=true;
  const company=$('company').value;if(!company)return;
  const data=await request('installation-catalog',{access_token:token,company});
  if(company!==$('company').value)return;
  const names={nexo:'Nexo',lume:'Lume',pulso:'Pulso'};
+ const bundle=data.bundle,primary=$('main-installer'),individual=$('individual-installers');
+ individual.open=!bundle;individual.classList.toggle('only-individual',!bundle);
+ if(bundle){
+  primary.hidden=false;
+  const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='INSTALADOR RECOMENDADO';
+  const title=document.createElement('h3');title.textContent='Seu pacote Tectria';
+  const modules=document.createElement('div');modules.className='included-modules';
+  for(const code of bundle.modules){const mark=document.createElement('span');mark.textContent='✓ '+(names[code]||code);modules.append(mark);}
+  const note=document.createElement('p');note.className='muted';note.textContent='Um único instalador para os módulos acima. Windows · '+(bundle.bytes/1048576).toFixed(1)+' MB';
+  const button=document.createElement('button');button.type='button';button.className='download';button.textContent='Baixar instalador completo';button.addEventListener('click',()=>{const download=document.createElement('a');download.href=bundle.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();});
+  const integrity=document.createElement('details'),summary=document.createElement('summary'),checksum=document.createElement('code');summary.textContent='Conferir integridade';checksum.textContent='SHA256: '+bundle.sha256;integrity.append(summary,checksum);
+  primary.append(eyebrow,title,modules,note,button,integrity);
+ }
+
  for(const item of data.modules){
   const article=document.createElement('article'),heading=document.createElement('h3');heading.textContent=names[item.module]||item.module;article.append(heading);
   const description=document.createElement('p'),release=item.release;
@@ -26,7 +48,7 @@ async function catalog(){
   $('packages').append(article);
  }
  if(!data.modules.length)$('packages').textContent='Nenhum módulo de instalação disponível para este acesso. Consulte a Tectria.';
- result.textContent='Acesso confirmado. Baixe os módulos abaixo; se o Nexo estiver contratado, instale-o primeiro.';
+ result.textContent='';
 }
 async function start(){
  form.hidden=true;login.hidden=true;$('use-account').hidden=true;
@@ -34,7 +56,7 @@ async function start(){
  $('company').replaceChildren();
  for(const company of data.companies){const option=document.createElement('option');option.value=company.id;option.textContent=company.code+' — '+company.name;$('company').append(option);}
  if(wantedCompany&&data.companies.some(c=>c.id===wantedCompany))$('company').value=wantedCompany;
- $('installation').hidden=false;
+ $('installation').hidden=false;updateJourney(true);
  if(!data.companies.length){result.textContent='Sua conta está ativa. Solicite à Tectria a liberação do responsável pela implantação.';return;}
  await catalog();
 }

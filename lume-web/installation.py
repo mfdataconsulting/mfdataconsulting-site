@@ -1,5 +1,6 @@
 """Customer installation portal. No persistent browser session or station registration."""
 import re
+from installer_bundles import BUNDLES
 from uuid import UUID
 from backend import ApiError, remote, rpc
 
@@ -32,5 +33,14 @@ def handle(action,data,headers):
    release=item.get('release')
    if release and (not re.fullmatch(r'https://github\.com/mfdataconsulting/mfdataconsulting-site/releases/download/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.exe',release.get('downloadUrl',''))
     or not re.fullmatch(r'[a-f0-9]{64}',release.get('sha256',''))):raise ApiError('Pacote indisponível para instalação.',503)
+  # Offer only the exact authorized composition, with versions matching live releases.
+  allowed={item['module']:item.get('release') for item in catalog.get('modules',[])}
+  catalog['bundle']=None
+  if len(allowed)>1 and all(allowed.values()):
+   for bundle in BUNDLES:
+    if set(bundle['modules'])==set(allowed) and all(bundle['versions'].get(m)==allowed[m].get('version') for m in allowed):
+     if not re.fullmatch(r'https://github\.com/mfdataconsulting/mfdataconsulting-site/releases/download/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.exe',bundle['downloadUrl']) or not re.fullmatch(r'[a-f0-9]{64}',bundle['sha256']):raise ApiError('Pacote indisponível para instalação.',503)
+     catalog['bundle']=bundle
+     break
   return catalog
  raise ApiError('Operação inválida.',404)
