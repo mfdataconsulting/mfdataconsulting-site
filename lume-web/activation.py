@@ -1,6 +1,7 @@
 """Account activation and Atlas mail relay. No credentials or links in logs."""
 import json,os,re,urllib.request,urllib.error,html
 from uuid import UUID
+from welcome_email import welcome_email
 from urllib.parse import urlparse
 from backend import ApiError,BASE,rpc,remote
 
@@ -32,11 +33,7 @@ def handle(action,data,headers):
   returning=invitation.get('existing_account') and kind!='recovery'
   if returning:link='https://lume.tectria.com.br/ativar.html#company='+company_id
   company=invitation.get('company_code','')+' — '+invitation.get('company','')
-  button='Continuar implantação' if returning else 'Ativar acesso e iniciar instalação'
-  access='Use seu e-mail e a senha atual.' if returning else 'Defina sua senha no primeiro passo. Se alterar uma senha existente, a mudança vale para todas as empresas da conta.'
-  body.update(subject='Sua implantação Tectria — '+company,
-   text='Bem-vindo à Tectria. Empresa: '+company+'\n\n'+access+'\n'+button+':\n'+link+'\n\nDepois, baixe os instaladores dos módulos contratados disponíveis para sua empresa. Instale primeiro o Nexo, se contratado. A Tectria acompanhará o vínculo da estação, as integrações e os backups antes da liberação para operação.\n\nO link de ativação tem validade limitada. Se já ativou sua conta, entre na mesma página para continuar. Se não esperava este convite, ignore a mensagem.',
-   html='<main style="font-family:Arial,sans-serif;color:#242c38;max-width:600px;margin:auto;padding:32px"><p style="color:#c81938;letter-spacing:4px;font-weight:bold">TECTRIA</p><h1>Vamos começar</h1><p>Empresa: '+html.escape(company)+'</p><p>'+html.escape(access)+'</p><p><a style="display:inline-block;background:#c81938;color:white;padding:16px;text-decoration:none;border-radius:8px" href="'+html.escape(link,quote=True)+'">'+button+'</a></p><ol><li>Ative seu acesso.</li><li>Baixe e instale os módulos contratados disponíveis para sua empresa.</li><li>Conclua com a Tectria a configuração da estação, integrações e backups.</li></ol><p>A instalação não conclui a implantação: aguarde a validação acompanhada antes de operar.</p><p>O link de ativação tem validade limitada. Se já ativou a conta, entre na mesma página para continuar. Se não esperava este convite, ignore a mensagem.</p></main>')
+  body.update(welcome_email(company,link,returning=returning,recovery=kind=='recovery'))
   request=urllib.request.Request('https://api.resend.com/emails',data=json.dumps(body).encode(),method='POST',headers={
    'Authorization':'Bearer '+key,'Content-Type':'application/json','User-Agent':'Tectria-Lume/1.0','Idempotency-Key':'atlas-invite/'+invitation['id']})
   try:
