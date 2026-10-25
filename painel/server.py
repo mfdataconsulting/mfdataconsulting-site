@@ -272,7 +272,7 @@ class Handler(BaseHTTPRequestHandler):
         route = urlparse(self.path)
         query = parse_qs(route.query)
         try:
-            if route.path == '/api/info': return self.send({'configured': configured(), 'environment': 'internal', 'version':'20261024.29'})
+            if route.path == '/api/info': return self.send({'configured': configured(), 'environment': 'internal', 'version':'20261025.30'})
             if route.path.startswith('/api/'):
                 _, session = self.session()
                 token = session['access_token']

@@ -22,7 +22,7 @@ export function setupPush(root,request,action,STORE='tectria-lume-device',option
  const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
  const enable=document.createElement('button');enable.type='button';enable.textContent='Ativar neste aparelho';
  const check=document.createElement('button');check.type='button';check.textContent='Verificar serviço de notificações';
- const test=document.createElement('button');test.type='button';test.textContent='Enviar aviso de teste';test.disabled=true;
+ const test=document.createElement('button');test.type='button';test.textContent='Enviar verificação';test.disabled=true;
  const disable=document.createElement('button');disable.type='button';disable.textContent='Desativar neste aparelho';disable.disabled=true;
  section.append(title,status,check,enable,test,disable);root.append(section);
  check.onclick=()=>action(async()=>{try{await request('push-auth-check');status.textContent=active?'Serviço autenticado. Notificações ativas neste aparelho.':'Serviço de notificações autenticado. Ative os avisos neste aparelho.';}catch(error){status.textContent=error.message;}});
@@ -58,14 +58,14 @@ export function setupPush(root,request,action,STORE='tectria-lume-device',option
    // Ask only in direct response to this button, never during page load.
    const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
    if(permission!=='granted'){state(false);status.textContent='Permita notificações nas configurações deste site para ativar os avisos.';return;}
-   await register();status.textContent='Aparelho registrado. Clique em Enviar aviso de teste para confirmar o recebimento.';
+   await register();status.textContent='Aparelho registrado. Clique em Enviar verificação para confirmar o recebimento.';
   }catch(error){await failure(error);}
  });
  test.onclick=()=>action(async()=>{
   try{
-   status.textContent='Enviando aviso de teste…';
+   status.textContent='Enviando verificação…';
    const result=await request('push-test',{deviceId:localStorage.getItem(STORE)});
-   if(result.accepted&&status.textContent==='Enviando aviso de teste…')status.textContent='Firebase aceitou o aviso. Aguarde a notificação neste aparelho.';
+   if(result.accepted&&status.textContent==='Enviando verificação…')status.textContent='Firebase aceitou o aviso. Aguarde a notificação neste aparelho.';
   }catch(error){status.textContent=error.message;}
  });
  async function pause(){

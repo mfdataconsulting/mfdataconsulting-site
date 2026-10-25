@@ -8,8 +8,8 @@ export const faqGroups=[
   ['Como acompanho o estoque?','A regra avisa ao atingir o mínimo ou ficar abaixo dele, conforme a posição recebida. Não usa antecedência em dias nem repete um aviso por venda. Após reposição acima do mínimo e nova queda, com as posições sincronizadas, pode gerar um novo alerta. O resumo diário pode mostrar pendências ainda abertas.'],
   ['Como acompanho vencimentos?','Selecione as regras de prazos e vencimentos e defina a antecedência. Estoque e acontecimentos sem prazo ficam separados. Registre informações operacionais na gestão de origem.'],
   ['Como funciona o e-mail?','Em Notificações, informe até cinco destinatários e ative o acompanhamento. A primeira ativação registra a posição atual sem reenviar avisos antigos. Enviado significa aceito pelo provedor para envio.'],
-  ['Como ativo o aviso no aparelho?','No Lume web, abra Notificações, ative neste aparelho e teste o recebimento. A ativação pertence ao aparelho, à conta e à empresa. A versão local oferece o link para a versão web.'],
-  ['Onde confiro os avisos?','No Histórico de execução, consulte os e-mails e os registros das rotinas. Confira o teste de push em Notificações. SMS e WhatsApp ainda não estão conectados.']
+  ['Como ativo o aviso no aparelho?','No Lume web, abra Notificações, ative neste aparelho e confirme o recebimento. A ativação pertence ao aparelho, à conta e à empresa. A versão local oferece o link para a versão web.'],
+  ['Onde confiro os avisos?','No Histórico de execução, consulte os e-mails e os registros das rotinas. Confira o verificação de notificações em Notificações. SMS e WhatsApp ainda não estão conectados.']
  ]},
  {title:'Dados e lembretes',subtitle:'Consulta das fontes e lembretes pessoais',items:[
   ['Onde cadastro compras, produtos e clientes?','No Nexo ou no sistema de gestão de origem. Dados acompanhados é uma consulta; registros anteriores do Lume são preservados. Compras e documentos só terão novos dados quando houver uma integração correspondente disponível.'],
