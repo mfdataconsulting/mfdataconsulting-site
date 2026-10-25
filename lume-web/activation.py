@@ -20,7 +20,7 @@ def handle(action,data,headers):
   bearer=headers.get('Authorization','')
   if not bearer.startswith('Bearer '):raise ApiError('Acesso exclusivo ao Atlas.',403)
   token=bearer[7:];admin_guard(token)
-  invitation=rpc('tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
+  invitation=rpc('tectria_atlas_resend_invitation' if data.get('resend') is True else 'tectria_atlas_invitation',{'p_company':data.get('company'),'p_email':data.get('email')},token)
   hash=data.get('token_hash','');kind=data.get('token_type','invite')
   if kind not in ('invite','recovery'):raise ApiError('Link inválido.')
   if not invitation.get('user_id') or ((not invitation.get('existing_account') or kind=='recovery') and (not isinstance(hash,str) or not re.fullmatch(r'(?:[a-fA-F0-9]{56}|[a-fA-F0-9]{64})',hash))):raise ApiError('Convite inválido.')
@@ -28,6 +28,7 @@ def handle(action,data,headers):
   if not key:raise ApiError('Envio não configurado.',503)
   company_id=str(UUID(data.get('company','')))
   link='https://lume.tectria.com.br/ativar.html#token_hash='+hash+'&type='+kind+'&company='+company_id
+  request_id=str(UUID(data['request_id'])) if data.get('request_id') else invitation['id']
   body={'from':'Tectria <contato@tectria.com.br>','to':[invitation['email']]}
   # One invitation, one guided journey. Account activation never implies installation.
   returning=invitation.get('existing_account') and kind!='recovery'
@@ -35,7 +36,7 @@ def handle(action,data,headers):
   company=invitation.get('company_code','')+' — '+invitation.get('company','')
   body.update(welcome_email(company,link,returning=returning,recovery=kind=='recovery'))
   request=urllib.request.Request('https://api.resend.com/emails',data=json.dumps(body).encode(),method='POST',headers={
-   'Authorization':'Bearer '+key,'Content-Type':'application/json','User-Agent':'Tectria-Lume/1.0','Idempotency-Key':'atlas-invite/'+invitation['id']})
+   'Authorization':'Bearer '+key,'Content-Type':'application/json','User-Agent':'Tectria-Lume/1.0','Idempotency-Key':'atlas-invite/'+invitation['id']+'/'+request_id})
   try:
    with urllib.request.urlopen(request,timeout=15) as r:json.load(r)
   except urllib.error.HTTPError as exc:raise ApiError('Envio não confirmado pelo provedor (HTTP '+str(exc.code)+').',502) from None
