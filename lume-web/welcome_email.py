@@ -5,7 +5,7 @@ ART_URL = 'https://lume.tectria.com.br/assets/email/boas-vindas-tectria-v1.png'
 
 
 def welcome_email(company, link, returning=False, recovery=False):
-    title = 'Seu próximo passo começa aqui.' if returning else 'Boas-vindas à Tectria!'
+    title = 'Seu próximo passo começa aqui.' if returning else 'Bem vindo(a) ao Ecossistema Tectria!'
     button = 'Continuar minha implantação' if returning else 'Ativar meu acesso'
     access = ('Entre com seu e-mail e a senha que você já utiliza na Tectria.' if returning else
               'Comece definindo sua senha. Depois, você poderá baixar os módulos contratados para sua empresa.')
