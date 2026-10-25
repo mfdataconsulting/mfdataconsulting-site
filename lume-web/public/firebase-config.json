@@ -1,0 +1,11 @@
+{
+  "firebase": {
+    "apiKey": "AIzaSyCWLH69I7pJh1Nd0B4p1ue8EECPPTWQr84",
+    "authDomain": "tectria-notificacoes-b69a6.firebaseapp.com",
+    "projectId": "tectria-notificacoes-b69a6",
+    "storageBucket": "tectria-notificacoes-b69a6.firebasestorage.app",
+    "messagingSenderId": "824378219973",
+    "appId": "1:824378219973:web:7416999da373eaa6ebbfac"
+  },
+  "vapidKey": "BEMJ7PsDRq5iScKXOJEU9PBmpv_yaqxuFMgwXuVMQ3zOMIRpehwH9lMA6x8vh5TcORwC9TM4-q9O8Mes3JwAMrc"
+}
