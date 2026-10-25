@@ -14,7 +14,7 @@ def welcome_email(company, link, returning=False, recovery=False):
     steps = [
         ('Acesse sua conta', 'Use seu e-mail e sua senha para continuar.' if returning else 'Crie sua senha na página de ativação.'),
         ('Instale seus módulos', 'Baixe os instaladores disponíveis para sua empresa. Se contratou o Nexo, instale-o primeiro.'),
-        ('Conte com a Tectria', 'Vamos acompanhar a configuração, as integrações e os backups antes de começar a operar.'),
+        ('Comece a usar', 'Abra o módulo ao concluir a instalação, entre com sua conta e confira a empresa. Conte com a Tectria se precisar de ajuda.'),
     ]
     step_html = ''.join(
         f'<tr><td valign="top" width="36" style="padding:0 0 18px;color:#c81938;font-size:16px;font-weight:bold;">{i:02}</td>'

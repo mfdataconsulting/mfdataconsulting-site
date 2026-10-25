@@ -5,11 +5,11 @@ const tokenType=fragment.get('type')||'invite';
 history.replaceState(null,'',location.pathname);
 const $=id=>document.getElementById(id),form=$('activation'),login=$('sign-in'),result=$('result');
 function updateJourney(installed){
- document.body.classList.toggle('is-installing',installed);
+ document.body.classList.toggle('is-installing',installed);if(!installed)$('close-page').hidden=true;
  $('access-status').hidden=!installed;
  $('page-title').textContent=installed?'Seus módulos. Seu próximo passo.':'Bem-vindo(a) ao Ecossistema Tectria!';
  $('page-intro').textContent=installed?'Seu acesso está confirmado. Agora, prepare os módulos da sua empresa.':'Prepare seu acesso para começar a implantação com a nossa equipe.';
- const steps=installed?['Baixar e instalar','Entrar nos módulos','Validar com a Tectria']:['Ativar acesso','Instalar módulos','Validar com a Tectria'];
+ const steps=installed?['Baixar e instalar','Entrar nos módulos','Começar a usar']:['Ativar acesso','Instalar módulos','Começar a usar'];
  $('journey').replaceChildren(...steps.map((label,index)=>{const item=document.createElement('li'),number=document.createElement('span');number.textContent=index+1;item.append(number,document.createTextNode(label));return item;}));
 }
 async function request(action,data){const response=await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Tectria-Activation':'1'},body:JSON.stringify(data),cache:'no-store'});const value=await response.json();if(!response.ok){if(response.status===401){token=null;$('installation').hidden=true;login.hidden=false;updateJourney(false);}throw Error(value.error||'Operação não confirmada.');}return value;}
@@ -31,7 +31,7 @@ async function catalog(){
   const modules=document.createElement('div');modules.className='included-modules';
   for(const code of bundle.modules){const mark=document.createElement('span');mark.textContent='✓ '+(names[code]||code);modules.append(mark);}
   const note=document.createElement('p');note.className='muted';note.textContent='Um único instalador para os módulos acima. Windows · '+(bundle.bytes/1048576).toFixed(1)+' MB';
-  const button=document.createElement('button');button.type='button';button.className='download';button.textContent='Baixar instalador completo';button.addEventListener('click',()=>{const download=document.createElement('a');download.href=bundle.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();});
+  const button=document.createElement('button');button.type='button';button.className='download';button.textContent='Baixar instalador completo';button.addEventListener('click',()=>{const download=document.createElement('a');download.href=bundle.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();installerHandoff(bundle.modules);});
   const integrity=document.createElement('details'),summary=document.createElement('summary'),checksum=document.createElement('code');summary.textContent='Conferir integridade';checksum.textContent='SHA256: '+bundle.sha256;integrity.append(summary,checksum);
   primary.append(eyebrow,title,modules,note,button,integrity);
  }
@@ -42,7 +42,7 @@ async function catalog(){
   if(release){
    description.textContent='Windows · Versão '+release.version+' · '+(release.bytes/1048576).toFixed(1)+' MB';article.append(description);
    const link=document.createElement('button');link.type='button';link.className='download';link.textContent='Baixar '+heading.textContent;
-   link.addEventListener('click',()=>{const download=document.createElement('a');download.href=release.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();});article.append(link);
+   link.addEventListener('click',()=>{const download=document.createElement('a');download.href=release.downloadUrl;download.referrerPolicy='no-referrer';download.rel='noreferrer';download.click();installerHandoff([item.module]);});article.append(link);
    const details=document.createElement('details'),summary=document.createElement('summary'),checksum=document.createElement('code');summary.textContent='Conferir integridade do arquivo';checksum.textContent='SHA256: '+release.sha256;details.append(summary,checksum);article.append(details);
   }else{description.textContent='Instalador em preparação. Solicite a liberação à equipe Tectria.';article.append(description);}
   $('packages').append(article);
@@ -75,3 +75,13 @@ login.addEventListener('submit',async event=>{event.preventDefault();const butto
 async function refresh(){try{await catalog();}catch(error){result.textContent=error.message;}}
 $('company').addEventListener('change',refresh);$('refresh-catalog').addEventListener('click',refresh);
 $('sign-out').addEventListener('click',()=>{token=null;$('packages').replaceChildren();$('company').replaceChildren();$('installation').hidden=true;showLogin();result.textContent='Acesso encerrado nesta página.';});
+
+function installerHandoff(modules){
+ const preferred=['nexo','lume','pulso'].find(code=>modules.includes(code));
+ const label={nexo:'Nexo',lume:'Lume',pulso:'Pulso'}[preferred]||'módulo';
+ $('page-title').textContent='Continue pelo instalador';
+ $('page-intro').textContent='Ao concluir, escolha abrir o '+label+'. Você poderá entrar com sua conta Tectria.';
+ result.textContent='Download solicitado. Instalação e abertura serão confirmadas na janela do instalador.';
+ $('close-page').hidden=false;
+}
+$('close-page').addEventListener('click',()=>{window.close();result.textContent='Se esta aba continuar aberta, você pode fechá-la pelo navegador. Continue pelo instalador ou pelo atalho do módulo.';});
