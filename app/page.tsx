@@ -44,7 +44,7 @@ export default function Tectria() {
     <Header home />
 
     <section id="inicio" className="hero">
-      <div className="hero-lines"/><div className="glow"/>
+      <div className="hero-photo" aria-hidden="true"/><div className="hero-lines"/>
       <div className="hero-copy">
         <p className="kicker">Tectria · Tecnologia e Dados</p>
         <h1>Tecnologia que conecta dados, operação e <em>resultados.</em></h1>
@@ -52,7 +52,14 @@ export default function Tectria() {
 
         <div className="actions"><a className="primary" href="#servicos">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Soluções para seu comércio <Arrow /></a></div>
       </div>
-      <div className="hero-visual" aria-hidden="true"><img src="/tectria-icon.png" alt=""/><span className="node n1"/><span className="node n2"/><span className="node n3"/></div>
+      <div className="hero-dashboard" aria-hidden="true">
+        <div className="dashboard-top"><span className="dashboard-brand">TECTRIA <b>/</b> INTELLIGENCE</span><span className="dashboard-dots">•••</span></div>
+        <div className="dashboard-heading"><span>VISÃO DO NEGÓCIO</span><strong>Informação que<br/>move decisões.</strong></div>
+        <div className="dashboard-chart"><span>Dados conectados. Novas perspectivas.</span><svg viewBox="0 0 400 130" fill="none"><defs><linearGradient id="hero-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#ed111c" stopOpacity=".35"/><stop offset="1" stopColor="#ed111c" stopOpacity="0"/></linearGradient></defs><path d="M0 110H400M0 65H400M0 20H400" stroke="white" strokeOpacity=".08"/><path d="M0 108L42 96L85 103L130 72L175 80L220 48L265 58L310 27L355 35L400 8V130H0Z" fill="url(#hero-chart-fill)"/><path d="M0 108L42 96L85 103L130 72L175 80L220 48L265 58L310 27L355 35L400 8" stroke="#ff4852" strokeWidth="3" strokeLinejoin="round"/></svg><div className="dashboard-axis"><span>ESTRUTURAR</span><span>CONECTAR</span><span>EVOLUIR</span></div></div>
+        <div className="dashboard-modules"><div><i>01</i><strong>Dados</strong><span>Base confiável</span></div><div><i>02</i><strong>Operação</strong><span>Rotinas conectadas</span></div><div><i>03</i><strong>Decisões</strong><span>Visão estratégica</span></div></div>
+        <div className="dashboard-footer"><span className="dashboard-signal"/>Tecnologia a serviço do seu negócio <span>↗</span></div>
+      </div>
+      <div className="hero-capabilities"><span>ENGENHARIA DE DADOS</span><i/><span>INTELIGÊNCIA DE NEGÓCIO</span><i/><span>AUTOMAÇÃO & GESTÃO</span></div>
       <div className="scroll">Role para explorar <span>↓</span></div>
     </section>
 
