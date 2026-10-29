@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Header from "./components/Header";
 import ProductPreview from "./components/ProductPreview";
+import HeroCarousel from "./components/HeroCarousel";
 
 const solutions = [
   ["01", "⇄", "Migrações & Incorporações", "Migração e consolidação de bases em mudanças de sistema e incorporações, com preservação de histórico, validação e rastreabilidade."],
@@ -52,13 +53,7 @@ export default function Tectria() {
 
         <div className="actions"><a className="primary" href="#servicos">Serviços para sua empresa <Arrow /></a><a className="secondary" href="#ecossistema">Soluções para seu comércio <Arrow /></a></div>
       </div>
-      <div className="hero-dashboard" aria-hidden="true">
-        <div className="dashboard-top"><span className="dashboard-brand">TECTRIA <b>/</b> INTELLIGENCE</span><span className="dashboard-dots">•••</span></div>
-        <div className="dashboard-heading"><span>VISÃO DO NEGÓCIO</span><strong>Informação que<br/>move decisões.</strong></div>
-        <div className="dashboard-chart"><span>Dados conectados. Novas perspectivas.</span><svg viewBox="0 0 400 130" fill="none"><defs><linearGradient id="hero-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#ed111c" stopOpacity=".35"/><stop offset="1" stopColor="#ed111c" stopOpacity="0"/></linearGradient></defs><path d="M0 110H400M0 65H400M0 20H400" stroke="white" strokeOpacity=".08"/><path d="M0 108L42 96L85 103L130 72L175 80L220 48L265 58L310 27L355 35L400 8V130H0Z" fill="url(#hero-chart-fill)"/><path d="M0 108L42 96L85 103L130 72L175 80L220 48L265 58L310 27L355 35L400 8" stroke="#ff4852" strokeWidth="3" strokeLinejoin="round"/></svg><div className="dashboard-axis"><span>ESTRUTURAR</span><span>CONECTAR</span><span>EVOLUIR</span></div></div>
-        <div className="dashboard-modules"><div><i>01</i><strong>Dados</strong><span>Base confiável</span></div><div><i>02</i><strong>Operação</strong><span>Rotinas conectadas</span></div><div><i>03</i><strong>Decisões</strong><span>Visão estratégica</span></div></div>
-        <div className="dashboard-footer"><span className="dashboard-signal"/>Tecnologia a serviço do seu negócio <span>↗</span></div>
-      </div>
+      <HeroCarousel services={solutions} products={products} />
       <div className="hero-capabilities"><span>ENGENHARIA DE DADOS</span><i/><span>INTELIGÊNCIA DE NEGÓCIO</span><i/><span>AUTOMAÇÃO & GESTÃO</span></div>
       <div className="scroll">Role para explorar <span>↓</span></div>
     </section>
@@ -75,7 +70,7 @@ export default function Tectria() {
 
     <section id="servicos" className="section dark"><span id="solucoes" className="anchor-target"/>
       <div className="section-head split"><div><p className="kicker">Frente 01 / Serviços para empresas</p><h2>Especialização para<br/>desafios complexos.</h2></div><p>Projetos sob medida para empresas de diferentes portes: migrações, incorporações, integrações e automações com continuidade e informação confiável.</p></div>
-      <div className="solutions">{solutions.map(([n,icon,t,d])=><article className="motion-card" key={t}><span>{n}</span><i className="service-icon" aria-hidden="true">{icon}</i><h3>{t}</h3><p>{d}</p><Arrow /></article>)}</div>
+      <div className="solutions">{solutions.map(([n,icon,t,d])=><article id={`servico-${n}`} className="motion-card" key={t}><span>{n}</span><i className="service-icon" aria-hidden="true">{icon}</i><h3>{t}</h3><p>{d}</p><Arrow /></article>)}</div>
     </section>
 
     <section id="metodologia" className="flow section">
