@@ -8,3 +8,14 @@
 @media(max-width:1100px){.carousel{padding:20px}.controls{gap:5px}.dots button{width:18px}.arrows button{width:38px}.top{font-size:8px}.description{font-size:12px}}
 @media(max-width:760px){.carousel{padding:20px}.visual{height:125px;margin:18px 0}.content h2{font-size:29px}.description{font-size:13px}.tags{min-height:70px}.arrows button{width:44px}.dots button{width:22px}}
 @media(prefers-reduced-motion:reduce){.content{animation:none}}
+
+/* Vidro leve e movimento contínuo, preservando a leitura. */
+.carousel.carousel{background:linear-gradient(145deg,rgba(24,34,44,.48),rgba(8,15,23,.58));backdrop-filter:blur(5px);border-color:#ffffff30;box-shadow:0 20px 65px #0003;padding:22px}
+.playback{display:flex;align-items:center;gap:7px;min-height:34px;border:1px solid #ffffff20;border-radius:6px;padding:5px 9px;background:#ffffff06;color:#e7edf3;font:inherit;font-size:11px;cursor:pointer}.playback span{font-size:9px;letter-spacing:normal}.playback:hover{background:#ffffff15}
+.top{padding-bottom:12px}.groups{margin-top:14px;background:#070e1638}.visual{height:112px;margin:16px 0;background-color:#ffffff02}.content{animation:reveal .65s cubic-bezier(.22,1,.36,1)}.content h2{min-height:2.3em;margin-bottom:10px}.description{min-height:5.25em;margin-bottom:14px;color:#e1e7ee;text-shadow:0 1px 8px #0008}.tags{min-height:62px}.tags span{color:#d0dbe5;background:#07101b25}.orbit{animation:orbitDrift 6s ease-in-out infinite}.symbol{animation:symbolFloat 3s ease-in-out infinite}.link{min-height:44px}.controls{padding-top:8px}.progress{height:2px;margin-top:8px;background:#ffffff15;overflow:hidden;border-radius:2px}.progress span{display:block;height:100%;background:linear-gradient(90deg,#ed111c,#ff9399);transform-origin:left;animation:slideProgress 3s linear forwards}
+@keyframes reveal{from{opacity:0;transform:translateX(18px);filter:blur(3px)}to{opacity:1;transform:translateX(0);filter:blur(0)}}
+@keyframes slideProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes orbitDrift{0%,100%{transform:rotate(45deg) scale(.9)}50%{transform:rotate(60deg) scale(1.04)}}
+@keyframes symbolFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(max-width:760px){.carousel.carousel{padding:20px;background:linear-gradient(145deg,#18222c66,#080f178c)}.visual{height:110px}.description{min-height:7em}.tags{min-height:70px}}
+@media(prefers-reduced-motion:reduce){.content,.orbit,.symbol,.progress span{animation:none}.progress{display:none}}
